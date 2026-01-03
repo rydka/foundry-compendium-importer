@@ -1,0 +1,18 @@
+{
+  "id": "compendium-json-importer",
+  "title": "Compendium JSON Importer",
+  "description": "Import compendium entries from .json or .db files.",
+  "version": "0.1.0",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "authors": [
+    {
+      "name": "Shadow"
+    }
+  ],
+  "esmodules": [
+    "scripts/importer.js"
+  ]
+}

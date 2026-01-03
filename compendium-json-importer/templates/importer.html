@@ -1,0 +1,59 @@
+<form class="compendium-json-importer">
+  <div class="form-group">
+    <label>Source file (.json or .db)</label>
+    <input type="file" name="sourceFile" accept=".json,.db,application/json" />
+    <p class="notes file-name">No file selected.</p>
+  </div>
+
+  <hr/>
+
+  <div class="form-group">
+    <label>Target pack</label>
+    <select name="targetPack">
+      {{#select targetPack}}
+      <option value="new">Create new pack</option>
+      {{#each packs}}
+      <option value="{{id}}">{{label}}</option>
+      {{/each}}
+      {{/select}}
+    </select>
+  </div>
+
+  <div class="form-group new-pack">
+    <label>New pack label</label>
+    <input type="text" name="newPackLabel" value="{{newPackLabel}}" />
+  </div>
+
+  <div class="form-group new-pack">
+    <label>New pack name (id)</label>
+    <input type="text" name="newPackName" value="{{newPackName}}" />
+    <p class="notes">Lowercase letters, numbers, and hyphens.</p>
+  </div>
+
+  <div class="form-group new-pack">
+    <label>Document type</label>
+    <select name="newPackType">
+      {{#select newPackType}}
+      {{#each docTypes}}
+      <option value="{{this}}">{{this}}</option>
+      {{/each}}
+      {{/select}}
+    </select>
+  </div>
+
+  <hr/>
+
+  <div class="form-group">
+    <label>Overwrite existing entries with the same name</label>
+    <input type="checkbox" name="overwrite" {{#if overwrite}}checked{{/if}} />
+  </div>
+
+  <div class="form-group">
+    <label>Strip _id from imported entries</label>
+    <input type="checkbox" name="stripIds" {{#if stripIds}}checked{{/if}} />
+  </div>
+
+  <footer class="sheet-footer flexrow">
+    <button type="submit"><i class="fas fa-file-import"></i> Import</button>
+  </footer>
+</form>
