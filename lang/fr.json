@@ -1,0 +1,89 @@
+{
+  "compendium-json-importer": {
+    "Title": "Importer dans un compendium",
+    "Menu": {
+      "Name": "Importeur JSON de compendium",
+      "Label": "Ouvrir l'importeur",
+      "Hint": "Importe des acteurs et des objets depuis un fichier .json ou .db dans un compendium."
+    },
+    "Button": {
+      "Import": "Importer",
+      "Analyze": "Analyser le fichier",
+      "Confirm": "Importer {count} documents",
+      "Cancel": "Annuler"
+    },
+    "Source": {
+      "Label": "Fichier source",
+      "Hint": "Un fichier .json ou .db. Choisi :",
+      "NoFile": "aucun fichier"
+    },
+    "Filter": {
+      "Label": "Type d'import",
+      "All": "Tous",
+      "Actors": "Acteurs",
+      "Items": "Objets"
+    },
+    "Target": {
+      "Label": "Compendium cible",
+      "NewPack": "Créer un nouveau compendium",
+      "NewLabel": "Libellé du nouveau compendium",
+      "NewName": "Nom du nouveau compendium (id)",
+      "NewNameHint": "Lettres minuscules, chiffres et tirets.",
+      "NewType": "Type de document"
+    },
+    "Options": {
+      "Overwrite": "Écraser",
+      "OverwriteHint": "Supprime les documents existants de même nom (et de même type) avant l'import.",
+      "StripIds": "Supprimer les _id",
+      "StripIdsHint": "Donne un nouvel identifiant à chaque document, document imbriqué et activité. Décochez pour garder les identifiants du fichier."
+    },
+    "Summary": {
+      "Title": "Vérification avant l'import dans",
+      "Conform": "Documents conformes : {count}",
+      "Updated": "Dont mis à jour au format dnd5e 6 : {count}",
+      "Rejected": "Documents rejetés (non importés) : {count}",
+      "Other": "Autres types de documents (non contrôlés) : {count}",
+      "ToReplace": "Documents existants à remplacer : {count}",
+      "RejectedTitle": "Documents rejetés",
+      "NotesTitle": "Anciens champs ignorés dans {count} documents",
+      "ConflictsTitle": "Identifiants déjà utilisés dans ce compendium",
+      "ConflictsHint": "Cochez les documents à importer, puis choisissez quoi en faire. Les documents non cochés sont ignorés.",
+      "SelectAll": "Tout sélectionner",
+      "ActionReplace": "Remplacer l'existant",
+      "ActionNewId": "Nouvel identifiant",
+      "Existing": "document existant : {name}"
+    },
+    "Warning": {
+      "DocType": "Le fichier déclare des documents de type {file}, mais le compendium contient des documents de type {pack}."
+    },
+    "Notify": {
+      "Done": "Import dans {target} terminé : {created} créés, {replaced} remplacés, {ignored} ignorés, {rejected} rejetés."
+    },
+    "Error": {
+      "NotGM": "Seul un MJ peut importer des documents.",
+      "NoFile": "Choisissez d'abord un fichier source.",
+      "PackType": "Le compendium {pack} ne contient pas de documents de type {type}. Choisissez un autre compendium ou un autre type d'import.",
+      "ImportFailed": "L'import a échoué : {message}. Consultez la console (F12) pour le détail.",
+      "Format": {
+        "empty": "Le fichier est vide. Choisissez un fichier qui contient des documents.",
+        "invalidJson": "Le fichier n'est pas du JSON valide. Vérifiez qu'il a été exporté en .json ou .db.",
+        "invalidLine": "La ligne {line} du fichier n'est pas du JSON valide. Corrigez ou supprimez cette ligne.",
+        "noDocuments": "Le fichier ne contient aucun document. Attendu : une liste, ou un objet avec entries, documents, items ou data."
+      }
+    },
+    "Reason": {
+      "MissingType": "Le document n'a pas de type. Ajoutez un type, par exemple : character, npc, weapon, spell.",
+      "MissingTypeNested": "L'objet imbriqué {name} n'a pas de type.",
+      "UnknownType": "Type « {type} » inconnu de dnd5e. Types connus : {known}.",
+      "UnknownTypeNested": "L'objet imbriqué {name} a un type « {type} » inconnu. Types connus : {known}.",
+      "InvalidField": "Valeur invalide dans {path} : {message}",
+      "Invalid": "Les données ne respectent pas le modèle dnd5e 6 : {message}",
+      "Unreadable": "Les données sont illisibles : {message}",
+      "DroppedFields": "{count} champs non pris en charge par dnd5e 6 : {paths}",
+      "PackExists": "Un compendium nommé {name} existe déjà. Choisissez un autre nom.",
+      "PackLocked": "Le compendium {name} est verrouillé. Déverrouillez-le d'abord.",
+      "InvalidName": "Le nom du compendium est vide ou invalide. Utilisez des lettres minuscules, des chiffres et des tirets.",
+      "MissingLabel": "Saisissez un libellé pour le nouveau compendium."
+    }
+  }
+}

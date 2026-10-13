@@ -42,4 +42,6 @@ npm run lint
 
 Liste maintenue par le développeur et lue par le vérificateur : hooks écoutés, méthodes remplacées, sélecteurs CSS globaux, modules tiers détectés ou adaptés.
 
-- Aucun pour l'instant.
+- Hook `renderCompendiumDirectory` : ajoute le bouton `.cji-open-importer` dans `.directory-header .header-actions` (MJ seulement). dnd5e ajoute aussi ses boutons dans ce conteneur.
+- `game.settings.registerMenu` (menu restreint ouvrant `ImporterApp`).
+- Sélecteurs CSS globaux : seulement `.compendium-json-importer` et `.cji-open-importer`.

@@ -1,0 +1,29 @@
+<fieldset class="cji-section" {{#if locked}}disabled{{/if}}>
+  <div class="form-group">
+    <label>{{localize "compendium-json-importer.Filter.Label"}}</label>
+    <div class="form-fields">
+      <select name="typeFilter">{{selectOptions typeFilters selected=typeFilter}}</select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>{{localize "compendium-json-importer.Target.Label"}}</label>
+    <div class="form-fields">
+      <select name="targetPack">{{selectOptions packChoices selected=targetPack}}</select>
+    </div>
+  </div>
+  <div class="form-group cji-new-pack" {{#unless isNew}}hidden{{/unless}}>
+    <label>{{localize "compendium-json-importer.Target.NewLabel"}}</label>
+    <div class="form-fields"><input type="text" name="newPackLabel" value="{{newPackLabel}}"></div>
+  </div>
+  <div class="form-group cji-new-pack" {{#unless isNew}}hidden{{/unless}}>
+    <label>{{localize "compendium-json-importer.Target.NewName"}}</label>
+    <div class="form-fields"><input type="text" name="newPackName" value="{{newPackName}}"></div>
+    <p class="hint">{{localize "compendium-json-importer.Target.NewNameHint"}}</p>
+  </div>
+  <div class="form-group cji-new-pack" {{#unless isNew}}hidden{{/unless}}>
+    <label>{{localize "compendium-json-importer.Target.NewType"}}</label>
+    <div class="form-fields">
+      <select name="newPackType" {{#unless showType}}disabled{{/unless}}>{{selectOptions typeChoices selected=newPackType}}</select>
+    </div>
+  </div>
+</fieldset>

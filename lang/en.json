@@ -1,0 +1,89 @@
+{
+  "compendium-json-importer": {
+    "Title": "Import into a compendium",
+    "Menu": {
+      "Name": "Compendium JSON Importer",
+      "Label": "Open the importer",
+      "Hint": "Import actors and items from a .json or .db file into a compendium."
+    },
+    "Button": {
+      "Import": "Import",
+      "Analyze": "Analyze file",
+      "Confirm": "Import {count} documents",
+      "Cancel": "Cancel"
+    },
+    "Source": {
+      "Label": "Source file",
+      "Hint": "A .json or .db file. Selected:",
+      "NoFile": "no file"
+    },
+    "Filter": {
+      "Label": "Import type",
+      "All": "All",
+      "Actors": "Actors",
+      "Items": "Items"
+    },
+    "Target": {
+      "Label": "Target compendium",
+      "NewPack": "Create a new compendium",
+      "NewLabel": "New compendium label",
+      "NewName": "New compendium name (id)",
+      "NewNameHint": "Lowercase letters, numbers and hyphens.",
+      "NewType": "Document type"
+    },
+    "Options": {
+      "Overwrite": "Overwrite",
+      "OverwriteHint": "Delete existing documents with the same name (and type) before importing.",
+      "StripIds": "Remove _id",
+      "StripIdsHint": "Give every document, embedded document and activity a new identifier. Uncheck to keep the identifiers of the file."
+    },
+    "Summary": {
+      "Title": "Review before importing into",
+      "Conform": "Compliant documents: {count}",
+      "Updated": "Of which updated to the dnd5e 6 format: {count}",
+      "Rejected": "Rejected documents (not imported): {count}",
+      "Other": "Other document types (not checked): {count}",
+      "ToReplace": "Existing documents to replace: {count}",
+      "RejectedTitle": "Rejected documents",
+      "NotesTitle": "Obsolete fields ignored in {count} documents",
+      "ConflictsTitle": "Identifiers already used in this compendium",
+      "ConflictsHint": "Check the documents to import, then choose what to do with them. Unchecked documents are ignored.",
+      "SelectAll": "Select all",
+      "ActionReplace": "Replace the existing document",
+      "ActionNewId": "Use a new identifier",
+      "Existing": "existing document: {name}"
+    },
+    "Warning": {
+      "DocType": "The file declares documents of type {file}, but the compendium contains {pack} documents."
+    },
+    "Notify": {
+      "Done": "Import into {target} finished: {created} created, {replaced} replaced, {ignored} ignored, {rejected} rejected."
+    },
+    "Error": {
+      "NotGM": "Only a Game Master can import documents.",
+      "NoFile": "Choose a source file first.",
+      "PackType": "The compendium {pack} does not contain {type} documents. Choose another compendium or another import type.",
+      "ImportFailed": "The import failed: {message}. Check the console (F12) for details.",
+      "Format": {
+        "empty": "The file is empty. Choose a file that contains documents.",
+        "invalidJson": "The file is not valid JSON. Check that it was exported as .json or .db.",
+        "invalidLine": "Line {line} of the file is not valid JSON. Fix or remove that line.",
+        "noDocuments": "The file contains no document. Expected a list, or an object with entries, documents, items or data."
+      }
+    },
+    "Reason": {
+      "MissingType": "The document has no type. Add a type such as one of: character, npc, weapon, spell.",
+      "MissingTypeNested": "The embedded item {name} has no type.",
+      "UnknownType": "Unknown type \"{type}\" for dnd5e. Known types: {known}.",
+      "UnknownTypeNested": "The embedded item {name} has an unknown type \"{type}\". Known types: {known}.",
+      "InvalidField": "Invalid value in {path}: {message}",
+      "Invalid": "The data does not match the dnd5e 6 model: {message}",
+      "Unreadable": "The data cannot be read: {message}",
+      "DroppedFields": "{count} fields not supported by dnd5e 6: {paths}",
+      "PackExists": "A compendium named {name} already exists. Choose another name.",
+      "PackLocked": "The compendium {name} is locked. Unlock it first.",
+      "InvalidName": "The compendium name is empty or invalid. Use lowercase letters, numbers and hyphens.",
+      "MissingLabel": "Enter a label for the new compendium."
+    }
+  }
+}

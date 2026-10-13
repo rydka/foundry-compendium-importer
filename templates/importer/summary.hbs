@@ -1,0 +1,58 @@
+<section class="cji-summary" {{#unless review}}hidden{{/unless}}>
+  {{#if review}}
+  <h3>{{localize "compendium-json-importer.Summary.Title"}} <small>{{summary.target}}</small></h3>
+  <ul class="cji-counts">
+    <li>{{localize "compendium-json-importer.Summary.Conform" count=summary.counts.conform}}</li>
+    <li>{{localize "compendium-json-importer.Summary.Updated" count=summary.counts.updated}}</li>
+    <li>{{localize "compendium-json-importer.Summary.Rejected" count=summary.counts.rejected}}</li>
+    <li>{{localize "compendium-json-importer.Summary.Other" count=summary.counts.other}}</li>
+    <li>{{localize "compendium-json-importer.Summary.ToReplace" count=summary.counts.toReplace}}</li>
+  </ul>
+  {{#each summary.warnings}}<p class="cji-warning"><i class="fa-solid fa-triangle-exclamation" inert></i> {{this}}</p>{{/each}}
+
+  {{#if summary.rejected.length}}
+  <h4>{{localize "compendium-json-importer.Summary.RejectedTitle"}}</h4>
+  <ul class="cji-list cji-rejected">
+    {{#each summary.rejected}}
+    <li>
+      <strong>{{name}}</strong> <em>({{type}})</em>
+      <ul>{{#each reasons}}<li>{{this}}</li>{{/each}}</ul>
+    </li>
+    {{/each}}
+  </ul>
+  {{/if}}
+
+  {{#if summary.notes.length}}
+  <details class="cji-notes">
+    <summary>{{localize "compendium-json-importer.Summary.NotesTitle" count=summary.notes.length}}</summary>
+    <ul class="cji-list">
+      {{#each summary.notes}}<li><strong>{{name}}</strong><ul>{{#each notes}}<li>{{this}}</li>{{/each}}</ul></li>{{/each}}
+    </ul>
+  </details>
+  {{/if}}
+
+  {{#if summary.conflicts.length}}
+  <h4>{{localize "compendium-json-importer.Summary.ConflictsTitle"}}</h4>
+  <p class="hint">{{localize "compendium-json-importer.Summary.ConflictsHint"}}</p>
+  <div class="form-group">
+    <label class="cji-select-all">
+      <input type="checkbox" name="selectAll"> {{localize "compendium-json-importer.Summary.SelectAll"}}
+    </label>
+    <div class="form-fields">
+      <select name="conflictAction">{{selectOptions summary.actions selected="replace"}}</select>
+    </div>
+  </div>
+  <ul class="cji-list cji-conflicts">
+    {{#each summary.conflicts}}
+    <li>
+      <label>
+        <input type="checkbox" name="conflictSelected" value="{{id}}">
+        <strong>{{name}}</strong> <em>({{type}})</em>
+        <span class="cji-existing">{{localize "compendium-json-importer.Summary.Existing" name=existing}}</span>
+      </label>
+    </li>
+    {{/each}}
+  </ul>
+  {{/if}}
+  {{/if}}
+</section>
