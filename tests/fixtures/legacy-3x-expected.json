@@ -1,0 +1,102 @@
+[
+  {
+    "name": "Legacy Longsword",
+    "type": "weapon",
+    "kind": "weapon",
+    "expectActivities": true,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Shortbow",
+    "type": "weapon",
+    "kind": "weapon",
+    "expectActivities": true,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Dagger Throw",
+    "type": "weapon",
+    "kind": "weapon",
+    "expectActivities": true,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Fireball",
+    "type": "spell",
+    "kind": "spell-save",
+    "expectActivities": true,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Fire Bolt",
+    "type": "spell",
+    "kind": "spell-attack",
+    "expectActivities": true,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Cure Wounds",
+    "type": "spell",
+    "kind": "heal",
+    "expectActivities": true,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Healing Potion",
+    "type": "consumable",
+    "kind": "consumable",
+    "expectActivities": true,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Wand Of Sparks",
+    "type": "consumable",
+    "kind": "consumable-recovery",
+    "expectActivities": true,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Smith Tools",
+    "type": "tool",
+    "kind": "tool",
+    "expectActivities": false,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Backpack",
+    "type": "backpack",
+    "kind": "backpack",
+    "expectActivities": false,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Gem",
+    "type": "loot",
+    "kind": "loot",
+    "expectActivities": false,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Second Wind",
+    "type": "feat",
+    "kind": "feat",
+    "expectActivities": true,
+    "nestedWithActivities": []
+  },
+  {
+    "name": "Legacy Goblin",
+    "type": "npc",
+    "kind": "npc",
+    "expectActivities": false,
+    "nestedWithActivities": [
+      "Legacy Scimitar"
+    ]
+  },
+  {
+    "name": "Legacy Hero",
+    "type": "character",
+    "kind": "character",
+    "expectActivities": false,
+    "nestedWithActivities": []
+  }
+]

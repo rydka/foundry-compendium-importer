@@ -1,0 +1,50 @@
+[
+  {
+    "_id": "conflictItem0001",
+    "name": "Conflict Item 1",
+    "type": "loot",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "conflictItem0002",
+    "name": "Conflict Item 2",
+    "type": "loot",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 2
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "conflictItem0003",
+    "name": "Conflict Item 3",
+    "type": "loot",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 3
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  }
+]

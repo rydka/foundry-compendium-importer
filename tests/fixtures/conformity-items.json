@@ -1,0 +1,541 @@
+[
+  {
+    "_id": "TLOnLnWUkVcu9GbC",
+    "name": "Ok Longsword",
+    "type": "weapon",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1,
+      "weight": {
+        "value": 3,
+        "units": "lb"
+      },
+      "price": {
+        "value": 15,
+        "denomination": "gp"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "1YArX6fpgqemkYHV",
+    "name": "Ok Dagger",
+    "type": "weapon",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 3
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "2ECbP9k8RVsutd2j",
+    "name": "Ok Longsword Active",
+    "type": "weapon",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1,
+      "activities": {
+        "cU1MklzlHN4H07JO": {
+          "_id": "cU1MklzlHN4H07JO",
+          "type": "attack",
+          "name": "Strike",
+          "activation": {
+            "type": "action",
+            "value": 1
+          }
+        }
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "DS0yJhErYMjSk2a0",
+    "name": "Ok Shortbow Array Activities",
+    "type": "weapon",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1,
+      "activities": [
+        {
+          "_id": "BXvDRo1D526nEzE6",
+          "type": "attack",
+          "name": "Strike",
+          "activation": {
+            "type": "action",
+            "value": 1
+          }
+        }
+      ]
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "8K7Yl2e04vOm7av8",
+    "name": "Ok Chain Shirt",
+    "type": "equipment",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1,
+      "armor": {
+        "value": 13
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "8Lb3Pg6skEGKMKM5",
+    "name": "Ok Shield",
+    "type": "equipment",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "o5dbARXOLI28geO8",
+    "name": "Ok Healing Potion",
+    "type": "consumable",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 2
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "kAMnSZSfLQb5T3Bf",
+    "name": "Ok Arrows",
+    "type": "consumable",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 20
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "fmHbmWQhVR47kx6l",
+    "name": "Ok Thieves Tools",
+    "type": "tool",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "k3keg718IEuvbBTM",
+    "name": "Ok Lute",
+    "type": "tool",
+    "img": "icons/svg/item-bag.svg",
+    "system": {},
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "7uyWbv6goea8UmKF",
+    "name": "Ok Gemstone",
+    "type": "loot",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 5,
+      "price": {
+        "value": 50,
+        "denomination": "gp"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "TBOzTnHSyoyV72cu",
+    "name": "Ok Rope",
+    "type": "loot",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "weight": {
+        "value": 10,
+        "units": "lb"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "tBquCpp4dgfYfB9l",
+    "name": "Ok Backpack",
+    "type": "container",
+    "img": "icons/svg/item-bag.svg",
+    "system": {},
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "dVtBv5gda49iezeg",
+    "name": "Ok Legacy Backpack Alias",
+    "type": "backpack",
+    "img": "icons/svg/item-bag.svg",
+    "system": {},
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "4hTpJzghJAO8W6C6",
+    "name": "Ok Fire Bolt",
+    "type": "spell",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "level": 0
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "dPE6Lw2wRLjcPCQl",
+    "name": "Ok Fireball",
+    "type": "spell",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "level": 3,
+      "school": "evo"
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "kvAiiDkDKhz3wbJ1",
+    "name": "Ok Second Wind",
+    "type": "feat",
+    "img": "icons/svg/item-bag.svg",
+    "system": {},
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "iuQUxz7flX3gQ5uB",
+    "name": "Ok Darkvision",
+    "type": "feat",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "<p>See in the dark.</p>"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "AQchTkpaBdmORxrI",
+    "name": "Ok Glowing Ring",
+    "type": "equipment",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1
+    },
+    "effects": [
+      {
+        "_id": "b4VtZX9rGPhIXBaa",
+        "name": "Glow",
+        "img": "icons/svg/aura.svg",
+        "changes": [],
+        "disabled": false,
+        "transfer": true
+      }
+    ],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "7ISa0Tz7OD0mDpib",
+    "name": "Ok Plain Tool File Item",
+    "type": "tool",
+    "img": "icons/svg/item-bag.svg",
+    "system": {},
+    "effects": [],
+    "flags": {}
+  },
+  {
+    "_id": "p9HQGlbvi0uQwPbZ",
+    "name": "Ok Plain Weapon File Item",
+    "type": "weapon",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1
+    },
+    "effects": [],
+    "flags": {}
+  },
+  {
+    "_id": "f668gpiAlQsCqs7Y",
+    "name": "Ok Plain Feat File Item",
+    "type": "feat",
+    "img": "icons/svg/item-bag.svg",
+    "system": {},
+    "effects": [],
+    "flags": {}
+  },
+  {
+    "_id": "delo5YXJegLmPlUZ",
+    "name": "Bad Unknown Item Type",
+    "type": "weapon2",
+    "img": "icons/svg/item-bag.svg",
+    "system": {},
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "hkFlXikYRJN5mL0E",
+    "name": "Bad Quantity Text",
+    "type": "loot",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": "beaucoup"
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "gYc46CpCvX2nFkxz",
+    "name": "Bad Weight Text",
+    "type": "loot",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "weight": {
+        "value": "lourd",
+        "units": "lb"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "fNab9uoCMSYcaZ8W",
+    "name": "Bad Spell Level",
+    "type": "spell",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "level": "haut"
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "3EEp3iwn7Z71TJnS",
+    "name": "Bad Extra Field",
+    "type": "weapon",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1,
+      "foo": "bar"
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "akNq0jFgvc8cRq1x",
+    "name": "Bad Activity Type",
+    "type": "weapon",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "activities": {
+        "zapzapzapzap0001": {
+          "_id": "zapzapzapzap0001",
+          "type": "zap"
+        }
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "caPm3WBdXH3Zqlhm",
+    "name": "Bad System String",
+    "type": "loot",
+    "img": "icons/svg/item-bag.svg",
+    "system": "oops",
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "f14PqhM3eJFoubIY",
+    "name": "Bad Effect Duration",
+    "type": "equipment",
+    "img": "icons/svg/item-bag.svg",
+    "system": {},
+    "effects": [
+      {
+        "_id": "2HoYR6TcTTp1qrSC",
+        "name": "Broken effect",
+        "img": "icons/svg/aura.svg",
+        "changes": [],
+        "disabled": false,
+        "transfer": true,
+        "duration": {
+          "units": "fortnights"
+        }
+      }
+    ],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "cCcY10xuhubNb7xJ",
+    "name": "Bad Uses Spent",
+    "type": "consumable",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "uses": {
+        "spent": "beaucoup",
+        "max": "3"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  }
+]

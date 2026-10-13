@@ -1,0 +1,81 @@
+// C5 (no button for players), C6 (players cannot import), C24 (runImport refused for a player).
+
+import { expect, test, waitForGame } from "../../../../test-env/fixtures.mjs";
+import { MODULE_ID, evidence, clientDeletePacks, clientSnapshot, fixtureText, uniqueName } from "./helpers.mjs";
+
+const PLAYER_NAME = "CJI Test Player";
+
+async function joinAsPlayer(browser, baseURL) {
+  // Separate context: it never touches the Gamemaster session stored for the other tests.
+  const context = await browser.newContext({ baseURL, storageState: { cookies: [], origins: [] }, viewport: { width: 1600, height: 900 } });
+  await context.addInitScript(() => localStorage.setItem("core.noCanvas", "true"));
+  const page = await context.newPage();
+  await page.goto("/join");
+  await page.getByRole("combobox", { name: "Select User" }).selectOption({ label: PLAYER_NAME });
+  await page.getByRole("button", { name: "Join Game Session" }).click();
+  await waitForGame(page);
+  return { context, page };
+}
+
+test.describe("player view", () => {
+  test.describe.configure({ timeout: 240_000 });
+  test.beforeEach(async ({ foundry }) => {
+    await foundry(async (name) => {
+      if (!game.users.getName(name)) await CONFIG.User.documentClass.create({ name, role: CONST.USER_ROLES.PLAYER });
+    }, PLAYER_NAME);
+  });
+
+  test.afterEach(async ({ foundry }) => {
+    await foundry(async (name) => game.users.getName(name)?.delete(), PLAYER_NAME);
+  });
+
+  test("C5: a player sees no Import button in the Compendiums tab", async ({ browser, baseURL }) => {
+    const { context, page } = await joinAsPlayer(browser, baseURL);
+    try {
+      await page.evaluate(async () => {
+        ui.sidebar.changeTab("compendium", "primary");
+        await ui.compendium.render({ force: true });
+      });
+      await page.waitForTimeout(500);
+      evidence("C5-joueur-bouton.json", { importButtons: await page.locator(".cji-open-importer").count(), compendiumTabRendered: await page.locator("#compendium").count() });
+      await expect(page.locator(".cji-open-importer")).toHaveCount(0);
+      await page.screenshot({ path: test.info().outputPath("C5-joueur-sans-bouton.png") });
+    } finally {
+      await context.close();
+    }
+  });
+
+  test("C6/C24: a player cannot run an import; nothing is created or deleted", async ({ browser, baseURL, foundry }) => {
+    const name = uniqueName("cji-player");
+    const snapshot = await foundry(clientSnapshot);
+    const { context, page } = await joinAsPlayer(browser, baseURL);
+    try {
+      const outcome = await page.evaluate(async ({ id, newName, text }) => {
+        const api = game.modules.get(id).api;
+        const documents = JSON.parse(text);
+        try {
+          const analysis = await api.analyze(documents, "Item");
+          await api.runImport(analysis, { newPackSpec: { label: newName, name: newName, type: "Item" } });
+          return { refused: false };
+        } catch (err) {
+          return { refused: true, message: err.message };
+        }
+      }, { id: MODULE_ID, newName: name, text: fixtureText("formats/array.json") });
+      evidence("C6-C24-joueur-refus.json", outcome);
+      expect(outcome.refused).toBe(true);
+      expect(outcome.message).toBeTruthy();
+
+      // The window itself also refuses: open it and press "Analyze".
+      await page.evaluate(() => game.modules.get("compendium-json-importer").api.open());
+      await page.locator("#compendium-json-importer footer button[type=submit]").click();
+      await expect(page.locator(".notification").first()).toBeVisible();
+      await page.screenshot({ path: test.info().outputPath("C6-joueur-refuse.png") });
+    } finally {
+      await context.close();
+    }
+    const after = await foundry(clientSnapshot);
+    expect(after).toEqual(snapshot);
+    expect(after.packs).toBe(snapshot.packs);
+    await foundry(clientDeletePacks, [name]);
+  });
+});

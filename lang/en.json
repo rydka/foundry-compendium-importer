@@ -1,0 +1,103 @@
+{
+  "compendium-json-importer": {
+    "Title": "Import into a compendium",
+    "Menu": {
+      "Name": "Compendium JSON Importer",
+      "Label": "Open the importer",
+      "Hint": "Import actors and items from a .json or .db file into a compendium."
+    },
+    "Button": {
+      "Import": "Import",
+      "Analyze": "Analyze file",
+      "Confirm": "Import {count} documents",
+      "Cancel": "Cancel"
+    },
+    "Source": {
+      "Label": "Source file",
+      "Hint": "A .json or .db file. Selected:",
+      "NoFile": "no file"
+    },
+    "Filter": {
+      "Label": "Import type",
+      "All": "All",
+      "Actors": "Actors",
+      "Items": "Items"
+    },
+    "Target": {
+      "Label": "Target compendium",
+      "NewPack": "Create a new compendium",
+      "NewLabel": "New compendium label",
+      "NewName": "New compendium name (id)",
+      "NewNameHint": "Lowercase letters, numbers and hyphens.",
+      "NewType": "Document type"
+    },
+    "Options": {
+      "Overwrite": "Overwrite",
+      "OverwriteHint": "Delete existing documents with the same name (and type) before importing.",
+      "StripIds": "Remove _id",
+      "StripIdsHint": "Give every document, embedded document and activity a new identifier. Uncheck to keep the identifiers of the file."
+    },
+    "Summary": {
+      "Title": "Review before importing into",
+      "Conform": "Compliant documents: {count}",
+      "Updated": "Of which updated to the dnd5e 6 format: {count}",
+      "Rejected": "Rejected documents (not imported): {count}",
+      "Other": "Other document types (not checked): {count}",
+      "ToReplace": "Existing documents to replace: {count}",
+      "RejectedTitle": "Rejected documents",
+      "NotesTitle": "Obsolete fields ignored in {count} documents",
+      "ConflictsTitle": "Identifiers already used in this compendium",
+      "ConflictsHint": "Check the documents to import, then choose what to do with them. Unchecked documents are ignored.",
+      "SelectAll": "Select all",
+      "ActionReplace": "Replace the existing document",
+      "ActionNewId": "Use a new identifier",
+      "Existing": "existing document: {name}"
+    },
+    "Warning": {
+      "DocType": "The file declares documents of type {file}, but the compendium contains {pack} documents."
+    },
+    "Notify": {
+      "Done": "Import into {target} finished: {created} created, {replaced} replaced, {ignored} ignored, {rejected} rejected."
+    },
+    "Error": {
+      "NotGM": "Only a Game Master can import documents.",
+      "NoFile": "Choose a source file first.",
+      "PackType": "The compendium {pack} does not contain {type} documents. Choose another compendium or another import type.",
+      "Restored": "Overwritten documents were put back: {names}. Cause: {message}",
+      "Lost": "Overwritten documents were deleted and could NOT be restored: {names}. Cause: {message}",
+      "Skipped": "Some documents were not created (refused by a hook); the overwritten ones were put back: {names}",
+      "SkippedLost": "Some documents were not created (refused by a hook) and the overwritten ones could NOT be put back: {names}",
+      "ImportFailed": "The import failed: {message}. Check the console (F12) for details.",
+      "Format": {
+        "empty": "The file is empty. Choose a file that contains documents.",
+        "invalidJson": "The file is not valid JSON. Check that it was exported as .json or .db.",
+        "invalidLine": "Line {line} of the file is not valid JSON. Fix or remove that line.",
+        "noDocuments": "The file contains no document. Expected a list, or an object with entries, documents, items or data."
+      },
+      "NoTarget": "No target compendium. Pass a compendium (pack) or a newPackSpec in the options.",
+      "BadAnalysis": "The analysis is not valid. Pass the result of the analyze function.",
+      "AnalysisType": "The analysis holds {analysis} documents but the target compendium holds {pack} documents. Analyze the file again for this compendium.",
+      "DuplicateIds": "Several documents of the file share the same _id: {ids}. Check \"Remove _id\" or give each document a unique _id."
+    },
+    "Reason": {
+      "MissingType": "The document has no type. Add a type such as one of: character, npc, weapon, spell.",
+      "MissingTypeNested": "The embedded item {name} has no type.",
+      "UnknownType": "Unknown type \"{type}\" for dnd5e. Known types: {known}.",
+      "UnknownTypeNested": "The embedded item {name} has an unknown type \"{type}\". Known types: {known}.",
+      "InvalidField": "Invalid value in {path}: {message}. Correct this value in the file.",
+      "Invalid": "The data does not match the dnd5e 6 model: {message}. Fix the document in the file to match the model.",
+      "Unreadable": "The data cannot be read: {message}. Check that the entry is a complete Foundry document.",
+      "ReplacedValue": "The value {value} in {path} is invalid and would have been replaced by a default. Fix the value in the file.",
+      "UnknownActivityType": "Activity {name} of {item} has an unknown type \"{type}\". Known types: {known}. Fix or remove the activity.",
+      "DroppedFields": "{count} fields not supported by dnd5e 6: {paths}. Remove these fields from the file, or export the document again from dnd5e 6.",
+      "PackExists": "A compendium named {name} already exists. Choose another name.",
+      "PackLocked": "The compendium {name} is locked. Unlock it first.",
+      "InvalidName": "The compendium name is empty or invalid. Use lowercase letters, numbers and hyphens.",
+      "MissingLabel": "Enter a label for the new compendium.",
+      "PackNotFound": "The compendium {name} no longer exists. Choose another target compendium.",
+      "InvalidPackType": "\"{type}\" is not a document type a compendium can hold. Choose Actor or Item.",
+      "MigrationFailed": "The automatic update to dnd5e 6 failed: {message}. Fix this document in the file, then import again.",
+      "NotAnObject": "This entry is not a document (it must be a JSON object). Remove it from the file or fix it."
+    }
+  }
+}

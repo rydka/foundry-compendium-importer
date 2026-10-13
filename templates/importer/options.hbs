@@ -1,0 +1,12 @@
+<fieldset class="cji-section" {{#if locked}}disabled{{/if}}>
+  <div class="form-group">
+    <label>{{localize "compendium-json-importer.Options.Overwrite"}}</label>
+    <div class="form-fields"><input type="checkbox" name="overwrite" {{checked overwrite}}></div>
+    <p class="hint">{{localize "compendium-json-importer.Options.OverwriteHint"}}</p>
+  </div>
+  <div class="form-group">
+    <label>{{localize "compendium-json-importer.Options.StripIds"}}</label>
+    <div class="form-fields"><input type="checkbox" name="stripIds" {{checked stripIds}}></div>
+    <p class="hint">{{localize "compendium-json-importer.Options.StripIdsHint"}}</p>
+  </div>
+</fieldset>

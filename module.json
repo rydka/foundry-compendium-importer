@@ -1,23 +1,48 @@
 {
   "id": "compendium-json-importer",
   "title": "Compendium JSON Importer",
-  "description": "Import compendium entries from .json or .db files.",
-  "version": "0.1.0",
+  "description": "Import dnd5e actors, items and other documents from .json or .db files into compendiums, with a conformity check against the dnd5e 6 data model.",
+  "version": "0.2.0",
   "url": "https://github.com/rydka/foundry-compendium-importer",
   "manifest": "https://raw.githubusercontent.com/rydka/foundry-compendium-importer/master/module.json",
   "download": "https://github.com/rydka/foundry-compendium-importer/releases/latest/download/compendium-json-importer.zip",
   "compatibility": {
-    "minimum": "13",
-    "verified": "13"
+    "minimum": "14",
+    "verified": "14"
   },
   "authors": [
     {
       "name": "Shadow"
     }
   ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "dnd5e",
+        "type": "system",
+        "compatibility": {
+          "minimum": "6.0.0",
+          "verified": "6.0.6"
+        }
+      }
+    ]
+  },
   "esmodules": [
-    "scripts/importer.js",
-    "scripts/object-importer.js",
-    "scripts/actor-importer.js"
+    "scripts/main.mjs"
+  ],
+  "styles": [
+    "styles/compendium-json-importer.css"
+  ],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    },
+    {
+      "lang": "fr",
+      "name": "Français",
+      "path": "lang/fr.json"
+    }
   ]
 }

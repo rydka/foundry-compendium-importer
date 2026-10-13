@@ -1,0 +1,49 @@
+# Builds and attaches module.json + module.zip when a GitHub release is published.
+# Tag format: v1.2.3 (the "v" is stripped to get the module version).
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
+      - name: Set version and download URLs in module.json
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          node -e '
+            const fs = require("fs");
+            const m = JSON.parse(fs.readFileSync("module.json", "utf8"));
+            const tag = process.env.TAG;
+            m.version = tag.replace(/^v/, "");
+            m.manifest = `https://github.com/${process.env.REPO}/releases/latest/download/module.json`;
+            m.download = `https://github.com/${process.env.REPO}/releases/download/${tag}/module.zip`;
+            fs.writeFileSync("module.json", JSON.stringify(m, null, 2) + "\n");
+          '
+
+      - name: Build module.zip
+        run: |
+          zip -r module.zip module.json scripts styles lang templates README.md CHANGELOG.md \
+            $( [ -d packs ] && echo packs ) $( [ -d assets ] && echo assets )
+
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" module.json module.zip --clobber

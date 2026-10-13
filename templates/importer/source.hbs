@@ -1,0 +1,12 @@
+<fieldset class="cji-section" {{#if locked}}disabled{{/if}}>
+  <div class="form-group">
+    <label>{{localize "compendium-json-importer.Source.Label"}}</label>
+    <div class="form-fields">
+      <input type="file" name="sourceFile" accept=".json,.db,application/json">
+    </div>
+    <p class="hint">
+      {{localize "compendium-json-importer.Source.Hint"}}
+      <strong class="cji-file-name">{{#if fileName}}{{fileName}}{{else}}{{localize "compendium-json-importer.Source.NoFile"}}{{/if}}</strong>
+    </p>
+  </div>
+</fieldset>
