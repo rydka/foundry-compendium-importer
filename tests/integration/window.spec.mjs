@@ -374,3 +374,42 @@ test("C14: the sheet of an imported item shows its activities (capture)", async 
   evidence("C14-fiche-activites.json", { activities: size });
   expect(size).toBeGreaterThanOrEqual(1);
 });
+
+test("N13: a name typed before the label changes is not overwritten by the proposed name", async ({ gamePage }) => {
+  await openWindow(gamePage);
+  const label = gamePage.locator(`${WIN} input[name=newPackLabel]`);
+  const nameInput = gamePage.locator(`${WIN} input[name=newPackName]`);
+  await nameInput.pressSequentially("my-typed-name"); // "input" events only, no blur, no change
+  await label.fill("Typed Label");
+  await label.blur(); // "change" on the label: proposes a name asynchronously
+  await gamePage.waitForTimeout(800); // let the late suggestion land
+  await expect(nameInput).toHaveValue("my-typed-name");
+  await gamePage.screenshot({ path: test.info().outputPath("N13-nom-saisi.png") });
+});
+
+test("N13: label then name typed right after, without waiting: the proposal is editable, nothing is lost", async ({ gamePage }) => {
+  await openWindow(gamePage);
+  const nameInput = gamePage.locator(`${WIN} input[name=newPackName]`);
+  await gamePage.locator(`${WIN} input[name=newPackLabel]`).fill("Typed Label");
+  await nameInput.click();
+  await expect(nameInput).not.toHaveValue(""); // the proposal lands
+  await nameInput.fill("my-typed-name"); // a user selects it and types over it
+  await gamePage.waitForTimeout(500);
+  await expect(nameInput).toHaveValue("my-typed-name");
+});
+
+test("N6: the summary lists non-object entries as rejected", async ({ gamePage }) => {
+  await openWindow(gamePage);
+  await gamePage.selectOption(`${WIN} select[name=typeFilter]`, "items");
+  await fillNewPack(gamePage, "Non objects", uniqueName("nonobj"));
+  await gamePage.locator(`${WIN} input[name=sourceFile]`).setInputFiles({
+    name: "mixed.json", mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify([{ name: "Valid Loot", type: "loot", system: {} }, 3, null]))
+  });
+  await analyze(gamePage);
+  await expect(gamePage.locator(`${WIN} .cji-rejected > li`)).toHaveCount(2);
+  const text = await gamePage.locator(`${WIN} .cji-rejected`).innerText();
+  evidence("N6-fenetre-non-objets.json", { text });
+  expect(text).toContain(lang("en").Reason.NotAnObject.slice(0, 30));
+  await gamePage.screenshot({ path: test.info().outputPath("N6-resume-non-objets.png") });
+});

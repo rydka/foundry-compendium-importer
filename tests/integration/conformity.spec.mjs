@@ -153,3 +153,29 @@ test("C19: an up-to-date document is not counted as updated", async ({ foundry }
   evidence("C19-a-jour.json", result.accepted);
   expect(result.accepted[0].updated).toBe(false);
 });
+
+// ------------------------------------------------------------------ review r2 fixes
+
+test("N6: non-object entries are rejected visibly (NotAnObject), the valid ones are kept", async ({ foundry }) => {
+  const text = JSON.stringify([{ name: "Valid Loot", type: "loot", system: {} }, 3, null, "text"]);
+  const result = await foundry(clientPipeline, { text, fileName: "mixed-entries.json", documentName: "Item", dryRun: true });
+  evidence("N6-entrees-non-objets.json", result);
+  expect(result.accepted.map((d) => d.name)).toEqual(["Valid Loot"]);
+  expect(result.rejected).toHaveLength(3);
+  for (const r of result.rejected) expect(r.rawReasons.map((x) => x.key.split(".").pop())).toEqual(["NotAnObject"]);
+  for (const r of result.rejected) expect(r.reasons.join(" ")).not.toMatch(/compendium-json-importer\.|NotAnObject/);
+});
+
+test("N11/Q1: a replaced value is reported with its field and value; a removed field is not reported as replaced", async ({ foundry }) => {
+  const doc = { name: "Bad Quantity", type: "loot", system: { price: "beaucoup" } };
+  const dropped = { name: "Removed Field", type: "loot", system: { removedByDnd5eSix: "x" } };
+  const result = await foundry(clientPipeline, { text: JSON.stringify([doc, dropped]), fileName: "r.json", documentName: "Item", dryRun: true });
+  evidence("N11-valeur-remplacee.json", result);
+  const bad = result.rejected.find((r) => r.name === "Bad Quantity");
+  expect(bad.rawReasons.map((x) => x.key.split(".").pop())).toEqual(["ReplacedValue"]);
+  expect(bad.reasons.join(" ")).toContain("system.price");
+  expect(bad.reasons.join(" ")).toContain("beaucoup");
+  const gone = result.rejected.find((r) => r.name === "Removed Field");
+  expect(gone, "a removed field is rejected as a dropped field").toBeTruthy();
+  expect(gone.rawReasons.map((x) => x.key.split(".").pop())).toEqual(["DroppedFields"]);
+});

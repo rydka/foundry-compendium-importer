@@ -1,6 +1,7 @@
 // C9-C15, C23: reading, creating, overwriting, ids, activities, batches. Driven through the module pieces
 // (parser, api.analyze, api.runImport) inside the real Foundry and dnd5e; the window flow is in window.spec.mjs.
 // Skeleton: not yet run in a real Foundry.
+/* global Item */
 import { expect, test } from "../../../../test-env/fixtures.mjs";
 import {
   clientDeletePacks, clientParse, evidence, clientPipeline, clientReadPack, clientSnapshot, fixtureJson, fixtureText, uniqueName
@@ -178,4 +179,84 @@ test("C15: 120 documents are all imported (several batches)", async ({ foundry }
   evidence("C15-120-documents.json", { created: result.created, rejected: result.rejected.length });
   expect(result.created).toBe(120);
   expect(await foundry(async (id) => (await game.packs.get(id).getIndex()).size, `world.${pack.name}`)).toBe(120);
+});
+
+// Failure after the overwritten documents were deleted (review r2, point 2). Foundry swallows errors thrown by
+// preCreate hooks, so the test wraps Item.createDocuments (restored afterwards) to throw when a batch holds
+// one document of the second batch (BATCH_SIZE = 50). mode: "once" | "always" (restoration fails too) | "veto"
+// (a preCreateItem hook returns false: Foundry skips the document without any error).
+async function clientFailingOverwrite({ names, failName, mode }) {
+  const docs = names.map((name, i) => ({ name, type: "loot", system: { quantity: i + 1 } }));
+  const api = game.modules.get("compendium-json-importer").api;
+  const packSpec = { label: "restore", name: "restore-" + Date.now().toString(36), type: "Item" };
+  const text = JSON.stringify(docs);
+  const { parseImportFile } = await import("/modules/compendium-json-importer/scripts/core/parse.mjs");
+  const run = async (options) => {
+    const analysis = await api.analyze(parseImportFile(text, "x.json").entries, "Item", {
+      migrationData: await dnd5e.migrations.getMigrationData(), idGen: () => foundry.utils.randomID()
+    });
+    return api.runImport(analysis, { stripIds: true, idGen: () => foundry.utils.randomID(), conflictSelection: [], conflictAction: "replace", ...options });
+  };
+  await run({ newPackSpec: packSpec });
+  const pack = game.packs.get(`world.${packSpec.name}`);
+  let thrown = 0;
+  const original = Item.createDocuments;
+  let hook = null;
+  if (mode === "veto") hook = Hooks.on("preCreateItem", (doc) => (doc.name === failName ? false : undefined));
+  else {
+    Item.createDocuments = function (data, ...rest) {
+      if (data.some((d) => d.name === failName) && (mode === "always" || !thrown)) {
+        thrown++;
+        throw new Error("test failure on " + failName);
+      }
+      return original.call(this, data, ...rest);
+    };
+  }
+  let error = null;
+  let result = null;
+  try {
+    result = await run({ pack, overwrite: true });
+  } catch (err) {
+    error = err.message;
+  } finally {
+    Item.createDocuments = original;
+    if (hook) Hooks.off("preCreateItem", hook);
+  }
+  const after = (await pack.getDocuments()).map((d) => ({ id: d.id, name: d.name, quantity: d.system.quantity }));
+  const prefixOf = (key) => game.i18n.format(key, { names: "@@", message: "@@" }).split("@@")[0];
+  return {
+    packName: packSpec.name, error, after, thrown, created: result?.created ?? null,
+    restoredPrefix: prefixOf("compendium-json-importer.Error.Restored"), lostPrefix: prefixOf("compendium-json-importer.Error.Lost")
+  };
+}
+
+const manyNames = Array.from({ length: 60 }, (_, i) => `Restore Loot ${i}`);
+
+test("N2: when the creation fails after the overwrite deletion, the deleted documents are recreated and the GM is told", async ({ foundry }) => {
+  const result = await foundry(clientFailingOverwrite, { names: manyNames, failName: "Restore Loot 55", mode: "once" });
+  created.push(result.packName);
+  evidence("N2-restauration.json", { error: result.error, count: result.after.length, thrown: result.thrown });
+  expect(result.thrown).toBe(1);
+  expect(result.error.startsWith(result.restoredPrefix)).toBe(true);
+  expect(result.error).toContain("Restore Loot 55");
+  expect(result.error).toContain("test failure on Restore Loot 55");
+  expect(result.after.map((d) => d.name).sort()).toEqual([...manyNames].sort());
+  expect(result.after.find((d) => d.name === "Restore Loot 55").quantity).toBe(56);
+});
+
+test("N2: when the restoration fails too, the error says the documents are lost", async ({ foundry }) => {
+  const result = await foundry(clientFailingOverwrite, { names: manyNames, failName: "Restore Loot 55", mode: "always" });
+  created.push(result.packName);
+  evidence("N2-perdu.json", { error: result.error, count: result.after.length, missing: manyNames.filter((n) => !result.after.some((d) => d.name === n)) });
+  expect(result.error.startsWith(result.lostPrefix)).toBe(true);
+  expect(result.error).toContain("Restore Loot 55");
+  expect(result.after.length).toBe(50); // the 50 created ones remain; the 10 of the failed batch cannot be restored (the same batch throws again)
+});
+
+test("N2: a document vetoed by a preCreate hook during an overwrite is not lost silently", async ({ foundry }) => {
+  const result = await foundry(clientFailingOverwrite, { names: manyNames, failName: "Restore Loot 55", mode: "veto" });
+  created.push(result.packName);
+  evidence("N2-veto.json", { error: result.error, created: result.created, count: result.after.length });
+  // Either the import reports a problem, or no overwritten document is missing afterwards.
+  expect(result.error !== null || result.after.length === manyNames.length).toBe(true);
 });
