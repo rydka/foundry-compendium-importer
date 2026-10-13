@@ -68,10 +68,10 @@ function replaced(before, after, path, out) {
   if (before === undefined || before === null || before === "") return;
   if (isObject(before)) {
     if (!isObject(after)) return void out.push(path);
-    for (const [key, value] of Object.entries(before)) replaced(value, after[key], `${path}.${key}`, out);
+    for (const [key, value] of Object.entries(before)) if (Object.hasOwn(after, key)) replaced(value, after[key], `${path}.${key}`, out);
   } else if (Array.isArray(before)) {
     if (!Array.isArray(after)) return void out.push(path);
-    before.forEach((value, i) => replaced(value, after[i], `${path}[${i}]`, out));
+    before.forEach((value, i) => i < after.length && replaced(value, after[i], `${path}[${i}]`, out));
   } else if (after === null || isNaNNumber(after) || isObject(after) || Array.isArray(after)) {
     if (!isNaNNumber(before)) out.push(path);
   }
