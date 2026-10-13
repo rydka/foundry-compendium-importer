@@ -69,23 +69,31 @@
         "invalidJson": "The file is not valid JSON. Check that it was exported as .json or .db.",
         "invalidLine": "Line {line} of the file is not valid JSON. Fix or remove that line.",
         "noDocuments": "The file contains no document. Expected a list, or an object with entries, documents, items or data."
-      }
+      },
+      "NoTarget": "No target compendium. Pass a compendium (pack) or a newPackSpec in the options.",
+      "BadAnalysis": "The analysis is not valid. Pass the result of the analyze function.",
+      "AnalysisType": "The analysis holds {analysis} documents but the target compendium holds {pack} documents. Analyze the file again for this compendium.",
+      "DuplicateIds": "Several documents of the file share the same _id: {ids}. Check \"Remove _id\" or give each document a unique _id."
     },
     "Reason": {
       "MissingType": "The document has no type. Add a type such as one of: character, npc, weapon, spell.",
       "MissingTypeNested": "The embedded item {name} has no type.",
       "UnknownType": "Unknown type \"{type}\" for dnd5e. Known types: {known}.",
       "UnknownTypeNested": "The embedded item {name} has an unknown type \"{type}\". Known types: {known}.",
-      "InvalidField": "Invalid value in {path}: {message}",
-      "Invalid": "The data does not match the dnd5e 6 model: {message}",
-      "Unreadable": "The data cannot be read: {message}",
+      "InvalidField": "Invalid value in {path}: {message}. Correct this value in the file.",
+      "Invalid": "The data does not match the dnd5e 6 model: {message}. Fix the document in the file to match the model.",
+      "Unreadable": "The data cannot be read: {message}. Check that the entry is a complete Foundry document.",
       "ReplacedValue": "The value in {path} is invalid and would have been replaced by a default. Fix the value in the file.",
       "UnknownActivityType": "Activity {name} of {item} has an unknown type \"{type}\". Known types: {known}. Fix or remove the activity.",
-      "DroppedFields": "{count} fields not supported by dnd5e 6: {paths}",
+      "DroppedFields": "{count} fields not supported by dnd5e 6: {paths}. Remove these fields from the file, or export the document again from dnd5e 6.",
       "PackExists": "A compendium named {name} already exists. Choose another name.",
       "PackLocked": "The compendium {name} is locked. Unlock it first.",
       "InvalidName": "The compendium name is empty or invalid. Use lowercase letters, numbers and hyphens.",
-      "MissingLabel": "Enter a label for the new compendium."
+      "MissingLabel": "Enter a label for the new compendium.",
+      "PackNotFound": "The compendium {name} no longer exists. Choose another target compendium.",
+      "InvalidPackType": "\"{type}\" is not a document type a compendium can hold. Choose Actor or Item.",
+      "MigrationFailed": "The automatic update to dnd5e 6 failed: {message}. Fix this document in the file, then import again.",
+      "NotAnObject": "This entry is not a document (it must be a JSON object). Remove it from the file or fix it."
     }
   }
 }

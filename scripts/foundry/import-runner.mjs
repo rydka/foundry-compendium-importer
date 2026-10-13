@@ -18,7 +18,7 @@ export function resolveTarget(choices) {
   const result = { pack: null, newPackSpec: null, errors: [] };
   if (choices.targetPack && choices.targetPack !== "new") {
     const pack = game.packs.get(choices.targetPack);
-    if (!pack) result.errors.push(error("Unreadable", { message: choices.targetPack }));
+    if (!pack) result.errors.push(error("PackNotFound", { name: choices.targetPack }));
     else if (pack.locked) result.errors.push(error("PackLocked", { name: pack.metadata.label }));
     else result.pack = pack;
     return result;
@@ -29,7 +29,7 @@ export function resolveTarget(choices) {
   if (!label) result.errors.push(error("MissingLabel"));
   else if (!name) result.errors.push(error("InvalidName"));
   else if (game.packs.has(worldPackId(name))) result.errors.push(error("PackExists", { name }));
-  if (!CONST.COMPENDIUM_DOCUMENT_TYPES.includes(type)) result.errors.push(error("Invalid", { message: String(type) }));
+  if (!CONST.COMPENDIUM_DOCUMENT_TYPES.includes(type)) result.errors.push(error("InvalidPackType", { type: String(type) }));
   if (!result.errors.length) result.newPackSpec = { label, name, type };
   return result;
 }
@@ -65,8 +65,43 @@ export async function runImport({ pack, newPackSpec, documents, deleteIds = [] }
 }
 
 /**
- * Import from the result of `analyzeEntries`, building the plan like the window does (public API).
- * @param {{accepted: object[], rejected: object[], other: object[]}} analysis
+ * Plan an import without writing: new ids, documents to overwrite, id conflicts, duplicate ids in the file.
+ * @param {object[]} documents Data of the documents to import
+ * @param {Iterable<{_id: string}>} index Index of the target pack ([] for a new pack)
+ * @param {{overwrite: boolean, stripIds: boolean, hasPack: boolean, idGen: () => string}} options
+ */
+export function planImport(documents, index, { overwrite, stripIds, hasPack, idGen }) {
+  const planned = stripIds ? documents.map((data) => remapIds(data, idGen)) : documents;
+  const overwriteIds = hasPack && overwrite ? findOverwriteTargets(index, planned) : [];
+  const conflictIds = hasPack && !stripIds ? findIdConflicts(index, planned, new Set(overwriteIds)) : new Set();
+  const seen = new Set();
+  const duplicateIds = new Set();
+  for (const { _id } of planned) (seen.has(_id) ? duplicateIds : seen).add(_id);
+  return { documents: planned, overwriteIds, conflictIds, duplicateIds: [...duplicateIds] };
+}
+
+/** Apply the choices made on id conflicts: returns the documents to create and the ids to delete. */
+export function applyConflictChoices(documents, plan, { selected, action, idGen }) {
+  const deleteIds = new Set(plan.overwriteIds);
+  const toCreate = [];
+  let ignored = 0;
+  for (let data of documents) {
+    if (plan.conflictIds.has(data._id)) {
+      if (!selected.has(data._id)) {
+        ignored++;
+        continue;
+      }
+      if (action === "replace") deleteIds.add(data._id);
+      else data = remapIds(data, idGen);
+    }
+    toCreate.push(data);
+  }
+  return { toCreate, deleteIds: [...deleteIds], ignored };
+}
+
+/**
+ * Import from the result of `analyzeEntries`, planning like the window does (public API).
+ * @param {{accepted: object[], rejected: object[], other: object[], documentName?: string}} analysis
  * @param {{pack?: object, newPackSpec?: object, overwrite?: boolean, stripIds?: boolean,
  *   conflictSelection?: string[], conflictAction?: "replace"|"newId", idGen?: () => string}} options
  *   `conflictSelection`: `_id` values of the conflicting documents to import (others are ignored).
@@ -76,25 +111,19 @@ export async function importFromAnalysis(analysis, options = {}) {
   if (!game.user.isGM) throw new Error(game.i18n.localize(`${MODULE_ID}.Error.NotGM`));
   const { pack, newPackSpec, overwrite = true, stripIds = true, conflictSelection = [], conflictAction = "replace",
     idGen = () => foundry.utils.randomID() } = options;
-  let documents = [...analysis.accepted, ...(analysis.other ?? [])].map((d) => d.data);
-  if (stripIds) documents = documents.map((data) => remapIds(data, idGen));
-  const index = pack ? await pack.getIndex({ fields: ["name", "type"] }) : [];
-  const deleteIds = new Set(pack && overwrite ? findOverwriteTargets(index, documents) : []);
-  const conflicts = pack && !stripIds ? findIdConflicts(index, documents, deleteIds) : new Set();
-  const selected = new Set(conflictSelection);
-  let ignored = 0;
-  const toCreate = [];
-  for (let data of documents) {
-    if (conflicts.has(data._id)) {
-      if (!selected.has(data._id)) {
-        ignored++;
-        continue;
-      }
-      if (conflictAction === "replace") deleteIds.add(data._id);
-      else data = remapIds(data, idGen);
-    }
-    toCreate.push(data);
+  const fail = (key, data) => new Error(game.i18n.format(`${MODULE_ID}.Error.${key}`, data));
+  if (!Array.isArray(analysis?.accepted)) throw fail("BadAnalysis");
+  if (!pack && !newPackSpec?.name) throw fail("NoTarget");
+  const documentName = pack ? pack.documentName : newPackSpec.type;
+  if (analysis.documentName && analysis.documentName !== documentName) {
+    throw fail("AnalysisType", { analysis: analysis.documentName, pack: documentName });
   }
-  const result = await runImport({ pack, newPackSpec, documents: toCreate, deleteIds: [...deleteIds] });
+  const documents = [...analysis.accepted, ...(analysis.other ?? [])].map((d) => d.data);
+  const index = pack ? await pack.getIndex({ fields: ["name", "type"] }) : [];
+  const plan = planImport(documents, index, { overwrite, stripIds, hasPack: !!pack, idGen });
+  if (plan.duplicateIds.length) throw fail("DuplicateIds", { ids: plan.duplicateIds.join(", ") });
+  const { toCreate, deleteIds, ignored } = applyConflictChoices(plan.documents, plan,
+    { selected: new Set(conflictSelection), action: conflictAction, idGen });
+  const result = await runImport({ pack, newPackSpec, documents: toCreate, deleteIds });
   return { ...result, ignored, rejected: analysis.rejected?.length ?? 0 };
 }

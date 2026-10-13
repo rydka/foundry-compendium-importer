@@ -69,23 +69,31 @@
         "invalidJson": "Le fichier n'est pas du JSON valide. Vérifiez qu'il a été exporté en .json ou .db.",
         "invalidLine": "La ligne {line} du fichier n'est pas du JSON valide. Corrigez ou supprimez cette ligne.",
         "noDocuments": "Le fichier ne contient aucun document. Attendu : une liste, ou un objet avec entries, documents, items ou data."
-      }
+      },
+      "NoTarget": "Aucun compendium cible. Fournissez un compendium (pack) ou un newPackSpec dans les options.",
+      "BadAnalysis": "L'analyse n'est pas valide. Fournissez le résultat de la fonction analyze.",
+      "AnalysisType": "L'analyse contient des documents {analysis} mais le compendium cible contient des documents {pack}. Analysez à nouveau le fichier pour ce compendium.",
+      "DuplicateIds": "Plusieurs documents du fichier ont le même _id : {ids}. Cochez « Supprimer les _id » ou donnez un _id unique à chaque document."
     },
     "Reason": {
       "MissingType": "Le document n'a pas de type. Ajoutez un type, par exemple : character, npc, weapon, spell.",
       "MissingTypeNested": "L'objet imbriqué {name} n'a pas de type.",
       "UnknownType": "Type « {type} » inconnu de dnd5e. Types connus : {known}.",
       "UnknownTypeNested": "L'objet imbriqué {name} a un type « {type} » inconnu. Types connus : {known}.",
-      "InvalidField": "Valeur invalide dans {path} : {message}",
-      "Invalid": "Les données ne respectent pas le modèle dnd5e 6 : {message}",
-      "Unreadable": "Les données sont illisibles : {message}",
+      "InvalidField": "Valeur invalide dans {path} : {message}. Corrigez cette valeur dans le fichier.",
+      "Invalid": "Les données ne respectent pas le modèle dnd5e 6 : {message}. Corrigez le document dans le fichier pour qu'il respecte le modèle.",
+      "Unreadable": "Les données sont illisibles : {message}. Vérifiez que l'entrée est un document Foundry complet.",
       "ReplacedValue": "La valeur de {path} est invalide et aurait été remplacée par une valeur par défaut. Corrigez la valeur dans le fichier.",
       "UnknownActivityType": "L'activité {name} de {item} a un type inconnu \"{type}\". Types connus : {known}. Corrigez ou retirez l'activité.",
-      "DroppedFields": "{count} champs non pris en charge par dnd5e 6 : {paths}",
+      "DroppedFields": "{count} champs non pris en charge par dnd5e 6 : {paths}. Retirez ces champs du fichier, ou exportez à nouveau le document depuis dnd5e 6.",
       "PackExists": "Un compendium nommé {name} existe déjà. Choisissez un autre nom.",
       "PackLocked": "Le compendium {name} est verrouillé. Déverrouillez-le d'abord.",
       "InvalidName": "Le nom du compendium est vide ou invalide. Utilisez des lettres minuscules, des chiffres et des tirets.",
-      "MissingLabel": "Saisissez un libellé pour le nouveau compendium."
+      "MissingLabel": "Saisissez un libellé pour le nouveau compendium.",
+      "PackNotFound": "Le compendium {name} n'existe plus. Choisissez un autre compendium cible.",
+      "InvalidPackType": "« {type} » n'est pas un type de document qu'un compendium peut contenir. Choisissez Actor ou Item.",
+      "MigrationFailed": "La mise à jour automatique vers dnd5e 6 a échoué : {message}. Corrigez ce document dans le fichier, puis relancez l'import.",
+      "NotAnObject": "Cette entrée n'est pas un document (ce doit être un objet JSON). Retirez-la du fichier ou corrigez-la."
     }
   }
 }

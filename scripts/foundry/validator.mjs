@@ -6,7 +6,7 @@ const KEY = "compendium-json-importer.Reason";
 const MAX_PATHS = 8;
 
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
-const NOT_AN_OBJECT = { name: "", type: "", reasons: [{ key: `${KEY}.Unreadable`, data: { message: "not an object" } }] };
+const NOT_AN_OBJECT = { name: "", type: "", reasons: [{ key: `${KEY}.NotAnObject`, data: {} }] };
 const label = (entry) => String(entry?.name ?? entry?._id ?? "");
 
 /** Names of the embedded documents by `_id`, used to make failure paths readable. */
@@ -106,7 +106,7 @@ function checkEntry(entry, documentName, { migrationData, idGen }) {
   try {
     updated = migrateDocument(doc, documentName, migrationData) || updated;
   } catch (err) {
-    return reject(failureReasons(err, data, "Unreadable"));
+    return reject(failureReasons(err, data, "MigrationFailed"));
   }
 
   const notes = [];
@@ -125,30 +125,23 @@ function checkEntry(entry, documentName, { migrationData, idGen }) {
  * @param {object[]} entries
  * @param {string} documentName Document name of the target pack
  * @param {{migrationData?: object, idGen: () => string}} options
- * @returns {Promise<{accepted: object[], rejected: object[], other: object[]}>}
+ * @returns {Promise<{accepted: object[], rejected: object[], other: object[], documentName: string}>}
  */
 export async function analyzeEntries(entries, documentName, { migrationData, idGen = () => foundry.utils.randomID() } = {}) {
-  const result = { accepted: [], rejected: [], other: [] };
-  if (!CHECKED_DOCUMENTS.includes(documentName)) {
-    for (const entry of entries) {
-      if (!isObject(entry)) {
-        result.rejected.push(NOT_AN_OBJECT);
-        continue;
-      }
-      const { data } = normalizeEntry(entry, { documentName, idGen, systemVersion: game.system.version });
-      result.other.push({ data, name: label(entry), type: String(entry?.type ?? "") });
-    }
-    return result;
-  }
-  const context = { migrationData: migrationData ?? await dnd5e.migrations.getMigrationData(), idGen };
+  const result = { accepted: [], rejected: [], other: [], documentName };
+  const checked = CHECKED_DOCUMENTS.includes(documentName);
+  const context = checked && { migrationData: migrationData ?? await dnd5e.migrations.getMigrationData(), idGen };
   for (const entry of entries) {
     if (!isObject(entry)) {
       result.rejected.push(NOT_AN_OBJECT);
-      continue;
+    } else if (!checked) {
+      const { data } = normalizeEntry(entry, { documentName, idGen, systemVersion: game.system.version });
+      result.other.push({ data, name: label(entry), type: String(entry?.type ?? "") });
+    } else {
+      const { accepted, rejected } = checkEntry(entry, documentName, context);
+      if (accepted) result.accepted.push(accepted);
+      else result.rejected.push(rejected);
     }
-    const { accepted, rejected } = checkEntry(entry, documentName, context);
-    if (accepted) result.accepted.push(accepted);
-    else result.rejected.push(rejected);
   }
   return result;
 }

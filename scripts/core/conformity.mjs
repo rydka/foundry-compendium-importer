@@ -64,7 +64,6 @@ export function findDroppedPaths(before, after, { embedded = ["items", "effects"
 
 const isNaNNumber = (value) => typeof value === "number" && Number.isNaN(value);
 
-/** Collect the values of `before` that cleaning replaced by a value of another kind (null, NaN, object...). */
 function replaced(before, after, path, out) {
   if (before === undefined || before === null || before === "") return;
   if (isObject(before)) {
@@ -79,13 +78,8 @@ function replaced(before, after, path, out) {
 }
 
 /**
- * Paths of `system` values (document and embedded items) that cleaning replaced with another kind of value:
- * a text turned into null, NaN or an empty object, an array turned into an object, and so on.
- * Missing keys are not reported here (see findDroppedPaths) and plain conversions such as "3" to 3 are accepted.
- * @param {object} before Data as provided
- * @param {object} after Data once cleaned and built
- * @param {{embedded?: string[]}} [options]
- * @returns {string[]} Readable paths, for example `items[Longsword].system.quantity`
+ * Paths of `system` values (document and embedded items) that cleaning replaced with another kind of value
+ * (text turned into null, NaN or {}...). Missing keys and conversions such as "3" to 3 are not reported.
  */
 export function findReplacedPaths(before, after, { embedded = ["items", "effects"] } = {}) {
   const out = [];
@@ -93,12 +87,7 @@ export function findReplacedPaths(before, after, { embedded = ["items", "effects
   return out;
 }
 
-/**
- * Reject activities whose type dnd5e does not know. `items` is the document itself or its embedded items.
- * @param {object} data Item or actor data
- * @param {string[]} knownTypes
- * @returns {{key: string, data: object}[]}
- */
+/** Reasons for activities (of the item or its embedded items) whose type dnd5e does not know. */
 export function checkActivityTypes(data, knownTypes) {
   const reasons = [];
   const scan = (item, owner) => {
