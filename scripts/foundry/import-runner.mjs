@@ -34,18 +34,22 @@ export function resolveTarget(choices) {
   return result;
 }
 
-/** After a failed creation, put back the overwritten documents that were not recreated; returns the error to throw. */
-async function restoreRemoved(pack, lost, options, err) {
-  if (!lost.length) return err;
-  let restored = true;
+/** Put back the overwritten documents whose replacement was not created; returns whether it worked. */
+async function putBack(pack, lost, options) {
   try {
-    await pack.documentClass.createDocuments(lost, options);
+    return (await pack.documentClass.createDocuments(lost, options)).length === lost.length;
   } catch (restoreErr) {
-    restored = false;
     console.error(restoreErr);
+    return false;
   }
-  const names = lost.map((data) => data.name).join(", ");
-  return new Error(game.i18n.format(`${MODULE_ID}.Error.${restored ? "Restored" : "Lost"}`, { names, message: err.message }), { cause: err });
+}
+
+/** Overwritten documents (as data) that no created document replaces, matched by `_id` or by name and type. */
+function unreplaced(removed, planned, createdIds) {
+  const made = planned.filter((data) => createdIds.has(data._id));
+  const replacedIds = new Set(findOverwriteTargets(removed, made));
+  for (const data of made) replacedIds.add(data._id);
+  return removed.filter((data) => !replacedIds.has(data._id));
 }
 
 /**
@@ -71,15 +75,29 @@ export async function runImport({ pack, newPackSpec, documents, deleteIds = [] }
   const removed = deleteIds.length ? (await pack.getDocuments({ _id__in: deleteIds })).map((doc) => doc.toObject()) : [];
   if (removed.length) await pack.documentClass.deleteDocuments(deleteIds, { pack: pack.collection });
   const createdIds = new Set();
+  let failure = null;
   try {
     for (const batch of chunk(documents, BATCH_SIZE)) {
       const result = await pack.documentClass.createDocuments(batch, options);
       for (const doc of result) createdIds.add(doc.id);
     }
   } catch (err) {
-    throw await restoreRemoved(pack, removed.filter((data) => !createdIds.has(data._id)), options, err);
+    failure = err;
   }
-  return { created: createdIds.size, replaced: deleteIds.length };
+  const lost = unreplaced(removed, documents, createdIds);
+  const restored = lost.length ? await putBack(pack, lost, options) : true;
+  const names = lost.map((data) => data.name).join(", ");
+  if (failure) {
+    if (!lost.length) throw failure;
+    const key = `${MODULE_ID}.Error.${restored ? "Restored" : "Lost"}`;
+    throw new Error(game.i18n.format(key, { names, message: failure.message }), { cause: failure });
+  }
+  if (lost.length) {
+    const message = game.i18n.format(`${MODULE_ID}.Error.${restored ? "Skipped" : "SkippedLost"}`, { names });
+    if (!restored) throw new Error(message);
+    ui.notifications.warn(message);
+  }
+  return { created: createdIds.size, replaced: removed.length - lost.length };
 }
 
 /**

@@ -65,6 +65,8 @@
       "PackType": "Le compendium {pack} ne contient pas de documents de type {type}. Choisissez un autre compendium ou un autre type d'import.",
       "Restored": "Les documents écrasés ont été remis en place : {names}. Cause : {message}",
       "Lost": "Les documents écrasés ont été supprimés et n'ont PAS pu être restaurés : {names}. Cause : {message}",
+      "Skipped": "Certains documents n'ont pas été créés (refusés par un hook) ; les documents écrasés ont été remis en place : {names}",
+      "SkippedLost": "Certains documents n'ont pas été créés (refusés par un hook) et les documents écrasés n'ont PAS pu être remis en place : {names}",
       "ImportFailed": "L'import a échoué : {message}. Consultez la console (F12) pour le détail.",
       "Format": {
         "empty": "Le fichier est vide. Choisissez un fichier qui contient des documents.",
