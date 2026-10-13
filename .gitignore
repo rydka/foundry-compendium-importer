@@ -6,3 +6,5 @@ dist/
 tools/out/
 tools/venv/
 __pycache__/
+node_modules/
+coverage/

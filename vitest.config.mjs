@@ -1,0 +1,9 @@
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  test: {
+    include: ["tests/unit/**/*.test.mjs"],
+    setupFiles: ["tests/setup/foundry-globals.mjs"],
+    environment: "node"
+  }
+});
