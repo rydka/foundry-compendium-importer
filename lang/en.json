@@ -63,6 +63,8 @@
       "NotGM": "Only a Game Master can import documents.",
       "NoFile": "Choose a source file first.",
       "PackType": "The compendium {pack} does not contain {type} documents. Choose another compendium or another import type.",
+      "Restored": "Overwritten documents were put back: {names}. Cause: {message}",
+      "Lost": "Overwritten documents were deleted and could NOT be restored: {names}. Cause: {message}",
       "ImportFailed": "The import failed: {message}. Check the console (F12) for details.",
       "Format": {
         "empty": "The file is empty. Choose a file that contains documents.",

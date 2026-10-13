@@ -63,6 +63,8 @@
       "NotGM": "Seul un MJ peut importer des documents.",
       "NoFile": "Choisissez d'abord un fichier source.",
       "PackType": "Le compendium {pack} ne contient pas de documents de type {type}. Choisissez un autre compendium ou un autre type d'import.",
+      "Restored": "Les documents écrasés ont été remis en place : {names}. Cause : {message}",
+      "Lost": "Les documents écrasés ont été supprimés et n'ont PAS pu être restaurés : {names}. Cause : {message}",
       "ImportFailed": "L'import a échoué : {message}. Consultez la console (F12) pour le détail.",
       "Format": {
         "empty": "Le fichier est vide. Choisissez un fichier qui contient des documents.",

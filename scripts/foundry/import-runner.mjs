@@ -34,6 +34,20 @@ export function resolveTarget(choices) {
   return result;
 }
 
+/** After a failed creation, put back the overwritten documents that were not recreated; returns the error to throw. */
+async function restoreRemoved(pack, lost, options, err) {
+  if (!lost.length) return err;
+  let restored = true;
+  try {
+    await pack.documentClass.createDocuments(lost, options);
+  } catch (restoreErr) {
+    restored = false;
+    console.error(restoreErr);
+  }
+  const names = lost.map((data) => data.name).join(", ");
+  return new Error(game.i18n.format(`${MODULE_ID}.Error.${restored ? "Restored" : "Lost"}`, { names, message: err.message }), { cause: err });
+}
+
 /**
  * Write the confirmed import: create the pack if needed, delete the documents to overwrite, create the
  * documents in batches. Documents are written with their `_id` (`keepId`, `keepEmbeddedIds`).
@@ -53,13 +67,19 @@ export async function runImport({ pack, newPackSpec, documents, deleteIds = [] }
   }
   if (pack.locked) throw new Error(game.i18n.format(`${KEY}.PackLocked`, { name: pack.metadata.label }));
 
-  if (deleteIds.length) await pack.documentClass.deleteDocuments(deleteIds, { pack: pack.collection });
+  const options = { pack: pack.collection, keepId: true, keepEmbeddedIds: true };
+  const removed = deleteIds.length ? (await pack.getDocuments({ _id__in: deleteIds })).map((doc) => doc.toObject()) : [];
+  if (removed.length) await pack.documentClass.deleteDocuments(deleteIds, { pack: pack.collection });
   let created = 0;
-  for (const batch of chunk(documents, BATCH_SIZE)) {
-    const result = await pack.documentClass.createDocuments(batch, {
-      pack: pack.collection, keepId: true, keepEmbeddedIds: true
-    });
-    created += result.length;
+  const createdIds = new Set();
+  try {
+    for (const batch of chunk(documents, BATCH_SIZE)) {
+      const result = await pack.documentClass.createDocuments(batch, options);
+      created += result.length;
+      for (const doc of result) createdIds.add(doc.id);
+    }
+  } catch (err) {
+    throw await restoreRemoved(pack, removed.filter((data) => !createdIds.has(data._id)), options, err);
   }
   return { created, replaced: deleteIds.length };
 }
