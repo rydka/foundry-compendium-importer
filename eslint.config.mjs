@@ -21,11 +21,17 @@ export default [
   js.configs.recommended,
   {
     files: ["scripts/**/*.{js,mjs}"],
+    ignores: ["scripts/core/**"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
       globals: { ...globals.browser, ...foundryGlobals }
     }
+  },
+  {
+    // Pure core: ECMAScript built-ins only, so any Foundry or browser dependency fails the lint.
+    files: ["scripts/core/**/*.mjs"],
+    languageOptions: { ecmaVersion: "latest", sourceType: "module", globals: {} }
   },
   {
     files: ["tests/**/*.{js,mjs}", "*.config.mjs"],
