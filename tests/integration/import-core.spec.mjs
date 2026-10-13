@@ -56,7 +56,8 @@ test("C11: a new world compendium is created with the given label and name; a du
   const before = await foundry(clientSnapshot);
   const dup = await foundry(async ({ spec }) => {
     try {
-      await game.modules.get("compendium-json-importer").api.runImport({ newPackSpec: spec, documents: [{ name: "x", type: "loot" }], deleteIds: [] });
+      const api = game.modules.get("compendium-json-importer").api;
+      await api.runImport(await api.analyze([{ name: "x", type: "loot" }], "Item"), { newPackSpec: spec });
       return { refused: false };
     } catch (err) {
       return { refused: true, message: err.message };

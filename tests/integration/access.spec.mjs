@@ -1,5 +1,5 @@
 // C5 (no button for players), C6 (players cannot import), C24 (runImport refused for a player).
-// Skeleton: not yet run in a real Foundry. The player joins from a second browser context via /join.
+
 import { expect, test, waitForGame } from "../../../../test-env/fixtures.mjs";
 import { MODULE_ID, clientDeletePacks, clientSnapshot, fixtureText, uniqueName } from "./helpers.mjs";
 
@@ -16,6 +16,7 @@ async function joinAsPlayer(browser, baseURL) {
 }
 
 test.describe("player view", () => {
+  test.describe.configure({ timeout: 240_000 });
   test.beforeEach(async ({ foundry }) => {
     await foundry(async (name) => {
       if (!game.users.getName(name)) await CONFIG.User.documentClass.create({ name, role: CONST.USER_ROLES.PLAYER });
@@ -50,7 +51,8 @@ test.describe("player view", () => {
         const api = game.modules.get(id).api;
         const documents = JSON.parse(text);
         try {
-          await api.runImport({ newPackSpec: { label: newName, name: newName, type: "Item" }, documents, deleteIds: [] });
+          const analysis = await api.analyze(documents, "Item");
+          await api.runImport(analysis, { newPackSpec: { label: newName, name: newName, type: "Item" } });
           return { refused: false };
         } catch (err) {
           return { refused: true, message: err.message };

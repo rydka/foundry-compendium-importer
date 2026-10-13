@@ -76,7 +76,8 @@ test("M3: a sample of 20 varied dnd5e documents is imported with 100% of documen
   for (const [documentName, docs, prefix] of [["Actor", actors, "m3a"], ["Item", items, "m3i"]]) {
     const { result, stored } = await importSet(foundry, documentName, docs, prefix, false);
     expect(result.rejected, JSON.stringify(result.rejected.map((r) => [r.name, r.reasons]))).toEqual([]);
-    for (const doc of docs) {
+    const expected = await foundry(async ({ documentName, docs }) => docs.map((d) => new CONFIG[documentName].documentClass(foundry.utils.deepClone(d)).toObject()), { documentName, docs });
+    for (const doc of expected) {
       const found = stored.find((s) => s.name === doc.name);
       all.push({ name: doc.name, imported: !!found, diffs: found ? differences(doc, found) : ["not imported"] });
     }

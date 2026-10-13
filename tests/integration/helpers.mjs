@@ -31,8 +31,6 @@ export const uniqueName = (prefix) => `${prefix}-${Date.now().toString(36)}${Mat
 export async function clientPipeline(arg) {
   const base = `/modules/compendium-json-importer/scripts`;
   const { parseImportFile } = await import(`${base}/core/parse.mjs`);
-  const { remapIds } = await import(`${base}/core/ids.mjs`);
-  const { findOverwriteTargets } = await import(`${base}/core/matching.mjs`);
   const api = game.modules.get("compendium-json-importer").api;
   const idGen = () => foundry.utils.randomID();
   const stripIds = arg.stripIds ?? true;
@@ -60,19 +58,15 @@ export async function clientPipeline(arg) {
   };
   if (arg.dryRun) return out;
 
-  let documents = analysis.accepted.map((d) => d.data);
-  documents.push(...analysis.other.map((o) => o.data ?? o));
-  if (stripIds) documents = documents.map((d) => remapIds(d, idGen));
-  let deleteIds = arg.deleteIds ?? [];
-  if (arg.overwrite && pack) {
-    const index = await pack.getIndex({ fields: ["name", "type"] });
-    deleteIds = findOverwriteTargets(index, documents);
-  }
   const t0 = performance.now();
-  const result = await api.runImport({ pack: pack ?? undefined, newPackSpec: arg.newPack, documents, deleteIds });
+  const result = await api.runImport(analysis, {
+    pack: pack ?? undefined, newPackSpec: arg.newPack, overwrite: !!arg.overwrite, stripIds, idGen,
+    conflictSelection: arg.conflictSelection ?? [], conflictAction: arg.conflictAction ?? "replace"
+  });
   out.ms = performance.now() - t0;
   out.created = result.created;
   out.replaced = result.replaced;
+  out.ignored = result.ignored;
   const target = pack ?? game.packs.get(`world.${arg.newPack.name}`);
   out.packId = target.collection;
   return out;
