@@ -60,6 +60,15 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   #analyzing = false;
 
+  /** @override */
+  _attachFrameListeners() {
+    super._attachFrameListeners();
+    // Typing in the name field protects it before the change event, so a suggestion never overwrites it
+    this.element.addEventListener("input", event => {
+      if ( event.target.name === "newPackName" ) this.#nameTouched = !!event.target.value;
+    });
+  }
+
   // Rendering
 
   /** @override */
