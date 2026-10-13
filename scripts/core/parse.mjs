@@ -56,7 +56,6 @@ export function parseImportFile(text, fileName) {
   const clean = String(text ?? "").replace(/^\uFEFF/, "");
   if (!clean.trim()) throw new ImportFormatError("empty");
   const result = /\.db$/i.test(String(fileName ?? "")) ? parseDb(clean) : parseJson(clean);
-  result.entries = result.entries.filter(isObject);
   if (!result.entries.length) throw new ImportFormatError("noDocuments");
   return result;
 }
