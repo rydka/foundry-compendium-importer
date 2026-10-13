@@ -4,7 +4,7 @@
   "description": "Import compendium entries from .json or .db files.",
   "version": "0.1.0",
   "url": "https://github.com/rydka/foundry-compendium-importer",
-  "manifest": "https://raw.githubusercontent.com/rydka/foundry-compendium-importer/master/compendium-json-importer/module.json",
+  "manifest": "https://raw.githubusercontent.com/rydka/foundry-compendium-importer/master/module.json",
   "download": "https://github.com/rydka/foundry-compendium-importer/releases/latest/download/compendium-json-importer.zip",
   "compatibility": {
     "minimum": "13",

@@ -5,7 +5,7 @@ Tested with dnd5e 5.2.24.
 
 ## Install
 
-1) Copy `compendium-json-importer` into your Foundry `Data/modules/` folder.
+1) Copy this repository into your Foundry `Data/modules/compendium-json-importer/` folder.
 2) Enable the module in your world.
 
 ## Use

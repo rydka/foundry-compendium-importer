@@ -1,1 +1,8 @@
+# Release artifacts
+dist/
+
+# PDF extraction tooling: inputs, outputs, local env
 *.pdf
+tools/out/
+tools/venv/
+__pycache__/
