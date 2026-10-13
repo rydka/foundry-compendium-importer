@@ -3,6 +3,9 @@
   "title": "Compendium JSON Importer",
   "description": "Import compendium entries from .json or .db files.",
   "version": "0.1.0",
+  "url": "https://github.com/rydka/foundry-compendium-importer",
+  "manifest": "https://raw.githubusercontent.com/rydka/foundry-compendium-importer/master/compendium-json-importer/module.json",
+  "download": "https://github.com/rydka/foundry-compendium-importer/releases/latest/download/compendium-json-importer.zip",
   "compatibility": {
     "minimum": "13",
     "verified": "13"
@@ -13,6 +16,8 @@
     }
   ],
   "esmodules": [
-    "scripts/importer.js"
+    "scripts/importer.js",
+    "scripts/object-importer.js",
+    "scripts/actor-importer.js"
   ]
 }

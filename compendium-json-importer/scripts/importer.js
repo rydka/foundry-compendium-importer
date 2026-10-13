@@ -1,6 +1,6 @@
-const MODULE_ID = "compendium-json-importer";
+export const MODULE_ID = "compendium-json-importer";
 
-class CompendiumJsonImporter extends FormApplication {
+export class CompendiumJsonImporter extends FormApplication {
   constructor(...args) {
     super(...args);
     this._file = null;
@@ -108,6 +108,7 @@ class CompendiumJsonImporter extends FormApplication {
     if (stripIds) {
       for (const entry of entries) stripIdsDeep(entry);
     }
+    for (const entry of entries) ensureActivityIdsDeep(entry);
 
     const index = await pack.getIndex({ fields: ["name", "type"] });
     const removedCount = overwrite ? await deleteExisting(pack, index, entries) : 0;
@@ -227,6 +228,44 @@ function stripIdsDeep(data) {
   delete data._id;
   for (const value of Object.values(data)) {
     stripIdsDeep(value);
+  }
+}
+
+function ensureActivityIdsDeep(data) {
+  if (!data || typeof data !== "object") return;
+  if (Array.isArray(data)) {
+    for (const entry of data) ensureActivityIdsDeep(entry);
+    return;
+  }
+
+  const system = data.system;
+  const activities = system?.activities;
+  if (activities && typeof activities === "object") {
+    if (Array.isArray(activities)) {
+      const rebuilt = {};
+      for (const activity of activities) {
+        if (!activity || typeof activity !== "object") continue;
+        const id = activity._id || activity.id || foundry.utils.randomID();
+        activity._id = id;
+        rebuilt[id] = activity;
+      }
+      system.activities = rebuilt;
+    } else {
+      const entries = Object.entries(activities);
+      for (const [key, activity] of entries) {
+        if (!activity || typeof activity !== "object") continue;
+        const id = activity._id || activity.id || key || foundry.utils.randomID();
+        activity._id = id;
+        if (key !== id) {
+          delete activities[key];
+          activities[id] = activity;
+        }
+      }
+    }
+  }
+
+  for (const value of Object.values(data)) {
+    ensureActivityIdsDeep(value);
   }
 }
 
