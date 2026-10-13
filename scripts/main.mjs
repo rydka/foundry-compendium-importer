@@ -3,7 +3,7 @@ import { registerSettings } from "./foundry/settings.mjs";
 import { ImporterApp, openImporter } from "./foundry/importer-app.mjs";
 import { onRenderCompendiumDirectory } from "./foundry/directory-button.mjs";
 import { analyzeEntries } from "./foundry/validator.mjs";
-import { runImport } from "./foundry/import-runner.mjs";
+import { importFromAnalysis } from "./foundry/import-runner.mjs";
 
 Hooks.once("init", () => {
   registerSettings();
@@ -19,5 +19,5 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
-  game.modules.get(MODULE_ID).api = { open: openImporter, analyze: analyzeEntries, runImport };
+  game.modules.get(MODULE_ID).api = { open: openImporter, analyze: analyzeEntries, runImport: importFromAnalysis };
 });
