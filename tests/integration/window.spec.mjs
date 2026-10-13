@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test, waitForGame } from "../../../../test-env/fixtures.mjs";
 import {
-  MODULE_ID, clientDeletePacks, clientReadPack, clientSeedPack, clientSnapshot, fixtureJson, fixturePath, uniqueName
+  MODULE_ID, clientDeletePacks, clientReadPack, clientSeedPack, clientSnapshot, evidence, fixtureJson, fixturePath, uniqueName
 } from "./helpers.mjs";
 
 const WIN = "#compendium-json-importer";
@@ -29,6 +29,16 @@ async function chooseFile(page, name) {
   await page.locator(`${WIN} input[name=sourceFile]`).setInputFiles(fixturePath(name));
 }
 
+
+/** Fills label then name. The label input proposes a name asynchronously: wait for it, or it is concatenated with ours. */
+async function fillNewPack(page, label, name) {
+  await page.fill(`${WIN} input[name=newPackLabel]`, label);
+  await page.locator(`${WIN} input[name=newPackLabel]`).blur(); // the name is proposed on "change"
+  await expect(page.locator(`${WIN} input[name=newPackName]`)).not.toHaveValue("");
+  await page.fill(`${WIN} input[name=newPackName]`, name);
+  await page.locator(`${WIN} input[name=newPackName]`).blur();
+  await expect(page.locator(`${WIN} input[name=newPackName]`)).toHaveValue(name);
+}
 async function analyze(page) {
   await page.locator(`${WIN} footer button[type=submit]`).click();
 }
@@ -64,7 +74,7 @@ test("C7: the target list only offers compendiums of the filtered type; the new 
   await expect(gamePage.locator(`${WIN} select[name=newPackType]`)).toBeEnabled();
   const types = await gamePage.locator(`${WIN} select[name=newPackType] option`).evaluateAll((os) => os.map((o) => o.value));
   expect(types).toEqual(expect.arrayContaining(["Actor", "Item", "JournalEntry"]));
-  await gamePage.screenshot({ path: test.info().outputPath("c7-filter-all.png") });
+  await gamePage.screenshot({ path: test.info().outputPath("C7-filtre-tous.png") });
 });
 
 test("scenario 1 / C9 / C11 / C2 / M2: import a file into a new compendium from the window, with no deprecation warning", async ({ gamePage, foundry }) => {
@@ -87,25 +97,25 @@ test("scenario 1 / C9 / C11 / C2 / M2: import a file into a new compendium from 
   // Label and name are proposed from the file name.
   await expect(gamePage.locator(`${WIN} input[name=newPackLabel]`)).not.toHaveValue("");
   await expect(gamePage.locator(`${WIN} input[name=newPackName]`)).toHaveValue("array");
-  await gamePage.fill(`${WIN} input[name=newPackLabel]`, `Scenario ${name}`);
-  await gamePage.fill(`${WIN} input[name=newPackName]`, name);
-  await gamePage.screenshot({ path: test.info().outputPath("scenario1-1-form.png") });
+  await fillNewPack(gamePage, `Scenario ${name}`, name);
+  await gamePage.screenshot({ path: test.info().outputPath("C9-scenario1-1-formulaire.png") });
 
   const before = await foundry(clientSnapshot);
   await analyze(gamePage);
   await expect(gamePage.locator(`${WIN} .cji-summary`)).toBeVisible();
   expect(await foundry(clientSnapshot), "nothing written before confirmation (C21)").toEqual(before);
-  await gamePage.screenshot({ path: test.info().outputPath("scenario1-2-summary.png") });
+  await gamePage.screenshot({ path: test.info().outputPath("C21-scenario1-2-resume.png") });
 
   await confirm(gamePage);
   await expect(gamePage.locator(".notification", { hasText: /3/ }).first()).toBeVisible();
-  await gamePage.screenshot({ path: test.info().outputPath("scenario1-3-done.png") });
+  await gamePage.screenshot({ path: test.info().outputPath("C9-scenario1-3-termine.png") });
 
   const stored = await foundry(clientReadPack, `world.${name}`);
   expect(stored).toHaveLength(3);
   expect(await foundry((id) => game.packs.get(id).metadata.label, `world.${name}`)).toBe(`Scenario ${name}`);
 
   const mine = logs.filter((l) => l.includes(MODULE_ID) || /deprecat/i.test(l));
+  evidence("M2-C2-journal-console.json", { consoleWarningsAndErrors: logs, attributedToModuleOrDeprecation: mine, packLabel: `Scenario ${name}`, stored: stored.map((d) => d.name) });
   expect(mine, logs.join("\n")).toEqual([]);
 });
 
@@ -118,7 +128,7 @@ test("C10: a broken file shows an error message and writes nothing", async ({ ga
   await expect(gamePage.locator(".notification.error, .notification[data-type=error], .notification").first()).toBeVisible();
   await expect(gamePage.locator(`${WIN} .cji-summary`)).toBeHidden();
   expect(await foundry(clientSnapshot)).toEqual(before);
-  await gamePage.screenshot({ path: test.info().outputPath("c10-broken-file.png") });
+  await gamePage.screenshot({ path: test.info().outputPath("C10-fichier-casse.png") });
 });
 
 test("C8: a file declaring another document type than the compendium raises a warning", async ({ gamePage, foundry }) => {
@@ -131,7 +141,7 @@ test("C8: a file declaring another document type than the compendium raises a wa
   await chooseFile(gamePage, "formats/entries.json"); // declares type "Item"
   await analyze(gamePage);
   await expect(gamePage.locator(`${WIN} .cji-warning`).first()).toBeVisible();
-  await gamePage.screenshot({ path: test.info().outputPath("c8-type-warning.png") });
+  await gamePage.screenshot({ path: test.info().outputPath("C8-avertissement-type.png") });
 });
 
 test("C8: a compendium of another type than the filter is refused", async ({ gamePage, foundry }) => {
@@ -158,15 +168,14 @@ test("C21: Cancel in the summary writes nothing and other types are counted apar
   await openWindow(gamePage);
   await gamePage.selectOption(`${WIN} select[name=typeFilter]`, "all");
   await gamePage.selectOption(`${WIN} select[name=newPackType]`, "JournalEntry");
-  await gamePage.fill(`${WIN} input[name=newPackLabel]`, "Cancelled");
-  await gamePage.fill(`${WIN} input[name=newPackName]`, uniqueName("cancelled"));
+  await fillNewPack(gamePage, "Cancelled", uniqueName("cancelled"));
   await chooseFile(gamePage, "formats/mixed-types.json");
   const before = await foundry(clientSnapshot);
   await analyze(gamePage);
   await expect(gamePage.locator(`${WIN} .cji-summary`)).toBeVisible();
   const lines = await counts(gamePage);
   expect(lines.join(" | ")).toContain("4"); // "other types" counter
-  await gamePage.screenshot({ path: test.info().outputPath("c21-summary.png") });
+  await gamePage.screenshot({ path: test.info().outputPath("C21-resume.png") });
   await gamePage.locator(`${WIN} button[data-action=backToForm]`).click();
   await expect(gamePage.locator(`${WIN} .cji-summary`)).toBeHidden();
   expect(await foundry(clientSnapshot)).toEqual(before);
@@ -177,8 +186,7 @@ test("C21/C20: the summary lists each rejected document with name, type and reas
   created.push(name);
   await openWindow(gamePage);
   await gamePage.selectOption(`${WIN} select[name=typeFilter]`, "items");
-  await gamePage.fill(`${WIN} input[name=newPackLabel]`, "Conformity UI");
-  await gamePage.fill(`${WIN} input[name=newPackName]`, name);
+  await fillNewPack(gamePage, "Conformity UI", name);
   await chooseFile(gamePage, "conformity-items.json");
   await analyze(gamePage);
   await expect(gamePage.locator(`${WIN} .cji-rejected > li`).first()).toBeVisible();
@@ -188,9 +196,10 @@ test("C21/C20: the summary lists each rejected document with name, type and reas
   const rejectedItems = await gamePage.locator(`${WIN} .cji-rejected > li`).count();
   expect(rejectedItems).toBe(bad.length);
   const text = await gamePage.locator(`${WIN} .cji-rejected`).innerText();
+  evidence("C20-fenetre-rejetes.json", { rejectedShown: rejectedItems, expected: bad.length, text });
   for (const t of bad) expect(text).toContain(t.name);
   expect(text).not.toMatch(/compendium-json-importer\.reason/);
-  await gamePage.screenshot({ path: test.info().outputPath("c20-rejected-list.png") });
+  await gamePage.screenshot({ path: test.info().outputPath("C20-liste-rejetes.png") });
 
   await confirm(gamePage);
   await expect.poll(() => foundry((id) => game.packs.get(id)?.index.size ?? 0, `world.${name}`)).toBe(truth.filter((t) => t.conform).length);
@@ -210,13 +219,15 @@ test("C12/scenario 2: re-importing with Overwrite replaces the documents and rep
     await expect(gamePage.locator(`${WIN} .cji-summary`)).toBeVisible();
     if (round === 1) {
       expect((await counts(gamePage)).join(" | ")).toContain("3"); // documents to replace
-      await gamePage.screenshot({ path: test.info().outputPath("c12-overwrite-summary.png") });
+      await gamePage.screenshot({ path: test.info().outputPath("C12-resume-ecrasement.png") });
     }
     await confirm(gamePage);
     await expect.poll(() => foundry((id) => game.packs.get(id).index.size, `world.${name}`)).toBe(3);
     await expect(gamePage.locator(WIN)).toHaveCount(0);
   }
-  expect(await foundry(clientReadPack, `world.${name}`)).toHaveLength(3);
+  const final = await foundry(clientReadPack, `world.${name}`);
+  evidence("C12-fenetre-ecrasement.json", { names: final.map((d) => d.name).sort() });
+  expect(final).toHaveLength(3);
 });
 
 test("C16: the last choices are restored when the importer is reopened", async ({ gamePage, foundry }) => {
@@ -238,7 +249,7 @@ test("C16: the last choices are restored when the importer is reopened", async (
   await expect(gamePage.locator(`${WIN} select[name=targetPack]`)).toHaveValue(`world.${name}`);
   await expect(gamePage.locator(`${WIN} input[name=overwrite]`)).not.toBeChecked();
   await expect(gamePage.locator(`${WIN} input[name=stripIds]`)).not.toBeChecked();
-  await gamePage.screenshot({ path: test.info().outputPath("c16-restored.png") });
+  await gamePage.screenshot({ path: test.info().outputPath("C16-choix-restaures.png") });
 });
 
 for (const code of ["fr", "en"]) {
@@ -254,12 +265,12 @@ for (const code of ["fr", "en"]) {
       expect(title.trim()).toBe(t.Title);
       const text = await gamePage.locator(WIN).innerText();
       for (const key of [t.Filter.Label, t.Target.Label, t.Options.Overwrite, t.Options.StripIds, t.Button.Analyze]) expect(text).toContain(key);
-      await gamePage.screenshot({ path: test.info().outputPath(`c17-window-${code}.png`) });
+      await gamePage.screenshot({ path: test.info().outputPath(`C17-fenetre-${code}.png`) });
       // An error message is translated too.
       await chooseFile(gamePage, "formats/broken.json");
       await analyze(gamePage);
       await expect(gamePage.locator(".notification").first()).toBeVisible();
-      await gamePage.screenshot({ path: test.info().outputPath(`c17-error-${code}.png`) });
+      await gamePage.screenshot({ path: test.info().outputPath(`C17-erreur-${code}.png`) });
       const messages = (await gamePage.locator(".notification").allInnerTexts()).join(" ");
       expect(messages).not.toContain("compendium-json-importer.");
     } finally {
@@ -301,13 +312,14 @@ test.describe("C22: identifiers already used in the target compendium", () => {
     const listed = await gamePage.locator(`${WIN} .cji-conflicts`).innerText();
     expect(listed).toContain("Conflict Item 1");
     expect(listed).toContain("Existing Conflict Item 1");
-    await gamePage.screenshot({ path: test.info().outputPath("c22-conflicts.png") });
+    await gamePage.screenshot({ path: test.info().outputPath("C22-conflits.png") });
 
     await gamePage.check(`${WIN} input[name=selectAll]`);
     await gamePage.selectOption(`${WIN} select[name=conflictAction]`, "replace");
     await confirm(gamePage);
     await expect.poll(async () => (await foundry(clientReadPack, `world.${name}`)).map((d) => d.name).sort().join()).toBe("Conflict Item 1,Conflict Item 2,Conflict Item 3");
     const stored = await foundry(clientReadPack, `world.${name}`);
+    evidence("C22-remplacement.json", { names: stored.map((d) => d.name), ids: stored.map((d) => d._id) });
     expect(stored.map((d) => d._id).sort()).toEqual([...ids].sort());
   });
 
@@ -322,6 +334,7 @@ test.describe("C22: identifiers already used in the target compendium", () => {
     expect(stored.filter((d) => d.name.startsWith("Existing")).map((d) => d._id).sort()).toEqual([...ids].sort());
     const added = stored.filter((d) => d.name.startsWith("Conflict"));
     expect(added).toHaveLength(3);
+    evidence("C22-nouvel-id.json", { existing: stored.filter((d) => d.name.startsWith("Existing")).map((d) => d._id), added: added.map((d) => d._id) });
     for (const d of added) expect(ids).not.toContain(d._id);
   });
 
@@ -335,6 +348,7 @@ test.describe("C22: identifiers already used in the target compendium", () => {
     const stored = await foundry(clientReadPack, `world.${name}`);
     expect(stored).toHaveLength(3);
     expect(stored.filter((d) => d.name.startsWith("Existing"))).toHaveLength(2);
+    evidence("C22-selection-partielle.json", { names: stored.map((d) => d.name).sort() });
     expect(stored.filter((d) => d.name.startsWith("Conflict"))).toHaveLength(1);
   });
 });
@@ -344,8 +358,7 @@ test("C14: the sheet of an imported item shows its activities (capture)", async 
   created.push(name);
   await openWindow(gamePage);
   await gamePage.selectOption(`${WIN} select[name=typeFilter]`, "items");
-  await gamePage.fill(`${WIN} input[name=newPackLabel]`, "Activities");
-  await gamePage.fill(`${WIN} input[name=newPackName]`, name);
+  await fillNewPack(gamePage, "Activities", name);
   await chooseFile(gamePage, "legacy-3x.json");
   await analyze(gamePage);
   await confirm(gamePage);
@@ -356,7 +369,8 @@ test("C14: the sheet of an imported item shows its activities (capture)", async 
     await item.sheet.render({ force: true });
   }, `world.${name}`);
   await gamePage.waitForTimeout(1500);
-  await gamePage.screenshot({ path: test.info().outputPath("c14-item-sheet.png") });
+  await gamePage.screenshot({ path: test.info().outputPath("C14-fiche-objet.png") });
   const size = await foundry(async (id) => (await game.packs.get(id).getDocuments()).find((d) => d.name === "Legacy Longsword").system.activities.size, `world.${name}`);
+  evidence("C14-fiche-activites.json", { activities: size });
   expect(size).toBeGreaterThanOrEqual(1);
 });

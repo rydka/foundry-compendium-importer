@@ -1,16 +1,18 @@
 // C5 (no button for players), C6 (players cannot import), C24 (runImport refused for a player).
 
 import { expect, test, waitForGame } from "../../../../test-env/fixtures.mjs";
-import { MODULE_ID, clientDeletePacks, clientSnapshot, fixtureText, uniqueName } from "./helpers.mjs";
+import { MODULE_ID, evidence, clientDeletePacks, clientSnapshot, fixtureText, uniqueName } from "./helpers.mjs";
 
 const PLAYER_NAME = "CJI Test Player";
 
 async function joinAsPlayer(browser, baseURL) {
-  const context = await browser.newContext({ baseURL, viewport: { width: 1600, height: 900 } });
+  // Separate context: it never touches the Gamemaster session stored for the other tests.
+  const context = await browser.newContext({ baseURL, storageState: { cookies: [], origins: [] }, viewport: { width: 1600, height: 900 } });
+  await context.addInitScript(() => localStorage.setItem("core.noCanvas", "true"));
   const page = await context.newPage();
   await page.goto("/join");
-  await page.locator('select[name="userid"]').selectOption({ label: PLAYER_NAME });
-  await page.locator('button[name="join"]').click();
+  await page.getByRole("combobox", { name: "Select User" }).selectOption({ label: PLAYER_NAME });
+  await page.getByRole("button", { name: "Join Game Session" }).click();
   await waitForGame(page);
   return { context, page };
 }
@@ -35,8 +37,9 @@ test.describe("player view", () => {
         await ui.compendium.render({ force: true });
       });
       await page.waitForTimeout(500);
+      evidence("C5-joueur-bouton.json", { importButtons: await page.locator(".cji-open-importer").count(), compendiumTabRendered: await page.locator("#compendium").count() });
       await expect(page.locator(".cji-open-importer")).toHaveCount(0);
-      await page.screenshot({ path: test.info().outputPath("c5-player-no-button.png") });
+      await page.screenshot({ path: test.info().outputPath("C5-joueur-sans-bouton.png") });
     } finally {
       await context.close();
     }
@@ -58,6 +61,7 @@ test.describe("player view", () => {
           return { refused: true, message: err.message };
         }
       }, { id: MODULE_ID, newName: name, text: fixtureText("formats/array.json") });
+      evidence("C6-C24-joueur-refus.json", outcome);
       expect(outcome.refused).toBe(true);
       expect(outcome.message).toBeTruthy();
 
@@ -65,7 +69,7 @@ test.describe("player view", () => {
       await page.evaluate(() => game.modules.get("compendium-json-importer").api.open());
       await page.locator("#compendium-json-importer footer button[type=submit]").click();
       await expect(page.locator(".notification").first()).toBeVisible();
-      await page.screenshot({ path: test.info().outputPath("c6-player-refused.png") });
+      await page.screenshot({ path: test.info().outputPath("C6-joueur-refuse.png") });
     } finally {
       await context.close();
     }

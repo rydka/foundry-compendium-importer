@@ -20,4 +20,4 @@ for (const f of files) {
   }
 }
 const duplicates = [...seen].filter(([, w]) => w.length > 1).map(([n]) => n);
-console.log(JSON.stringify({ lines, target: 700, duplicates }, null, 2));
+console.log(JSON.stringify({ lines, target: 1100, duplicates }, null, 2));

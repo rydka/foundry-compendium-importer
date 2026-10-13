@@ -5,7 +5,8 @@
 // anything declared in this file. They drive the module through its public pieces:
 //   game.modules.get("compendium-json-importer").api = { open, analyze, runImport }
 // and through the core modules served by Foundry at /modules/compendium-json-importer/scripts/core/*.
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { test } from "../../../../test-env/fixtures.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -146,4 +147,9 @@ export async function clientSeedPack(arg) {
     await pack.documentClass.createDocuments(arg.documents, { pack: pack.collection, keepId: true, keepEmbeddedIds: true });
   }
   return pack.collection;
+}
+
+/** Writes a named proof file (archived with the run). Prefix the name with the criterion or metric. */
+export function evidence(name, data) {
+  writeFileSync(test.info().outputPath(name), typeof data === "string" ? data : JSON.stringify(data, null, 2));
 }

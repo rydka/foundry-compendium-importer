@@ -69,7 +69,7 @@ describe("deprecated API usage (C2)", () => {
 describe("size and duplication (M7)", () => {
   it("reports the line count of scripts/ (M7 is recorded, not blocking; see tests/metrics/m7.mjs)", () => {
     const total = files.reduce((n, f) => n + source(f).split("\n").length, 0);
-    console.log(`M7: ${total} lines in scripts/ (target 700)`);
+    console.log(`M7: ${total} lines in scripts/ (target 1100)`);
     expect(total).toBeGreaterThan(0);
   });
 

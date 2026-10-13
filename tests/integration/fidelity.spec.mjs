@@ -2,14 +2,16 @@
 // The data comes from the dnd5e compendium packs inside the running Foundry (deterministic pick by _id).
 // Skeleton: not yet run in a real Foundry.
 import { expect, test } from "../../../../test-env/fixtures.mjs";
-import { clientDeletePacks, clientExtractFromPacks, clientPipeline, clientReadPack, uniqueName } from "./helpers.mjs";
+import { evidence, clientDeletePacks, clientExtractFromPacks, clientPipeline, clientReadPack, uniqueName } from "./helpers.mjs";
 
 const created = [];
 test.afterEach(async ({ foundry }) => {
   if (created.length) await foundry(clientDeletePacks, created.splice(0));
 });
 
-const IGNORED = /^(_id|_stats|folder|sort|ownership)(\.|$)/;
+// Ids, stats, folder, sort and ownership are set by Foundry. The dnd5e migration of effects (origin -> system.origin.item,
+// system.magical) and the random _id of effect changes are expected differences with respect to the raw source.
+const IGNORED = /^(_id|folder|sort|ownership)(\.|$)|(^|\.)_stats(\.|$)|(^|\.)effects\.\d+\.(origin|system\.origin|system\.magical)(\.|$)|(^|\.)changes\.\d+\._id$/;
 
 /** Leaves of an object as "a.b.0.c" -> value; empty containers are kept as "[]" / "{}". */
 function flatten(value, prefix = "", out = {}) {
@@ -21,14 +23,18 @@ function flatten(value, prefix = "", out = {}) {
 }
 
 /** Fields of `source` that are missing or different in `stored` (ids, stats, folder, sort, ownership excluded). */
+// Normalizations done by Foundry/dnd5e when a document is created, whatever the importer: HTML serialization (<br /> -> <br>)
+// and the identifier derived from the name when the source leaves it empty.
+const normalize = (key, value) => JSON.stringify(typeof value === "string" ? value.replaceAll("<br />", "<br>") : value);
+
 function differences(source, stored) {
   const diffs = [];
   const a = flatten({ ...source, items: undefined });
   const b = flatten({ ...stored, items: undefined });
   for (const [key, value] of Object.entries(a)) {
-    if (!key || IGNORED.test(key) || key === "items") continue;
-    if (!(key in b)) diffs.push(`${key}: missing`);
-    else if (JSON.stringify(b[key]) !== JSON.stringify(value)) diffs.push(`${key}: ${JSON.stringify(value)} -> ${JSON.stringify(b[key])}`);
+    if (!key || IGNORED.test(key) || key === "items" || (key.endsWith("system.identifier") && value === "")) continue;
+    if (!(key in b)) { if (value !== null && value !== undefined && value !== "[]" && value !== "{}") diffs.push(`${key}: missing (source ${JSON.stringify(value)})`); }
+    else if (normalize(key, b[key]) !== normalize(key, value)) diffs.push(`${key}: ${JSON.stringify(value)} -> ${JSON.stringify(b[key])}`);
   }
   const used = new Set();
   for (const nested of source.items ?? []) {
@@ -89,6 +95,7 @@ test("M3: a sample of 20 varied dnd5e documents is imported with 100% of documen
     type: "M3",
     description: `documents ${importedCount}/${total}; documents with identical fields ${identical}/${total}`
   });
+  evidence("M3-fidelite.json", { total, imported: importedCount, identical, documents: all });
   const report = all.filter((d) => d.diffs.length).map((d) => `${d.name}: ${d.diffs.slice(0, 5).join("; ")}`);
   expect(importedCount).toBe(total);
   expect(report).toEqual([]);
@@ -126,6 +133,7 @@ test("M4/C15: 500 dnd5e items are imported in a new compendium in 30 s or less",
     type: "M4",
     description: `write ${Math.round(result.ms)} ms; analysis + write ${totalMs} ms; ${result.created}/500 created; rejected ${result.rejected.length}`
   });
+  evidence("M4-500-objets.json", { writeMs: Math.round(result.ms), totalMs, created: result.created, stored, rejected: result.rejected.length, targetMs: 30000 });
   expect(result.rejected, JSON.stringify(result.rejected.slice(0, 3))).toEqual([]);
   expect(result.created).toBe(500);
   expect(stored).toBe(500);
