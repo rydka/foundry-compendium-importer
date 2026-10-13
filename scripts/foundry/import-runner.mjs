@@ -46,12 +46,12 @@ export async function runImport({ pack, newPackSpec, documents, deleteIds = [] }
   if (!game.user.isGM) throw new Error(game.i18n.localize(`${MODULE_ID}.Error.NotGM`));
   if (!pack) {
     const id = worldPackId(newPackSpec.name);
-    if (game.packs.has(id)) throw new Error(game.i18n.format(`${KEY}.packExists`, { name: newPackSpec.name }));
+    if (game.packs.has(id)) throw new Error(game.i18n.format(`${KEY}.PackExists`, { name: newPackSpec.name }));
     pack = await foundry.documents.collections.CompendiumCollection.createCompendium({
       label: newPackSpec.label, name: newPackSpec.name, type: newPackSpec.type
     });
   }
-  if (pack.locked) throw new Error(game.i18n.format(`${KEY}.packLocked`, { name: pack.metadata.label }));
+  if (pack.locked) throw new Error(game.i18n.format(`${KEY}.PackLocked`, { name: pack.metadata.label }));
 
   if (deleteIds.length) await pack.documentClass.deleteDocuments(deleteIds, { pack: pack.collection });
   let created = 0;
