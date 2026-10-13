@@ -17,17 +17,21 @@ export function checkType(type, knownTypes, aliases = {}, nestedName = undefined
   return { key: `${KEY}.UnknownType${nested}`, data: { ...data, known: knownTypes.join(", ") } };
 }
 
-function walk(before, after, prefix, embedded, out) {
-  if (isObject(before.system)) dropped(before.system, isObject(after?.system) ? after.system : {}, `${prefix}system`, out);
+function walk(before, after, prefix, embedded, out, visit = visitDropped) {
+  if (before.system !== undefined) visit(before.system, after?.system, `${prefix}system`, out);
   for (const key of embedded) {
     if (!Array.isArray(before[key])) continue;
     const afterList = Array.isArray(after?.[key]) ? after[key] : [];
     before[key].forEach((child, i) => {
       if (!isObject(child)) return;
       const match = afterList.find((c) => child._id && c?._id === child._id) ?? afterList[i];
-      walk(child, match ?? {}, `${prefix}${key}[${child.name ?? child._id ?? i}].`, embedded, out);
+      walk(child, match ?? {}, `${prefix}${key}[${child.name ?? child._id ?? i}].`, embedded, out, visit);
     });
   }
+}
+
+function visitDropped(before, after, path, out) {
+  if (isObject(before)) dropped(before, isObject(after) ? after : {}, path, out);
 }
 
 function dropped(before, after, path, out) {
@@ -56,6 +60,59 @@ export function findDroppedPaths(before, after, { embedded = ["items", "effects"
   const out = [];
   walk(before ?? {}, after ?? {}, "", embedded, out);
   return out;
+}
+
+const isNaNNumber = (value) => typeof value === "number" && Number.isNaN(value);
+
+/** Collect the values of `before` that cleaning replaced by a value of another kind (null, NaN, object...). */
+function replaced(before, after, path, out) {
+  if (before === undefined || before === null || before === "") return;
+  if (isObject(before)) {
+    if (!isObject(after)) return void out.push(path);
+    for (const [key, value] of Object.entries(before)) replaced(value, after[key], `${path}.${key}`, out);
+  } else if (Array.isArray(before)) {
+    if (!Array.isArray(after)) return void out.push(path);
+    before.forEach((value, i) => replaced(value, after[i], `${path}[${i}]`, out));
+  } else if (after === null || isNaNNumber(after) || isObject(after) || Array.isArray(after)) {
+    if (!isNaNNumber(before)) out.push(path);
+  }
+}
+
+/**
+ * Paths of `system` values (document and embedded items) that cleaning replaced with another kind of value:
+ * a text turned into null, NaN or an empty object, an array turned into an object, and so on.
+ * Missing keys are not reported here (see findDroppedPaths) and plain conversions such as "3" to 3 are accepted.
+ * @param {object} before Data as provided
+ * @param {object} after Data once cleaned and built
+ * @param {{embedded?: string[]}} [options]
+ * @returns {string[]} Readable paths, for example `items[Longsword].system.quantity`
+ */
+export function findReplacedPaths(before, after, { embedded = ["items", "effects"] } = {}) {
+  const out = [];
+  walk(before ?? {}, after ?? {}, "", embedded, out, replaced);
+  return out;
+}
+
+/**
+ * Reject activities whose type dnd5e does not know. `items` is the document itself or its embedded items.
+ * @param {object} data Item or actor data
+ * @param {string[]} knownTypes
+ * @returns {{key: string, data: object}[]}
+ */
+export function checkActivityTypes(data, knownTypes) {
+  const reasons = [];
+  const scan = (item, owner) => {
+    const activities = item?.system?.activities;
+    if (!isObject(activities)) return;
+    for (const [id, activity] of Object.entries(activities)) {
+      const type = isObject(activity) ? activity.type : undefined;
+      if (typeof type === "string" && knownTypes.includes(type)) continue;
+      reasons.push({ key: `${KEY}.UnknownActivityType`, data: { type: String(type ?? ""), name: activity?.name || id, item: owner, known: knownTypes.join(", ") } });
+    }
+  };
+  scan(data, data?.name ?? "");
+  if (Array.isArray(data?.items)) for (const item of data.items) if (isObject(item)) scan(item, item.name ?? "");
+  return reasons;
 }
 
 /**
