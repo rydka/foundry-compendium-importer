@@ -70,18 +70,16 @@ export async function runImport({ pack, newPackSpec, documents, deleteIds = [] }
   const options = { pack: pack.collection, keepId: true, keepEmbeddedIds: true };
   const removed = deleteIds.length ? (await pack.getDocuments({ _id__in: deleteIds })).map((doc) => doc.toObject()) : [];
   if (removed.length) await pack.documentClass.deleteDocuments(deleteIds, { pack: pack.collection });
-  let created = 0;
   const createdIds = new Set();
   try {
     for (const batch of chunk(documents, BATCH_SIZE)) {
       const result = await pack.documentClass.createDocuments(batch, options);
-      created += result.length;
       for (const doc of result) createdIds.add(doc.id);
     }
   } catch (err) {
     throw await restoreRemoved(pack, removed.filter((data) => !createdIds.has(data._id)), options, err);
   }
-  return { created, replaced: deleteIds.length };
+  return { created: createdIds.size, replaced: deleteIds.length };
 }
 
 /**

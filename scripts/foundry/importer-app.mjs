@@ -49,15 +49,10 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   #state = { ...loadChoices(), newPackLabel: "", newPackName: "", newPackType: "Actor" };
 
   #step = "choose";
-
   #file = null;
-
   #nameTouched = false;
-
   #analysis = null;
-
   #busy = false;
-
   #analyzing = false;
 
   /** @override */
@@ -241,7 +236,6 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if ( existing && filterType && (existing.documentName !== filterType) ) {
       return this.#fail("Error.PackType", { pack: existing.metadata.label, type: filterType });
     }
-
     let parsed;
     try {
       parsed = parseImportFile(await this.#file.text(), this.#file.name);
@@ -250,17 +244,14 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       throw err;
     }
     const { pack, newPackSpec, errors } = resolveTarget(s);
-    if ( errors?.length ) {
-      errors.forEach(error => ui.notifications.error(reasonText(error)));
-      return;
-    }
+    errors.forEach(error => ui.notifications.error(reasonText(error)));
+    if ( errors.length ) return;
     const documentName = pack ? pack.documentName : newPackSpec.type;
     const warnings = [];
     if ( parsed.meta?.docType && (parsed.meta.docType !== documentName) ) {
       warnings.push(t("Warning.DocType", { file: parsed.meta.docType, pack: documentName }));
       ui.notifications.warn(warnings.at(-1));
     }
-
     const idGen = () => foundry.utils.randomID();
     const migrationData = await dnd5e.migrations.getMigrationData();
     const result = await analyzeEntries(parsed.entries, documentName, { migrationData, idGen });
@@ -273,15 +264,12 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       { overwrite: s.overwrite, stripIds: s.stripIds, hasPack: !!pack, idGen });
     if ( plan.duplicateIds.length ) return this.#fail("Error.DuplicateIds", { ids: plan.duplicateIds.join(", ") });
     documents.forEach((d, i) => { d.data = plan.documents[i]; });
-    const overwriteIds = plan.overwriteIds;
-    const conflictIds = plan.conflictIds;
-    const conflicts = documents.filter(d => conflictIds.has(d.data._id)).map(d => ({
+    const conflicts = documents.filter(d => plan.conflictIds.has(d.data._id)).map(d => ({
       id: d.data._id, name: d.name, type: d.type, existing: index.get(d.data._id)?.name ?? d.data._id
     }));
-
     this.#analysis = {
       pack, newPackSpec, accepted: result.accepted, rejected: result.rejected, other: result.other,
-      documents, overwriteIds, conflictIds, conflicts, warnings
+      documents, overwriteIds: plan.overwriteIds, conflictIds: plan.conflictIds, conflicts, warnings
     };
     await saveChoices(s);
     this.#step = "review";
@@ -297,10 +285,6 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static async #onConfirm() {
-    await this.#confirm();
-  }
-
-  async #confirm() {
     if ( !game.user.isGM ) return this.#fail("Error.NotGM");
     const a = this.#analysis;
     if ( !a || this.#busy ) return;

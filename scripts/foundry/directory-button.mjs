@@ -11,8 +11,7 @@ export function onRenderCompendiumDirectory(app, element, context, options) {
   const actions = element.querySelector(".directory-header .header-actions");
   if ( !actions || actions.querySelector(".cji-open-importer") ) return;
   const button = document.createElement("button");
-  button.type = "button";
-  button.className = "cji-open-importer";
+  Object.assign(button, { type: "button", className: "cji-open-importer" });
   button.innerHTML = `<i class="fa-solid fa-file-import" inert></i> <span>${game.i18n.localize(`${MODULE_ID}.Button.Import`)}</span>`;
   button.addEventListener("click", event => {
     event.preventDefault();

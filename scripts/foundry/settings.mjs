@@ -9,9 +9,8 @@ const DEFAULTS = {
 
 /** Register the internal client settings that remember the last choices (C16). */
 export function registerSettings() {
-  const types = { lastTypeFilter: String, lastTargetPack: String, lastOverwrite: Boolean, lastStripIds: Boolean };
-  for ( const [key, type] of Object.entries(types) ) {
-    game.settings.register(MODULE_ID, key, { scope: "client", config: false, type, default: DEFAULTS[key] });
+  for ( const [key, value] of Object.entries(DEFAULTS) ) {
+    game.settings.register(MODULE_ID, key, { scope: "client", config: false, type: value.constructor, default: value });
   }
 }
 

@@ -76,7 +76,6 @@ function checkEntry(entry, documentName, { migrationData, idGen }) {
   const reject = (reasons) => ({ rejected: { name, type, reasons } });
   const cls = CONFIG[documentName].documentClass;
   const systemVersion = game.system.version;
-
   let normalized;
   try {
     normalized = normalizeEntry(entry, { documentName, idGen, systemVersion });
@@ -86,7 +85,6 @@ function checkEntry(entry, documentName, { migrationData, idGen }) {
   const { data, declaredVersion } = normalized;
   const reasons = typeReasons(data, documentName);
   if (reasons.length) return reject(reasons);
-
   let before;
   let doc;
   try {
@@ -108,7 +106,6 @@ function checkEntry(entry, documentName, { migrationData, idGen }) {
   } catch (err) {
     return reject(failureReasons(err, data, "MigrationFailed"));
   }
-
   const notes = [];
   if (dropped.length) {
     if (!updated) return reject([droppedReason(dropped)]);
