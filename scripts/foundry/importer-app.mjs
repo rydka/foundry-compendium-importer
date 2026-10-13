@@ -1,10 +1,8 @@
 import { MODULE_ID, TYPE_FILTERS } from "../constants.mjs";
 import { parseImportFile, ImportFormatError } from "../core/parse.mjs";
-import { remapIds } from "../core/ids.mjs";
-import { findOverwriteTargets, findIdConflicts } from "../core/matching.mjs";
 import { slugify, suggestPackFields } from "../core/naming.mjs";
 import { analyzeEntries } from "./validator.mjs";
-import { resolveTarget, runImport } from "./import-runner.mjs";
+import { applyConflictChoices, planImport, resolveTarget, runImport } from "./import-runner.mjs";
 import { loadChoices, saveChoices } from "./settings.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -60,9 +58,9 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   #busy = false;
 
-  /* -------------------------------------------- */
-  /*  Rendering                                   */
-  /* -------------------------------------------- */
+  #analyzing = false;
+
+  // Rendering
 
   /** @override */
   async _prepareContext(options) {
@@ -144,9 +142,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return new Set(Array.from(boxes, box => box.value));
   }
 
-  /* -------------------------------------------- */
-  /*  Form changes                                */
-  /* -------------------------------------------- */
+  // Form changes
 
   #readState() {
     const data = new FormDataExtended(this.form).object;
@@ -209,12 +205,16 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     this.render({ parts: ["footer"] });
   }
 
-  /* -------------------------------------------- */
-  /*  Step 1: analysis                            */
-  /* -------------------------------------------- */
+  // Step 1: analysis
 
   static async #onSubmit() {
-    await this.#analyze();
+    if ( this.#analyzing ) return;
+    this.#analyzing = true;
+    try {
+      await this.#analyze();
+    } finally {
+      this.#analyzing = false;
+    }
   }
 
   #fail(key, data) {
@@ -259,28 +259,27 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       const data = o.data ?? o;
       return { data, name: o.name ?? data.name, type: o.type ?? data.type };
     })];
-    if ( s.stripIds ) documents.forEach(d => { d.data = remapIds(d.data, idGen); });
-
     const index = pack ? await pack.getIndex({ fields: ["name", "type"] }) : [];
-    const overwriteIds = (s.overwrite && pack) ? findOverwriteTargets(index, documents.map(d => d.data)) : [];
-    const conflictIds = (!s.stripIds && pack)
-      ? findIdConflicts(index, documents.map(d => d.data), new Set(overwriteIds)) : new Set();
+    const plan = planImport(documents.map(d => d.data), index,
+      { overwrite: s.overwrite, stripIds: s.stripIds, hasPack: !!pack, idGen });
+    if ( plan.duplicateIds.length ) return this.#fail("Error.DuplicateIds", { ids: plan.duplicateIds.join(", ") });
+    documents.forEach((d, i) => { d.data = plan.documents[i]; });
+    const overwriteIds = plan.overwriteIds;
+    const conflictIds = plan.conflictIds;
     const conflicts = documents.filter(d => conflictIds.has(d.data._id)).map(d => ({
       id: d.data._id, name: d.name, type: d.type, existing: index.get(d.data._id)?.name ?? d.data._id
     }));
 
     this.#analysis = {
       pack, newPackSpec, accepted: result.accepted, rejected: result.rejected, other: result.other,
-      documents, overwriteIds, conflicts, warnings
+      documents, overwriteIds, conflictIds, conflicts, warnings
     };
     await saveChoices(s);
     this.#step = "review";
     await this.render();
   }
 
-  /* -------------------------------------------- */
-  /*  Step 2: confirmation                        */
-  /* -------------------------------------------- */
+  // Step 2: confirmation
 
   static async #onBack() {
     this.#step = "choose";
@@ -298,26 +297,12 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if ( !a || this.#busy ) return;
     const selected = this.#selectedConflicts();
     const action = this.element.querySelector("[name=conflictAction]")?.value ?? "replace";
-    const conflictIds = new Set(a.conflicts.map(c => c.id));
-    const deleteIds = new Set(a.overwriteIds);
-    const documents = [];
-    let ignored = 0;
-    for ( const doc of a.documents ) {
-      const id = doc.data._id;
-      if ( conflictIds.has(id) ) {
-        if ( !selected.has(id) ) {
-          ignored++;
-          continue;
-        }
-        if ( action === "replace" ) deleteIds.add(id);
-        else doc.data = remapIds(doc.data, () => foundry.utils.randomID());
-      }
-      documents.push(doc.data);
-    }
+    const { toCreate, deleteIds, ignored } = applyConflictChoices(a.documents.map(doc => doc.data), a,
+      { selected, action, idGen: () => foundry.utils.randomID() });
     this.#busy = true;
     let result;
     try {
-      result = await runImport({ pack: a.pack, newPackSpec: a.newPackSpec, documents, deleteIds: Array.from(deleteIds) });
+      result = await runImport({ pack: a.pack, newPackSpec: a.newPackSpec, documents: toCreate, deleteIds });
     } catch(err) {
       console.error(err);
       return this.#fail("Error.ImportFailed", { message: err.message });
