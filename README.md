@@ -48,6 +48,9 @@ Actors and items are built in memory with the dnd5e 6 data model, without writin
 - Older data (for example dnd5e 3.x or 4.x items) goes through the dnd5e migrations and is flagged as updated.
 - A document is rejected, with a readable reason, if its type is unknown, a value is invalid, or a field is not part
   of the dnd5e 6 model and would be dropped (unless dnd5e updated the document, in which case it is only noted).
+- Invalid values that cleaning would silently replace by a default (text turned into null, NaN or an empty object) are
+  rejected with the field and the value provided. Documents older than dnd5e 6.0.0 (declared `_stats.systemVersion`)
+  are migrated by dnd5e and do not go through this check of replaced values.
 - Documents of other types (journals, tables, and so on, in a matching compendium) are imported without checks.
 
 ## Macro API
