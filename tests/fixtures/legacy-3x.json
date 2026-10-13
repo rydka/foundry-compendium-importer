@@ -1,0 +1,740 @@
+[
+  {
+    "_id": "Cb7lu1RaFwWUWWfz",
+    "name": "Legacy Longsword",
+    "type": "weapon",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "quantity": 1,
+      "weight": 3,
+      "price": {
+        "value": 15,
+        "denomination": "gp"
+      },
+      "rarity": "",
+      "actionType": "mwak",
+      "ability": "",
+      "attackBonus": "",
+      "critical": {
+        "threshold": null,
+        "damage": ""
+      },
+      "damage": {
+        "parts": [
+          [
+            "1d8 + @mod",
+            "slashing"
+          ]
+        ],
+        "versatile": "1d10"
+      },
+      "activation": {
+        "type": "action",
+        "cost": 1,
+        "condition": ""
+      },
+      "range": {
+        "value": 5,
+        "long": null,
+        "units": "ft"
+      },
+      "target": {
+        "value": null,
+        "type": "",
+        "units": ""
+      },
+      "equipped": true,
+      "proficient": null,
+      "identified": true,
+      "properties": [
+        "ver"
+      ],
+      "type": {
+        "value": "martialM",
+        "baseItem": "longsword"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "RL7XFL6i7vocQvJt",
+    "name": "Legacy Shortbow",
+    "type": "weapon",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "quantity": 1,
+      "weight": 2,
+      "price": {
+        "value": 25,
+        "denomination": "gp"
+      },
+      "actionType": "rwak",
+      "damage": {
+        "parts": [
+          [
+            "1d6 + @mod",
+            "piercing"
+          ]
+        ],
+        "versatile": ""
+      },
+      "activation": {
+        "type": "action",
+        "cost": 1,
+        "condition": ""
+      },
+      "range": {
+        "value": 80,
+        "long": 320,
+        "units": "ft"
+      },
+      "equipped": true,
+      "properties": [
+        "amm",
+        "two"
+      ],
+      "type": {
+        "value": "martialR",
+        "baseItem": "shortbow"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "Fn01ylgjbb6pfRXe",
+    "name": "Legacy Dagger Throw",
+    "type": "weapon",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "quantity": 2,
+      "weight": 1,
+      "actionType": "mwak",
+      "damage": {
+        "parts": [
+          [
+            "1d4 + @mod",
+            "piercing"
+          ]
+        ],
+        "versatile": ""
+      },
+      "activation": {
+        "type": "action",
+        "cost": 1,
+        "condition": ""
+      },
+      "range": {
+        "value": 20,
+        "long": 60,
+        "units": "ft"
+      },
+      "properties": [
+        "fin",
+        "lgt",
+        "thr"
+      ],
+      "type": {
+        "value": "simpleM",
+        "baseItem": "dagger"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "ReBBi2I7aD1hf3eo",
+    "name": "Legacy Fireball",
+    "type": "spell",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "level": 3,
+      "school": "evo",
+      "properties": [
+        "vocal",
+        "somatic",
+        "material"
+      ],
+      "actionType": "save",
+      "save": {
+        "ability": "dex",
+        "dc": null,
+        "scaling": "spell"
+      },
+      "damage": {
+        "parts": [
+          [
+            "8d6",
+            "fire"
+          ]
+        ],
+        "versatile": ""
+      },
+      "activation": {
+        "type": "action",
+        "cost": 1,
+        "condition": ""
+      },
+      "range": {
+        "value": 150,
+        "units": "ft"
+      },
+      "target": {
+        "value": 20,
+        "type": "sphere",
+        "units": "ft"
+      },
+      "duration": {
+        "value": "",
+        "units": "inst"
+      },
+      "materials": {
+        "value": "a tiny ball of bat guano and sulfur",
+        "consumed": false,
+        "cost": 0,
+        "supply": 0
+      },
+      "preparation": {
+        "mode": "prepared",
+        "prepared": false
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "FfnDgHXNeRcfkGis",
+    "name": "Legacy Fire Bolt",
+    "type": "spell",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "level": 0,
+      "school": "evo",
+      "properties": [
+        "vocal",
+        "somatic"
+      ],
+      "actionType": "rsak",
+      "damage": {
+        "parts": [
+          [
+            "1d10",
+            "fire"
+          ]
+        ],
+        "versatile": ""
+      },
+      "activation": {
+        "type": "action",
+        "cost": 1,
+        "condition": ""
+      },
+      "range": {
+        "value": 120,
+        "units": "ft"
+      },
+      "duration": {
+        "value": "",
+        "units": "inst"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "eYNC7ewDTJNCoisd",
+    "name": "Legacy Cure Wounds",
+    "type": "spell",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "level": 1,
+      "school": "evo",
+      "properties": [
+        "vocal",
+        "somatic"
+      ],
+      "actionType": "heal",
+      "damage": {
+        "parts": [
+          [
+            "1d8 + @mod",
+            "healing"
+          ]
+        ],
+        "versatile": ""
+      },
+      "activation": {
+        "type": "action",
+        "cost": 1,
+        "condition": ""
+      },
+      "range": {
+        "value": null,
+        "units": "touch"
+      },
+      "duration": {
+        "value": "",
+        "units": "inst"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "WK1J33uwxCwekocm",
+    "name": "Legacy Healing Potion",
+    "type": "consumable",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "quantity": 3,
+      "weight": 0.5,
+      "actionType": "heal",
+      "consumableType": "potion",
+      "damage": {
+        "parts": [
+          [
+            "2d4 + 2",
+            "healing"
+          ]
+        ],
+        "versatile": ""
+      },
+      "activation": {
+        "type": "action",
+        "cost": 1,
+        "condition": ""
+      },
+      "range": {
+        "value": null,
+        "units": "self"
+      },
+      "uses": {
+        "value": 1,
+        "max": "1",
+        "per": "charges",
+        "recovery": "",
+        "autoDestroy": true
+      },
+      "type": {
+        "value": "potion"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "yJXeE3U0Yphx7geh",
+    "name": "Legacy Wand Of Sparks",
+    "type": "consumable",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "quantity": 1,
+      "activation": {
+        "type": "action",
+        "cost": 1,
+        "condition": ""
+      },
+      "uses": {
+        "value": 3,
+        "max": "3",
+        "per": "charges",
+        "recovery": "1d3",
+        "autoDestroy": false
+      },
+      "type": {
+        "value": "wand"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "c5brhMBO5CyuS6px",
+    "name": "Legacy Smith Tools",
+    "type": "tool",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "quantity": 1,
+      "weight": 8,
+      "ability": "int",
+      "chatFlavor": "",
+      "proficient": null,
+      "bonus": "",
+      "type": {
+        "value": "art",
+        "baseItem": "smith"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "kDudTatxsZhyhBM7",
+    "name": "Legacy Backpack",
+    "type": "backpack",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "quantity": 1,
+      "weight": 5,
+      "capacity": {
+        "type": "weight",
+        "value": 30,
+        "weightless": false
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "7SOSduOWepCgcbZK",
+    "name": "Legacy Gem",
+    "type": "loot",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "quantity": 2,
+      "weight": 0,
+      "price": {
+        "value": 100,
+        "denomination": "gp"
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "a5GhOUFU0xtQ3V0S",
+    "name": "Legacy Second Wind",
+    "type": "feat",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "description": {
+        "value": "",
+        "chat": "",
+        "unidentified": ""
+      },
+      "activation": {
+        "type": "bonus",
+        "cost": 1,
+        "condition": ""
+      },
+      "actionType": "heal",
+      "damage": {
+        "parts": [
+          [
+            "1d10 + @classes.fighter.levels",
+            "healing"
+          ]
+        ],
+        "versatile": ""
+      },
+      "uses": {
+        "value": 1,
+        "max": "1",
+        "per": "sr",
+        "recovery": ""
+      },
+      "type": {
+        "value": "class",
+        "subtype": ""
+      }
+    },
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "aMjHxrm0JBAjXcvd",
+    "name": "Legacy Goblin",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "abilities": {
+        "str": {
+          "value": 8
+        },
+        "dex": {
+          "value": 14
+        },
+        "con": {
+          "value": 10
+        },
+        "int": {
+          "value": 10
+        },
+        "wis": {
+          "value": 8
+        },
+        "cha": {
+          "value": 8
+        }
+      },
+      "attributes": {
+        "ac": {
+          "flat": 15,
+          "calc": "natural",
+          "value": 15
+        },
+        "hp": {
+          "value": 7,
+          "max": 7,
+          "formula": "2d6"
+        },
+        "movement": {
+          "walk": 30
+        }
+      },
+      "details": {
+        "cr": 0.25,
+        "type": {
+          "value": "humanoid"
+        },
+        "biography": {
+          "value": ""
+        }
+      }
+    },
+    "items": [
+      {
+        "_id": "1U7KBodePW6JiDEQ",
+        "name": "Legacy Scimitar",
+        "type": "weapon",
+        "img": "icons/svg/item-bag.svg",
+        "system": {
+          "description": {
+            "value": "",
+            "chat": "",
+            "unidentified": ""
+          },
+          "quantity": 1,
+          "actionType": "mwak",
+          "damage": {
+            "parts": [
+              [
+                "1d6 + 2",
+                "slashing"
+              ]
+            ],
+            "versatile": ""
+          },
+          "activation": {
+            "type": "action",
+            "cost": 1,
+            "condition": ""
+          },
+          "range": {
+            "value": 5,
+            "units": "ft"
+          },
+          "equipped": true,
+          "type": {
+            "value": "martialM",
+            "baseItem": "scimitar"
+          }
+        },
+        "effects": [],
+        "flags": {},
+        "_stats": {
+          "systemId": "dnd5e",
+          "systemVersion": "3.3.1",
+          "coreVersion": "12.331"
+        }
+      },
+      {
+        "_id": "9bDNOAQNOrZzAoBk",
+        "name": "Legacy Nimble Escape",
+        "type": "feat",
+        "img": "icons/svg/item-bag.svg",
+        "system": {
+          "description": {
+            "value": "",
+            "chat": "",
+            "unidentified": ""
+          },
+          "type": {
+            "value": "monster"
+          }
+        },
+        "effects": [],
+        "flags": {},
+        "_stats": {
+          "systemId": "dnd5e",
+          "systemVersion": "3.3.1",
+          "coreVersion": "12.331"
+        }
+      }
+    ],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  },
+  {
+    "_id": "p3f9aHywHavS9IGr",
+    "name": "Legacy Hero",
+    "type": "character",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "abilities": {
+        "str": {
+          "value": 15
+        },
+        "dex": {
+          "value": 12
+        },
+        "con": {
+          "value": 14
+        },
+        "int": {
+          "value": 10
+        },
+        "wis": {
+          "value": 10
+        },
+        "cha": {
+          "value": 8
+        }
+      },
+      "attributes": {
+        "ac": {
+          "calc": "default"
+        },
+        "hp": {
+          "value": 12,
+          "max": 12
+        }
+      },
+      "details": {
+        "biography": {
+          "value": ""
+        },
+        "alignment": "NG"
+      }
+    },
+    "items": [],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "3.3.1",
+      "coreVersion": "12.331"
+    }
+  }
+]

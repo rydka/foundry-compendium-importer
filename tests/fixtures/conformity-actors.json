@@ -1,0 +1,418 @@
+[
+  {
+    "_id": "SIMpFTMHb1XdfjNM",
+    "name": "Ok Goblin",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "abilities": {
+        "str": {
+          "value": 8
+        },
+        "dex": {
+          "value": 14
+        }
+      },
+      "attributes": {
+        "hp": {
+          "value": 7,
+          "max": 7
+        }
+      },
+      "details": {
+        "cr": 0.25
+      }
+    },
+    "items": [],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "yar6V3w2I3sS5edn",
+    "name": "Ok Ogre",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "abilities": {
+        "str": {
+          "value": 19
+        }
+      },
+      "details": {
+        "cr": 2
+      }
+    },
+    "items": [],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "f1dP6OhE6K9lobpF",
+    "name": "Ok Skeleton With Club",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "details": {
+        "cr": 0.25
+      }
+    },
+    "items": [
+      {
+        "_id": "YLnF5WEM2H5kPiW3",
+        "name": "Ok Club",
+        "type": "weapon",
+        "img": "icons/svg/item-bag.svg",
+        "system": {
+          "quantity": 1
+        },
+        "effects": [],
+        "flags": {},
+        "_stats": {
+          "systemId": "dnd5e",
+          "systemVersion": "6.0.6",
+          "coreVersion": "14.369"
+        }
+      },
+      {
+        "_id": "vYca1LdPJlX2rGNU",
+        "name": "Ok Bone Fortitude",
+        "type": "feat",
+        "img": "icons/svg/item-bag.svg",
+        "system": {},
+        "effects": [],
+        "flags": {},
+        "_stats": {
+          "systemId": "dnd5e",
+          "systemVersion": "6.0.6",
+          "coreVersion": "14.369"
+        }
+      }
+    ],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "pCdfmk7xHthHqM0L",
+    "name": "Ok Wolf",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {},
+    "items": [
+      {
+        "_id": "AIMATKP6aaSgtNLz",
+        "name": "Ok Bite",
+        "type": "feat",
+        "img": "icons/svg/item-bag.svg",
+        "system": {},
+        "effects": [],
+        "flags": {},
+        "_stats": {
+          "systemId": "dnd5e",
+          "systemVersion": "6.0.6",
+          "coreVersion": "14.369"
+        }
+      }
+    ],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "QlDIXCSra8OQD1a9",
+    "name": "Ok Commoner",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "abilities": {
+        "str": {
+          "value": 10
+        }
+      }
+    },
+    "items": [],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "YA1uXllUvpbFgtht",
+    "name": "Ok Wizard Hero",
+    "type": "character",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "abilities": {
+        "int": {
+          "value": 16
+        }
+      }
+    },
+    "items": [
+      {
+        "_id": "u9GwyjHwkt5KeWVp",
+        "name": "Ok Spell Fire Bolt",
+        "type": "spell",
+        "img": "icons/svg/item-bag.svg",
+        "system": {
+          "level": 0
+        },
+        "effects": [],
+        "flags": {},
+        "_stats": {
+          "systemId": "dnd5e",
+          "systemVersion": "6.0.6",
+          "coreVersion": "14.369"
+        }
+      }
+    ],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "pSD0GZjOenNyV2yc",
+    "name": "Ok Fighter Hero",
+    "type": "character",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "abilities": {
+        "str": {
+          "value": 17
+        }
+      }
+    },
+    "items": [
+      {
+        "_id": "EmDDkpNot5njaaSy",
+        "name": "Ok Hero Sword",
+        "type": "weapon",
+        "img": "icons/svg/item-bag.svg",
+        "system": {
+          "quantity": 1
+        },
+        "effects": [],
+        "flags": {},
+        "_stats": {
+          "systemId": "dnd5e",
+          "systemVersion": "6.0.6",
+          "coreVersion": "14.369"
+        }
+      }
+    ],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "CoHKRcMvsW3LZwAG",
+    "name": "Ok Blessed Hero",
+    "type": "character",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {},
+    "items": [],
+    "effects": [
+      {
+        "_id": "Cjm0nXcXIm0EVRt0",
+        "name": "Blessing",
+        "img": "icons/svg/aura.svg",
+        "changes": [],
+        "disabled": false,
+        "transfer": false
+      }
+    ],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "Jv66u9IrB177Zdzh",
+    "name": "Ok Plain File Npc",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "details": {
+        "cr": 1
+      }
+    },
+    "items": [],
+    "effects": [],
+    "flags": {}
+  },
+  {
+    "_id": "tjfscXSUqV61hrz2",
+    "name": "Ok Plain File Hero",
+    "type": "character",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {},
+    "items": [],
+    "effects": [],
+    "flags": {}
+  },
+  {
+    "_id": "9Ku6s2bmUXxuW9HE",
+    "name": "Bad Unknown Actor Type",
+    "type": "monster",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {},
+    "items": [],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "wrleTmMlbKk7fkgv",
+    "name": "Bad Strength Text",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "abilities": {
+        "str": {
+          "value": "fort"
+        }
+      }
+    },
+    "items": [],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "UTCUttywovxRvpZk",
+    "name": "Bad Hit Points Text",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "attributes": {
+        "hp": {
+          "value": "plein"
+        }
+      }
+    },
+    "items": [],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "wtlql2ZiR30xvJ8x",
+    "name": "Bad Nested Item Type",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {},
+    "items": [
+      {
+        "_id": "AAguwUthbYQhLmaD",
+        "name": "Nested Mystery",
+        "type": "gizmo",
+        "img": "icons/svg/item-bag.svg",
+        "system": {},
+        "effects": [],
+        "flags": {},
+        "_stats": {
+          "systemId": "dnd5e",
+          "systemVersion": "6.0.6",
+          "coreVersion": "14.369"
+        }
+      }
+    ],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "i6Qe7pjV2HjhGqcJ",
+    "name": "Bad Nested Item Value",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {},
+    "items": [
+      {
+        "_id": "wgqYroIwELodFtcl",
+        "name": "Nested Bad Loot",
+        "type": "loot",
+        "img": "icons/svg/item-bag.svg",
+        "system": {
+          "quantity": "beaucoup"
+        },
+        "effects": [],
+        "flags": {},
+        "_stats": {
+          "systemId": "dnd5e",
+          "systemVersion": "6.0.6",
+          "coreVersion": "14.369"
+        }
+      }
+    ],
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  },
+  {
+    "_id": "5D4At0o75ahMwpCM",
+    "name": "Bad Items Not Array",
+    "type": "npc",
+    "img": "icons/svg/mystery-man.svg",
+    "system": {},
+    "items": "oops",
+    "effects": [],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  }
+]

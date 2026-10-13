@@ -1,0 +1,39 @@
+[
+  {
+    "_id": "linkedItem000001",
+    "name": "Link Ring",
+    "type": "equipment",
+    "img": "icons/svg/item-bag.svg",
+    "system": {
+      "quantity": 1,
+      "activities": {
+        "linkedActiv00001": {
+          "_id": "linkedActiv00001",
+          "type": "save",
+          "name": "Burst",
+          "effects": [
+            {
+              "_id": "linkedEffect0001"
+            }
+          ]
+        }
+      }
+    },
+    "effects": [
+      {
+        "_id": "linkedEffect0001",
+        "name": "Linked Burn",
+        "img": "icons/svg/fire.svg",
+        "changes": [],
+        "disabled": false,
+        "transfer": false
+      }
+    ],
+    "flags": {},
+    "_stats": {
+      "systemId": "dnd5e",
+      "systemVersion": "6.0.6",
+      "coreVersion": "14.369"
+    }
+  }
+]

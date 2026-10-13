@@ -1,0 +1,31 @@
+{
+  "documents": [
+    {
+      "_id": "9iBt7Ev7A2phDCiO",
+      "name": "Format Sword",
+      "type": "weapon",
+      "img": "icons/svg/sword.svg",
+      "system": {},
+      "effects": [],
+      "flags": {}
+    },
+    {
+      "_id": "M8VOGbljpGxmEYua",
+      "name": "Format Potion",
+      "type": "consumable",
+      "img": "icons/svg/aura.svg",
+      "system": {},
+      "effects": [],
+      "flags": {}
+    },
+    {
+      "_id": "9mEmi2ITkLg29N4B",
+      "name": "Format Amulet",
+      "type": "loot",
+      "img": "icons/svg/mystery-man.svg",
+      "system": {},
+      "effects": [],
+      "flags": {}
+    }
+  ]
+}

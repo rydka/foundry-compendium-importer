@@ -1,0 +1,351 @@
+{
+  "note": "Ground truth for conformity-items.json and conformity-actors.json. conform=false documents are all up to date (systemVersion 6.0.6).",
+  "defects": {
+    "unknownType": "type inconnu",
+    "invalidValue": "valeur invalide dans system",
+    "droppedField": "champ system inconnu sur un document a jour",
+    "unknownActivityType": "activite de type inconnu",
+    "nestedUnknownType": "objet imbrique de type inconnu",
+    "nestedInvalid": "objet ou effet imbrique invalide",
+    "itemsNotArray": "items n'est pas un tableau",
+    "systemNotObject": "system n'est pas un objet"
+  },
+  "counts": {
+    "items": 31,
+    "actors": 16,
+    "total": 47,
+    "conform": 32,
+    "nonConform": 15
+  },
+  "documents": [
+    {
+      "name": "Ok Longsword",
+      "documentName": "Item",
+      "type": "weapon",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Dagger",
+      "documentName": "Item",
+      "type": "weapon",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Longsword Active",
+      "documentName": "Item",
+      "type": "weapon",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Shortbow Array Activities",
+      "documentName": "Item",
+      "type": "weapon",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Chain Shirt",
+      "documentName": "Item",
+      "type": "equipment",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Shield",
+      "documentName": "Item",
+      "type": "equipment",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Healing Potion",
+      "documentName": "Item",
+      "type": "consumable",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Arrows",
+      "documentName": "Item",
+      "type": "consumable",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Thieves Tools",
+      "documentName": "Item",
+      "type": "tool",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Lute",
+      "documentName": "Item",
+      "type": "tool",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Gemstone",
+      "documentName": "Item",
+      "type": "loot",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Rope",
+      "documentName": "Item",
+      "type": "loot",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Backpack",
+      "documentName": "Item",
+      "type": "container",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Legacy Backpack Alias",
+      "documentName": "Item",
+      "type": "backpack",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Fire Bolt",
+      "documentName": "Item",
+      "type": "spell",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Fireball",
+      "documentName": "Item",
+      "type": "spell",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Second Wind",
+      "documentName": "Item",
+      "type": "feat",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Darkvision",
+      "documentName": "Item",
+      "type": "feat",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Glowing Ring",
+      "documentName": "Item",
+      "type": "equipment",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Plain Tool File Item",
+      "documentName": "Item",
+      "type": "tool",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Plain Weapon File Item",
+      "documentName": "Item",
+      "type": "weapon",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Plain Feat File Item",
+      "documentName": "Item",
+      "type": "feat",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Bad Unknown Item Type",
+      "documentName": "Item",
+      "type": "weapon2",
+      "conform": false,
+      "defect": "unknownType"
+    },
+    {
+      "name": "Bad Quantity Text",
+      "documentName": "Item",
+      "type": "loot",
+      "conform": false,
+      "defect": "invalidValue"
+    },
+    {
+      "name": "Bad Weight Text",
+      "documentName": "Item",
+      "type": "loot",
+      "conform": false,
+      "defect": "invalidValue"
+    },
+    {
+      "name": "Bad Spell Level",
+      "documentName": "Item",
+      "type": "spell",
+      "conform": false,
+      "defect": "invalidValue"
+    },
+    {
+      "name": "Bad Extra Field",
+      "documentName": "Item",
+      "type": "weapon",
+      "conform": false,
+      "defect": "droppedField"
+    },
+    {
+      "name": "Bad Activity Type",
+      "documentName": "Item",
+      "type": "weapon",
+      "conform": false,
+      "defect": "unknownActivityType"
+    },
+    {
+      "name": "Bad System String",
+      "documentName": "Item",
+      "type": "loot",
+      "conform": false,
+      "defect": "systemNotObject"
+    },
+    {
+      "name": "Bad Effect Duration",
+      "documentName": "Item",
+      "type": "equipment",
+      "conform": false,
+      "defect": "nestedInvalid"
+    },
+    {
+      "name": "Bad Uses Spent",
+      "documentName": "Item",
+      "type": "consumable",
+      "conform": false,
+      "defect": "invalidValue"
+    },
+    {
+      "name": "Ok Goblin",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Ogre",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Skeleton With Club",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Wolf",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Commoner",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Wizard Hero",
+      "documentName": "Actor",
+      "type": "character",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Fighter Hero",
+      "documentName": "Actor",
+      "type": "character",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Blessed Hero",
+      "documentName": "Actor",
+      "type": "character",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Plain File Npc",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Ok Plain File Hero",
+      "documentName": "Actor",
+      "type": "character",
+      "conform": true,
+      "defect": null
+    },
+    {
+      "name": "Bad Unknown Actor Type",
+      "documentName": "Actor",
+      "type": "monster",
+      "conform": false,
+      "defect": "unknownType"
+    },
+    {
+      "name": "Bad Strength Text",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": false,
+      "defect": "invalidValue"
+    },
+    {
+      "name": "Bad Hit Points Text",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": false,
+      "defect": "invalidValue"
+    },
+    {
+      "name": "Bad Nested Item Type",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": false,
+      "defect": "nestedUnknownType"
+    },
+    {
+      "name": "Bad Nested Item Value",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": false,
+      "defect": "nestedInvalid"
+    },
+    {
+      "name": "Bad Items Not Array",
+      "documentName": "Actor",
+      "type": "npc",
+      "conform": false,
+      "defect": "itemsNotArray"
+    }
+  ]
+}
