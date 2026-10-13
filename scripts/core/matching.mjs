@@ -17,15 +17,16 @@ export function findOverwriteTargets(index, entries) {
   for (const doc of entriesOf(index)) {
     const name = nameKey(doc.name);
     if (!name) continue;
-    byKey.set(`${name}::${doc.type ?? ""}`, doc._id);
-    if (!byName.has(name)) byName.set(name, doc._id);
+    const key = `${name}::${doc.type ?? ""}`;
+    byKey.set(key, [...(byKey.get(key) ?? []), doc._id]);
+    byName.set(name, [...(byName.get(name) ?? []), doc._id]);
   }
   const ids = new Set();
   for (const entry of entries) {
     const name = nameKey(entry.name);
     if (!name) continue;
-    const id = byKey.get(`${name}::${entry.type ?? ""}`) ?? byName.get(name);
-    if (id) ids.add(id);
+    const found = byKey.get(`${name}::${entry.type ?? ""}`) ?? byName.get(name) ?? [];
+    for (const id of found) ids.add(id);
   }
   return [...ids];
 }
