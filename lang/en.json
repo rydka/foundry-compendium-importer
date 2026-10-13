@@ -85,7 +85,7 @@
       "InvalidField": "Invalid value in {path}: {message}. Correct this value in the file.",
       "Invalid": "The data does not match the dnd5e 6 model: {message}. Fix the document in the file to match the model.",
       "Unreadable": "The data cannot be read: {message}. Check that the entry is a complete Foundry document.",
-      "ReplacedValue": "The value in {path} is invalid and would have been replaced by a default. Fix the value in the file.",
+      "ReplacedValue": "The value {value} in {path} is invalid and would have been replaced by a default. Fix the value in the file.",
       "UnknownActivityType": "Activity {name} of {item} has an unknown type \"{type}\". Known types: {known}. Fix or remove the activity.",
       "DroppedFields": "{count} fields not supported by dnd5e 6: {paths}. Remove these fields from the file, or export the document again from dnd5e 6.",
       "PackExists": "A compendium named {name} already exists. Choose another name.",

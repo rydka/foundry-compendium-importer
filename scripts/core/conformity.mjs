@@ -64,28 +64,32 @@ export function findDroppedPaths(before, after, { embedded = ["items", "effects"
 
 const isNaNNumber = (value) => typeof value === "number" && Number.isNaN(value);
 
+const report = (out, path, value) => out.push({ path, value: JSON.stringify(value).slice(0, 40) });
+
 function replaced(before, after, path, out) {
   if (before === undefined || before === null || before === "") return;
   if (isObject(before)) {
-    if (!isObject(after)) return void out.push(path);
+    if (!isObject(after)) return void report(out, path, before);
     for (const [key, value] of Object.entries(before)) if (Object.hasOwn(after, key)) replaced(value, after[key], `${path}.${key}`, out);
   } else if (Array.isArray(before)) {
-    if (!Array.isArray(after)) return void out.push(path);
+    if (!Array.isArray(after)) return void report(out, path, before);
     before.forEach((value, i) => i < after.length && replaced(value, after[i], `${path}[${i}]`, out));
   } else if (after === null || isNaNNumber(after) || isObject(after) || Array.isArray(after)) {
-    if (!isNaNNumber(before)) out.push(path);
+    if (!isNaNNumber(before)) report(out, path, before);
   }
 }
 
 /**
- * Paths of `system` values (document and embedded items) that cleaning replaced with another kind of value
+ * Paths and provided values (JSON, truncated) of `system` values (document and embedded items) that cleaning replaced with another kind of value
  * (text turned into null, NaN or {}...). Missing keys and conversions such as "3" to 3 are not reported.
  */
-export function findReplacedPaths(before, after, { embedded = ["items", "effects"] } = {}) {
+export function findReplaced(before, after, { embedded = ["items", "effects"] } = {}) {
   const out = [];
   walk(before ?? {}, after ?? {}, "", embedded, out, replaced);
   return out;
 }
+
+export const findReplacedPaths = (before, after, options) => findReplaced(before, after, options).map(({ path }) => path);
 
 /** Reasons for activities (of the item or its embedded items) whose type dnd5e does not know. */
 export function checkActivityTypes(data, knownTypes) {

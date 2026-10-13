@@ -1,5 +1,5 @@
 import { CHECKED_DOCUMENTS, LEGACY_TYPE_ALIASES } from "../constants.mjs";
-import { checkActivityTypes, checkType, describeFailures, findDroppedPaths, findReplacedPaths, isOlderThan } from "../core/conformity.mjs";
+import { checkActivityTypes, checkType, describeFailures, findDroppedPaths, findReplaced, isOlderThan } from "../core/conformity.mjs";
 import { normalizeEntry } from "../core/normalize.mjs";
 
 const KEY = "compendium-json-importer.Reason";
@@ -101,8 +101,8 @@ function checkEntry(entry, documentName, { migrationData, idGen }) {
   const dropped = findDroppedPaths(before, built);
   // Cleaning turns some invalid values into defaults, null or NaN without failing: compare with what was provided.
   // Older documents are skipped: their legacy shapes are converted by the migration, not by an error.
-  const replaced = updated ? [] : findReplacedPaths(data, built);
-  if (replaced.length) return reject(replaced.map((path) => ({ key: `${KEY}.ReplacedValue`, data: { path } })));
+  const replaced = updated ? [] : findReplaced(data, built);
+  if (replaced.length) return reject(replaced.map((data) => ({ key: `${KEY}.ReplacedValue`, data })));
   try {
     updated = migrateDocument(doc, documentName, migrationData) || updated;
   } catch (err) {
