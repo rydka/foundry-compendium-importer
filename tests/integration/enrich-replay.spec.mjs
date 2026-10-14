@@ -28,7 +28,11 @@ async function clientAnalyze({ entries, documentName, options }) {
 }
 
 const gitHead = (dir) => {
-  try { return execFileSync("git", ["-C", dir, "log", "-1", "--format=%h"], { encoding: "utf8" }).trim(); } catch { return "?"; }
+  try {
+    const head = execFileSync("git", ["-C", dir, "log", "-1", "--format=%h"], { encoding: "utf8" }).trim();
+    const dirty = execFileSync("git", ["-C", dir, "status", "--porcelain", "--", "scripts", "lang"], { encoding: "utf8" }).trim();
+    return dirty ? `${head}+dirty` : head;
+  } catch { return "?"; }
 };
 
 async function replay(foundry, setDir) {
