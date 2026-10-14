@@ -1,6 +1,8 @@
-import { CHECKED_DOCUMENTS, LEGACY_TYPE_ALIASES } from "../constants.mjs";
+import { CHECKED_DOCUMENTS, MODULE_ID, LEGACY_TYPE_ALIASES } from "../constants.mjs";
 import { checkActivityTypes, checkType, describeFailures, findDroppedPaths, findReplaced, isOlderThan } from "../core/conformity.mjs";
 import { normalizeEntry } from "../core/normalize.mjs";
+import { enrichEntry } from "../core/enrich/enrich.mjs";
+import { loadParser, prepareEnrichment } from "./enrichment.mjs";
 
 const KEY = "compendium-json-importer.Reason";
 const MAX_PATHS = 8;
@@ -70,19 +72,11 @@ function migrateDocument(doc, documentName, migrationData) {
   return true;
 }
 
-function checkEntry(entry, documentName, { migrationData, idGen }) {
-  const name = label(entry);
-  const type = String(entry?.type ?? "");
+/** Check a normalized document against the dnd5e 6 model and migrate it in memory. */
+function checkNormalized(data, declaredVersion, documentName, { migrationData, name, type }) {
   const reject = (reasons) => ({ rejected: { name, type, reasons } });
   const cls = CONFIG[documentName].documentClass;
   const systemVersion = game.system.version;
-  let normalized;
-  try {
-    normalized = normalizeEntry(entry, { documentName, idGen, systemVersion });
-  } catch (err) {
-    return reject(failureReasons(err, entry));
-  }
-  const { data, declaredVersion } = normalized;
   const reasons = typeReasons(data, documentName);
   if (reasons.length) return reject(reasons);
   let before;
@@ -117,17 +111,70 @@ function checkEntry(entry, documentName, { migrationData, idGen }) {
 }
 
 /**
+ * Enrich a copy of the normalized data. A failure of the enrichment is not an error of the file:
+ * the entry is then checked without it.
+ */
+function enrichData(data, documentName, { parser, enrichment, idGen }) {
+  try {
+    return enrichEntry(data, documentName, { ...enrichment, parser, idGen });
+  } catch (err) {
+    console.error(`${MODULE_ID} | enrichment failed`, err);
+    return null;
+  }
+}
+
+function checkEntry(entry, documentName, context) {
+  const { idGen, parser } = context;
+  const name = label(entry);
+  const type = String(entry?.type ?? "");
+  let normalized;
+  try {
+    normalized = normalizeEntry(entry, { documentName, idGen, systemVersion: game.system.version });
+  } catch (err) {
+    return { rejected: { name, type, reasons: failureReasons(err, entry) } };
+  }
+  const { data, declaredVersion } = normalized;
+  const options = { ...context, name, type };
+  const enriched = parser && enrichData(data, documentName, context);
+  if (!enriched) return checkNormalized(data, declaredVersion, documentName, options);
+  const first = checkNormalized(enriched.data, declaredVersion, documentName, options);
+  if (first.accepted) {
+    first.accepted.enrichment = enriched.report;
+    return first;
+  }
+  // The enrichment must never be the reason for a rejection: import the document as the file gives it.
+  const second = checkNormalized(data, declaredVersion, documentName, options);
+  if (second.accepted) {
+    second.accepted.enrichment = { status: "reverted", changes: [], items: [], reasons: first.rejected.reasons };
+  }
+  return second;
+}
+
+/**
  * Check and migrate entries in memory against the dnd5e 6 data model. Nothing is written.
  * `entries` are the raw entries from the file: the declared `_stats.systemVersion` is read here.
+ * With `enrich`, empty activities are completed from the text (and, for actors, items are taken from the
+ * compendiums when `compendiums` is true); the result then holds an `enrichment` summary.
  * @param {object[]} entries
  * @param {string} documentName Document name of the target pack
- * @param {{migrationData?: object, idGen: () => string}} options
- * @returns {Promise<{accepted: object[], rejected: object[], other: object[], documentName: string}>}
+ * @param {{migrationData?: object, idGen?: () => string, enrich?: boolean, compendiums?: boolean}} options
+ * @returns {Promise<{accepted: object[], rejected: object[], other: object[], documentName: string, enrichment?: object}>}
  */
-export async function analyzeEntries(entries, documentName, { migrationData, idGen = () => foundry.utils.randomID() } = {}) {
+export async function analyzeEntries(entries, documentName, options = {}) {
+  const { migrationData, idGen = () => foundry.utils.randomID(), enrich = false, compendiums = enrich } = options;
   const result = { accepted: [], rejected: [], other: [], documentName };
   const checked = CHECKED_DOCUMENTS.includes(documentName);
   const context = checked && { migrationData: migrationData ?? await dnd5e.migrations.getMigrationData(), idGen };
+  if (checked && enrich) {
+    context.parser = await loadParser();
+    result.enrichment = { unavailable: !context.parser, counts: { enriched: 0, unchanged: 0, notEnriched: 0, reverted: 0 } };
+    if (context.parser) {
+      const objects = entries.filter(isObject);
+      const { skipped, ...prepared } = await prepareEnrichment(objects, documentName, { useCompendiums: compendiums });
+      context.enrichment = { ...prepared, useCompendiums: compendiums };
+      result.enrichment.skipped = skipped;
+    }
+  }
   for (const entry of entries) {
     if (!isObject(entry)) {
       result.rejected.push(NOT_AN_OBJECT);
@@ -136,8 +183,12 @@ export async function analyzeEntries(entries, documentName, { migrationData, idG
       result.other.push({ data, name: label(entry), type: String(entry?.type ?? "") });
     } else {
       const { accepted, rejected } = checkEntry(entry, documentName, context);
-      if (accepted) result.accepted.push(accepted);
-      else result.rejected.push(rejected);
+      if (accepted) {
+        result.accepted.push(accepted);
+        if (accepted.enrichment) result.enrichment.counts[accepted.enrichment.status]++;
+      } else {
+        result.rejected.push(rejected);
+      }
     }
   }
   return result;
