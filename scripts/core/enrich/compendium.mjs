@@ -281,12 +281,17 @@ export function adjustToFacts(data, facts = {}) {
       : null;
   if (usesFact) {
     const uses = system.uses ?? {};
-    const fromRec = uses.recovery?.[0];
-    const sig = (max, rec) => `${max ?? ""}|${rec?.period ?? ""}|${rec?.period === "recharge" ? rec.formula : ""}`;
-    const sigTo = sig(usesFact.max, usesFact.recovery[0]);
-    const changed = sig(uses.max, fromRec) !== sigTo;
+    // Reported as { max, period, formula } (formula only for a recharge), null when the item has no uses.
+    const describeUses = (max, rec) => {
+      const m = String(max ?? "");
+      if (!m && !rec?.period) return null;
+      return { max: m, period: rec?.period ?? null, formula: rec?.period === "recharge" ? String(rec.formula ?? "") : null };
+    };
+    const from = describeUses(uses.max, uses.recovery?.[0]);
+    const to = describeUses(usesFact.max, usesFact.recovery[0]);
+    const changed = JSON.stringify(from) !== JSON.stringify(to);
     if (changed) {
-      note("uses", sig(uses.max, fromRec) === "||" ? null : sig(uses.max, fromRec), sigTo);
+      note("uses", from, to);
       system.uses = { ...uses, max: usesFact.max, recovery: usesFact.recovery };
     }
     const a = list[0];

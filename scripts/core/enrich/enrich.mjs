@@ -274,11 +274,13 @@ function enrichItem(item, ctx, { fromActor }) {
   if (!plan || plan.skip) return { item, entry: null };
 
   const entry = { name: item.name, origin: "text", changes: [], adjusted: [], notes: [], status: "unchanged" };
-  const match = fromActor && ctx.useCompendiums ? ctx.matches?.get?.(`${item.type}|${key}`) : null;
+  const searched = fromActor && ctx.useCompendiums;
+  const match = searched ? ctx.matches?.get?.(`${item.type}|${key}`) : null;
   if (match?.status === "ambiguous") {
     entry.origin = "ambiguous";
     entry.pack = match.packLabel;
   }
+  if (searched && !match) entry.notFound = true; // looked up in the compendiums, built from the text (C21, C23)
   let result;
   if (match && match.status !== "ambiguous" && match.data) {
     result = replaceFromCompendium(item, match, plan, ctx, entry);
@@ -295,7 +297,7 @@ function enrichItem(item, ctx, { fromActor }) {
   if (entry.status === "unchanged") {
     const acts = Object.values(activitiesOf(result) ?? {});
     if (acts.some(isEmptyUtility)) entry.status = "notEnriched";
-    else if (!entry.notes.length && entry.origin === "text") return { item: result, entry: null };
+    else if (!entry.notes.length && entry.origin === "text" && !entry.notFound) return { item: result, entry: null };
   }
   return { item: result, entry };
 }
