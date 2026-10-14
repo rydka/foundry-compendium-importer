@@ -126,7 +126,8 @@ test.describe("compendium-40", () => {
     const uuid = item._stats.compendiumSource;
     const sample = await foundry(async (u) => {
       const d = await fromUuid(u);
-      return { name: d.name, img: d.img, activityIds: Object.keys(d.system.activities ?? {}), effects: d.effects.size };
+      const o = d.toObject();
+      return { name: d.name, img: d.img, activityIds: Object.keys(o.system.activities ?? {}), effects: d.effects.size };
     }, uuid);
     const outcome = { uuid, name: item.name, img: item.img, activityIds: Object.keys(item.system.activities ?? {}), effects: item.effects?.length ?? 0, compendium: sample };
     evidence("C19-reprise-fireball.json", outcome);

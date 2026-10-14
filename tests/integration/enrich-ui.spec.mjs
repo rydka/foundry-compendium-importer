@@ -200,7 +200,8 @@ test("C16: the window and api.analyze(entries, type, { enrich: true }) give the 
     return { counts: r.enrichment.counts, docs: r.accepted.map((a) => a.data) };
   }, JSON.parse(readFileSync(file, "utf8")));
   // names are not unique (several "Slam"): compare the multisets of "name | facts"
-  const sig = (docs) => docs.map((d) => `${d.name} | ${itemTokens(d).sort().join(" ; ")}`).sort();
+  // a weapon range is read back as `reach` or `range` depending on the weapon type once stored (dnd5e): compared as one distance
+  const sig = (docs) => docs.map((d) => `${d.name} | ${itemTokens(d).map((t) => t.replace(/^range=(reach|range) /, "range=")).sort().join(" ; ")}`).sort();
   const a = sig(imported), b = sig(viaApi.docs);
   const differing = a.map((x, i) => (x === b[i] ? null : { window: x, api: b[i] })).filter(Boolean);
   evidence("C16-fenetre-vs-api.json", { imported: imported.length, api: viaApi.docs.length, counts: viaApi.counts, differing });
