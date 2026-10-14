@@ -45,8 +45,6 @@ async function clientAnalyze({ entries, options }) {
   };
 }
 
-const idOf = (actor, item) => item._id;
-
 // ---------------------------------------------------------------- compendium-40 (C18-C21, C23, M9, M10)
 
 const FACT_TOKEN = {

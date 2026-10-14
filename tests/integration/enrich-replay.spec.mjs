@@ -37,7 +37,7 @@ const gitHead = (dir) => {
 
 async function replay(foundry, setDir) {
   const set = loadSet(setDir);
-  const newId = idMaker(setDir === "control" ? 99 : 7);
+  const newId = idMaker(setDir === "control" ? 99 : setDir === "control-2" ? 123 : 7);
   const inputs = new Map();
   const entries = set.features.map((c) => {
     const item = buildFeature(c, set.real, newId);
@@ -65,7 +65,7 @@ async function replay(foundry, setDir) {
   return { set, out, actorOut, feat };
 }
 
-for (const label of ["reference", "control"]) {
+for (const label of ["reference", "control", "control-2"]) {
   test(`M2/M3 (${label} set): replay through api.analyze, recorded`, async ({ foundry }) => {
     const root = path.join(LIB, "tests/fixtures", label);
     test.skip(!existsSync(root), `${label} set not committed in the library`);

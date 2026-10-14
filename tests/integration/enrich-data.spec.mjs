@@ -1,3 +1,4 @@
+/* global Actor, Item */
 // C2 (never a reason for rejection), C3/M5 (filled fields never modified), C4, C12 exception, C15 (rolls in dnd5e),
 // M4 (empty utilities left on the real files), M7 (cost of enriching 500 items).
 import { readFileSync } from "node:fs";
@@ -246,7 +247,7 @@ test("M4: empty utility activities left on the real files whose text contains a 
   const rows = [];
   const count = (label, docs, outDocs) => {
     const byId = new Map(outDocs.map((d) => [d._id, d]));
-    let before = 0, after = 0, utilities = 0;
+    let before = 0, after = 0;
     const left = [];
     const check = (item, outItem) => {
       if (/multiattack|attaques multiples/i.test(item.name)) return;
@@ -254,7 +255,6 @@ test("M4: empty utility activities left on the real files whose text contains a 
       if (!FORMULATION.some((re) => re.test(text))) return;
       for (const [id, act] of Object.entries(item.system?.activities ?? {})) {
         if (act.type !== "utility" || act.roll?.formula || act.range?.value || act.uses?.max) continue;
-        utilities++;
         before++;
         const now = outItem?.system?.activities?.[id];
         // still empty = still a utility AND nothing actionable gained by the item (uses, recharge, legendary resistance)
