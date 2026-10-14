@@ -11,8 +11,9 @@ export function isMultiattackKey(key) {
 /**
  * Elements of the actors that deserve a compendium lookup: their items and the spells listed by their
  * spellcasting traits. Returns unique { key, type, name }.
+ * `plans` (a Map or WeakMap) receives the ActorPlan of each entry, so that the enrichment does not parse it again.
  */
-export function collectLookups(entries, parser) {
+export function collectLookups(entries, parser, { keys, plans } = {}) {
   const seen = new Map();
   const add = (name, type) => {
     const key = parser.nameKey(name);
@@ -24,7 +25,8 @@ export function collectLookups(entries, parser) {
     if (!entry || !Array.isArray(entry.items)) continue;
     for (const item of entry.items) add(item?.name, item?.type);
     let plan;
-    try { plan = parser.parseActor(entry); } catch { plan = null; }
+    try { plan = parser.parseActor(entry, { keys }); } catch { plan = null; }
+    plans?.set(entry, plan);
     for (const casting of plan?.spellcasting ?? []) {
       for (const list of casting.lists ?? []) for (const spell of list.spells ?? []) add(spell, "spell");
     }
@@ -32,24 +34,52 @@ export function collectLookups(entries, parser) {
   return [...seen.values()];
 }
 
-function indexEntries(indexByPack, pack) {
-  if (indexByPack instanceof Map) return indexByPack.get(pack) ?? [];
-  return indexByPack?.[pack] ?? [];
+/**
+ * Index entries grouped by pack then by "type|key", built once per analysis: `nameKey` runs once per entry,
+ * whatever the number of elements looked up.
+ */
+export class LookupTable {
+  /**
+   * @param {Map<string, {_id: string, name: string, type: string}[]>|object} indexByPack
+   * @param {(name: string) => string} keyOf the `nameKey` of the parser
+   */
+  constructor(indexByPack, keyOf) {
+    if (typeof keyOf !== "function") throw new TypeError("LookupTable: keyOf (parser.nameKey) is required");
+    this.packs = new Map();
+    const packs = indexByPack instanceof Map ? indexByPack : Object.entries(indexByPack ?? {});
+    for (const [pack, entries] of packs) {
+      const byKey = new Map();
+      for (const e of entries ?? []) {
+        const id = `${e?.type}|${keyOf(e?.name)}`;
+        if (!byKey.has(id)) byKey.set(id, []);
+        byKey.get(id).push(e);
+      }
+      this.packs.set(pack, byKey);
+    }
+  }
+
+  /** Entries of `pack` whose type and key match. */
+  hits(pack, key, type) {
+    return this.packs.get(pack)?.get(`${type}|${key}`) ?? [];
+  }
 }
 
 /**
  * Looks a (key, type) up in the packs, in priority order. The first pack with at least one entry decides:
  * one entry = found, several = ambiguous.
- * @param {Map<string, {_id: string, name: string, type: string}[]>|object} indexByPack
+ * @param {LookupTable|Map<string, object[]>|object} indexByPack a prebuilt table, or the raw indexes (then `keyOf` is required)
  * @param {({pack: string, enabled?: boolean}|string)[]} order
- * @param {{ keyOf: (name: string) => string }} options `keyOf` is the `nameKey` of the parser
+ * @param {{ keyOf?: (name: string) => string }} options `keyOf` is the `nameKey` of the parser
  */
 export function findMatch(indexByPack, order, key, type, { keyOf } = {}) {
-  if (typeof keyOf !== "function") throw new TypeError("findMatch: keyOf (parser.nameKey) is required");
+  if (!(indexByPack instanceof LookupTable) && typeof keyOf !== "function") {
+    throw new TypeError("findMatch: keyOf (parser.nameKey) is required");
+  }
+  const table = indexByPack instanceof LookupTable ? indexByPack : new LookupTable(indexByPack, keyOf);
   for (const source of order ?? []) {
     const pack = typeof source === "string" ? source : source.pack;
     if (typeof source !== "string" && source.enabled === false) continue;
-    const hits = indexEntries(indexByPack, pack).filter(e => e.type === type && keyOf(e.name) === key);
+    const hits = table.hits(pack, key, type);
     if (hits.length === 1) return { status: "found", pack, id: hits[0]._id };
     if (hits.length > 1) return { status: "ambiguous", pack, id: null };
   }

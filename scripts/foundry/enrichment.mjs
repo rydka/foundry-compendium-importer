@@ -1,5 +1,5 @@
 import { MODULE_ID } from "../constants.mjs";
-import { collectLookups, defaultSourceOrder, findMatch, resolveSourceOrder } from "../core/enrich/compendium.mjs";
+import { collectLookups, defaultSourceOrder, findMatch, LookupTable, resolveSourceOrder } from "../core/enrich/compendium.mjs";
 
 const LIBRARY = "dnd5e-text-parser";
 const API_MAJOR = "1";
@@ -70,19 +70,20 @@ async function loadIndexes(order, skipped) {
 
 /**
  * Look up the items of the actors in the compendiums, and load only the documents found (one request per pack).
+ * The index of each pack is keyed once (`LookupTable`); the actor plans go to `plans` for the enrichment.
  * @returns {Promise<Map<string, {status: "found"|"ambiguous", data?: object, uuid?: string, packLabel: string}>>}
  */
-async function findInCompendiums(entries, parser, skipped) {
+async function findInCompendiums(entries, parser, skipped, { keys, plans }) {
   const matches = new Map();
-  const lookups = collectLookups(entries, parser);
+  const lookups = collectLookups(entries, parser, { keys, plans });
   if ( !lookups.length ) return matches;
   const order = getSourceOrder();
-  const indexes = await loadIndexes(order, skipped);
+  const table = new LookupTable(await loadIndexes(order, skipped), parser.nameKey);
   const wanted = new Map();
   for ( const { key, type } of lookups ) {
     const id = `${type}|${key}`;
     if ( matches.has(id) ) continue;
-    const found = findMatch(indexes, order, key, type, { keyOf: parser.nameKey });
+    const found = findMatch(table, order, key, type);
     if ( found.status === "ambiguous" ) matches.set(id, { status: "ambiguous", packLabel: game.packs.get(found.pack).metadata.label });
     if ( found.status !== "found" ) continue;
     if ( !wanted.has(found.pack) ) wanted.set(found.pack, new Map());
@@ -105,16 +106,19 @@ async function findInCompendiums(entries, parser, skipped) {
  * @param {object[]} entries Raw entries of the file
  * @param {string} documentName
  * @param {{useCompendiums: boolean}} options
- * @returns {Promise<{keys: object, matches: Map, pdfLabel: string, skipped: object[]}>}
+ * @returns {Promise<{keys: object, matches: Map, plans: WeakMap, pdfLabel: string, skipped: object[]}>}
  */
 export async function prepareEnrichment(entries, documentName, { useCompendiums }) {
   const parser = await loadParser();
   const skipped = [];
+  const keys = parser.keysFromConfig(CONFIG.DND5E);
+  const plans = new WeakMap(); // raw entry -> ActorPlan, parsed once during the lookup
   const matches = (useCompendiums && (documentName === "Actor"))
-    ? await findInCompendiums(entries, parser, skipped) : new Map();
+    ? await findInCompendiums(entries, parser, skipped, { keys, plans }) : new Map();
   return {
-    keys: parser.keysFromConfig(CONFIG.DND5E),
+    keys,
     matches,
+    plans,
     pdfLabel: game.i18n.localize(`${MODULE_ID}.Enrich.PdfVersion`),
     skipped
   };

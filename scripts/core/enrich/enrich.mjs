@@ -410,7 +410,10 @@ const ZERO_IS_EMPTY = [
 function enrichActorData(data, original, ctx, report) {
   const { parser } = ctx;
   let plan;
-  try { plan = parser.parseActor(original, { keys: ctx.keys }); } catch { plan = null; }
+  if (ctx.plans?.has?.(ctx.source)) plan = ctx.plans.get(ctx.source); // parsed once by collectLookups
+  else {
+    try { plan = parser.parseActor(original, { keys: ctx.keys }); } catch { plan = null; }
+  }
   if (!plan) return;
   const { system: patch = {}, notes = [] } = parser.toActorPatch(plan, { keys: ctx.keys, actor: data }) ?? {};
   const { traits, ...rest } = patch;
@@ -441,6 +444,8 @@ function enrichActorData(data, original, ctx, report) {
  * @param {object} ctx.parser dnd5e-text-parser API v1
  * @param {object} ctx.keys result of `parser.keysFromConfig(CONFIG.DND5E)`
  * @param {Map<string, object>} [ctx.matches] "type|key" -> { status: "found"|"ambiguous", data, uuid, packLabel }
+ * @param {WeakMap<object, object>} [ctx.plans] raw entry -> ActorPlan already parsed (see `collectLookups`)
+ * @param {object} [ctx.source] the raw entry `data` comes from (key of `ctx.plans`)
  * @param {() => string} ctx.idGen
  * @param {string} [ctx.pdfLabel]
  * @param {boolean} [ctx.useCompendiums]

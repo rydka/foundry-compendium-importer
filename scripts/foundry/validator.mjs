@@ -114,9 +114,9 @@ function checkNormalized(data, declaredVersion, documentName, { migrationData, n
  * Enrich a copy of the normalized data. A failure of the enrichment is not an error of the file:
  * the entry is then checked without it.
  */
-function enrichData(data, documentName, { parser, enrichment, idGen }) {
+function enrichData(data, documentName, { parser, enrichment, idGen }, source) {
   try {
-    return enrichEntry(data, documentName, { ...enrichment, parser, idGen });
+    return enrichEntry(data, documentName, { ...enrichment, parser, idGen, source });
   } catch (err) {
     console.error(`${MODULE_ID} | enrichment failed`, err);
     return null;
@@ -135,7 +135,7 @@ function checkEntry(entry, documentName, context) {
   }
   const { data, declaredVersion } = normalized;
   const options = { ...context, name, type };
-  const enriched = parser && enrichData(data, documentName, context);
+  const enriched = parser && enrichData(data, documentName, context, entry);
   if (!enriched) return checkNormalized(data, declaredVersion, documentName, options);
   const first = checkNormalized(enriched.data, declaredVersion, documentName, options);
   if (first.accepted) {
