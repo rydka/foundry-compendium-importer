@@ -224,10 +224,16 @@ function enrichText(item, plan, ctx, entry) {
   const generated = ctx.parser.toActivities(plan, { keys: ctx.keys, idGen: ctx.idGen, item }) ?? [];
   const patch = ctx.parser.toItemPatch(plan, { keys: ctx.keys, item }) ?? {};
   const lr = plan.legendaryResistance;
+  const stripItemUses = () => {
+    for (const g of generated) if (g.consumption?.targets) g.consumption.targets = g.consumption.targets.filter(t => t.type !== "itemUses");
+  };
   if (lr || !isEmpty(system.uses?.max) || !isEmpty(system.uses?.recovery)) {
     // The item keeps its uses: the activities must not consume item uses that are not there.
     delete patch.uses;
-    for (const g of generated) if (g.consumption?.targets) g.consumption.targets = g.consumption.targets.filter(t => t.type !== "itemUses");
+    stripItemUses();
+  } else if (isEmpty(patch.uses?.max)) {
+    // No uses on the item (none in the file, none built from the text): nothing to consume.
+    stripItemUses();
   }
   item.system ??= system;
   if (!lr) applyActivities(item, generated, ctx, filled);
