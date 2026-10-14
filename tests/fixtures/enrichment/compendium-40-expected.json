@@ -1,0 +1,457 @@
+{
+ "order": [
+  "dnd5e.spells24",
+  "dnd5e.equipment24",
+  "dnd5e.monsterfeatures24",
+  "dnd5e.spells",
+  "dnd5e.items",
+  "dnd5e.monsterfeatures",
+  "dnd5e.tradegoods"
+ ],
+ "actors": [
+  {
+   "name": "Archmage Test",
+   "items": [
+    {
+     "name": "Fireball",
+     "type": "spell",
+     "expect": "dnd5e.spells24|Fireball",
+     "facts": {
+      "save": "dex 23 half",
+      "damage": [
+       "10d6 fire"
+      ],
+      "template": "sphere 20"
+     },
+     "hasText": true
+    },
+    {
+     "name": "Shield",
+     "type": "spell",
+     "expect": "dnd5e.spells24|Shield",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Mage Hand",
+     "type": "spell",
+     "expect": "dnd5e.spells24|Mage Hand",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Counterspell",
+     "type": "spell",
+     "expect": "dnd5e.spells24|Counterspell",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Misty Step",
+     "type": "spell",
+     "expect": "dnd5e.spells24|Misty Step",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Magic Missile",
+     "type": "spell",
+     "expect": "dnd5e.spells24|Magic Missile",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Detect Magic",
+     "type": "spell",
+     "expect": "dnd5e.spells24|Detect Magic",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Darkness",
+     "type": "spell",
+     "expect": "dnd5e.spells24|Darkness",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Hellish Rebuke",
+     "type": "spell",
+     "expect": "dnd5e.spells24|Hellish Rebuke",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Boule de feu",
+     "type": "spell",
+     "expect": "none",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Fireball",
+     "type": "feat",
+     "expect": "none",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Shield",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures|Shield",
+     "facts": {
+      "activation": "reaction 1"
+     },
+     "hasText": true
+    },
+    {
+     "name": "Shield",
+     "type": "equipment",
+     "expect": "dnd5e.equipment24|Shield",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Dagger",
+     "type": "weapon",
+     "expect": "dnd5e.equipment24|Dagger",
+     "facts": {
+      "attack": "melee/weapon +17",
+      "range": "reach 10",
+      "target": "1 creature",
+      "damage": [
+       "1d4+7 piercing"
+      ],
+      "quantity": 4
+     },
+     "hasText": true
+    },
+    {
+     "name": "Longsword",
+     "type": "weapon",
+     "expect": "dnd5e.equipment24|Longsword",
+     "facts": {
+      "quantity": 2
+     },
+     "hasText": false
+    },
+    {
+     "name": "Plate Armor",
+     "type": "equipment",
+     "expect": "dnd5e.equipment24|Plate Armor",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Chain Mail",
+     "type": "equipment",
+     "expect": "dnd5e.equipment24|Chain Mail",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Torch",
+     "type": "consumable",
+     "expect": "ambiguous",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Marshal Undead",
+     "type": "loot",
+     "expect": "none",
+     "facts": {},
+     "hasText": true
+    }
+   ]
+  },
+  {
+   "name": "Undead Test",
+   "items": [
+    {
+     "name": "Legendary Resistance (3/Day)",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Legendary Resistance",
+     "facts": {
+      "legres": 3
+     },
+     "hasText": true
+    },
+    {
+     "name": "Invisibility",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Invisibility",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Incorporeal Movement",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Incorporeal Movement",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Magic Resistance",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Magic Resistance",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Amorphous",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Amorphous",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Shadow Stealth",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Shadow Stealth",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Agile",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Agile",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Pack Tactics",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Pack Tactics",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Charge",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Charge",
+     "facts": {
+      "activation": "bonus 1"
+     },
+     "hasText": true
+    },
+    {
+     "name": "Siege Monster",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Siege Monster",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Life Drain",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Life Drain",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Regeneration",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Regeneration",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Turn Immunity",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures|Turn Immunity",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Parry",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Parry",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Spider Climb",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Spider Climb",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Vampire Weaknesses",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures|Vampire Weaknesses",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Immutable Form",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Immutable Form",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Innate Spellcasting",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures|Innate Spellcasting",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Paralyzing Touch",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures|Paralyzing Touch",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Disrupt Life (3/Day)",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Disrupt Life",
+     "facts": {
+      "save": "con 21 half",
+      "damage": [
+       "7d6 necrotic"
+      ],
+      "uses": "3/day"
+     },
+     "hasText": true
+    },
+    {
+     "name": "Rejuvenation",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures|Rejuvenation",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "False Appearance",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures|False Appearance",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Multiattack",
+     "type": "feat",
+     "expect": "skip",
+     "facts": {},
+     "hasText": true
+    },
+    {
+     "name": "Indomitable",
+     "type": "feat",
+     "expect": "none",
+     "facts": {},
+     "hasText": true
+    },
+    {
+     "name": "Sneak Attack",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures|Sneak Attack",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Slam",
+     "type": "weapon",
+     "expect": "dnd5e.monsterfeatures24|Slam",
+     "facts": {
+      "attack": "+15",
+      "range": "reach 15",
+      "target": "1 creature",
+      "damage": [
+       "4d8+4 bludgeoning"
+      ]
+     },
+     "hasText": true
+    },
+    {
+     "name": "Bite",
+     "type": "weapon",
+     "expect": "dnd5e.monsterfeatures24|Bite",
+     "facts": {
+      "attack": "melee/weapon +19",
+      "range": "reach 5",
+      "target": "1 creature",
+      "damage": [
+       "5d10+4 piercing"
+      ]
+     },
+     "hasText": true
+    },
+    {
+     "name": "Withering Touch",
+     "type": "weapon",
+     "expect": "dnd5e.monsterfeatures24|Withering Touch",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Fire Breath (Recharge 4–6)",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Fire Breath",
+     "facts": {
+      "save": "dex 23 half",
+      "damage": [
+       "18d10 fire"
+      ],
+      "template": "cone 30",
+      "uses": "recharge 4"
+     },
+     "hasText": true
+    },
+    {
+     "name": "Frightful Presence",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Frightful Presence",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Death Burst",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Death Burst",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Undead Fortitude",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Undead Fortitude",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Hold Breath",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Hold Breath",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Horrifying Visage",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures|Horrifying Visage",
+     "facts": {},
+     "hasText": false
+    },
+    {
+     "name": "Everfrost Aura",
+     "type": "feat",
+     "expect": "none",
+     "facts": {},
+     "hasText": true
+    },
+    {
+     "name": "Spellcasting",
+     "type": "feat",
+     "expect": "dnd5e.monsterfeatures24|Spellcasting",
+     "facts": {},
+     "hasText": false
+    }
+   ]
+  }
+ ]
+}
