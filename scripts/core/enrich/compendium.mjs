@@ -236,7 +236,8 @@ export function adjustToFacts(data, facts = {}) {
         a.save = { ...(a.save ?? {}), ability: [facts.save.ability] };
         note("saveAbility", abilities.join(",") || null, facts.save.ability);
       }
-      const dc = String(facts.save.dc ?? "");
+      // A DC read as a formula (save.dcFormula, library) is reported as such rather than dropped.
+      const dc = String(facts.save.dc ?? facts.save.dcFormula ?? "");
       const fromDc = a.save?.dc?.calculation ? null : String(a.save?.dc?.formula ?? "");
       if (dc && fromDc !== dc) {
         a.save = { ...(a.save ?? {}), dc: { calculation: "", formula: dc } };

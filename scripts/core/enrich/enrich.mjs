@@ -48,10 +48,12 @@ export function factsFromItem(item, parser) {
   if (dmg) facts.damage = dmg.damage.parts.map(toPart);
   const save = acts.find(a => a.type === "save" && !isEmpty(a.save?.ability));
   if (save) {
-    const dc = num(save.save?.dc?.formula);
+    const formula = save.save?.dc?.formula;
+    const dc = num(formula);
     facts.save = {
       ability: [...save.save.ability][0],
       dc,
+      dcFormula: dc === null && !isEmpty(formula) ? String(formula) : null, // a DC that is a formula, like the library's
       onSave: save.damage?.onSave || "half",
       damage: (save.damage?.parts ?? []).map(toPart)
     };
@@ -84,7 +86,7 @@ function mergeFacts(fileFacts, plan) {
   for (const k of ["attack", "damage", "save", "range", "uses", "recharge", "activation"]) take(k);
   if (plan?.activation?.type === "legendary" && plan.activation.cost) out.activation = plan.activation;
   if (plan?.legendaryResistance) { delete out.uses; delete out.recharge; }
-  if (out.save && !out.save.dc) delete out.save;
+  if (out.save && !out.save.dc && !out.save.dcFormula) delete out.save;
   return out;
 }
 
