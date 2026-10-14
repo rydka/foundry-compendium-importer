@@ -4,6 +4,8 @@ import { slugify, suggestPackFields } from "../core/naming.mjs";
 import { analyzeEntries } from "./validator.mjs";
 import { applyConflictChoices, planImport, resolveTarget, runImport } from "./import-runner.mjs";
 import { loadChoices, saveChoices } from "./settings.mjs";
+import { loadParser } from "./enrichment.mjs";
+import { describeReport } from "./enrich-summary.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const { FormDataExtended } = foundry.applications.ux;
@@ -71,6 +73,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const context = await super._prepareContext(options);
     const s = this.#state;
     const review = this.#step === "review";
+    const enrichAvailable = !!(await loadParser());
     const filterType = TYPE_FILTERS[s.typeFilter];
     const packs = game.packs.filter(p => p.visible && (!filterType || p.documentName === filterType));
     const packChoices = [{ value: "new", label: t("Target.NewPack") },
@@ -95,6 +98,9 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       newPackType: filterType ?? s.newPackType,
       overwrite: s.overwrite,
       stripIds: s.stripIds,
+      enrichAvailable,
+      enrich: enrichAvailable && s.enrich,
+      useCompendiums: s.useCompendiums,
       review,
       summary: review ? this.#summaryContext() : null,
       buttons: this.#buttons()
@@ -104,6 +110,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   #summaryContext() {
     const a = this.#analysis;
     return {
+      enrich: this.#enrichContext(),
       counts: {
         conform: a.accepted.length,
         updated: a.accepted.filter(d => d.updated).length,
@@ -120,6 +127,25 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
         { value: "newId", label: t("Summary.ActionNewId") }
       ],
       target: a.pack ? a.pack.metadata.label : a.newPackSpec.label
+    };
+  }
+
+  /** Counts and one block per enriched document, or null when the enrichment was not requested. */
+  #enrichContext() {
+    const enrichment = this.#analysis.enrichment;
+    if ( !enrichment || enrichment.unavailable ) return null;
+    const { counts } = enrichment;
+    const documents = this.#analysis.accepted.filter(d => d.enrichment && (d.enrichment.status !== "unchanged"))
+      .map(d => ({
+        name: d.name,
+        status: d.enrichment.status,
+        statusLabel: t(`Enrich.Status.${d.enrichment.status}`),
+        ...describeReport(d.enrichment)
+      }));
+    return {
+      counts: { enriched: counts.enriched, unchanged: counts.unchanged, notEnriched: counts.notEnriched + counts.reverted },
+      documents,
+      skipped: enrichment.skipped.map(s => t("Enrich.SourceSkipped", s))
     };
   }
 
@@ -158,6 +184,10 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     s.newPackType = data.newPackType ?? s.newPackType;
     s.overwrite = !!data.overwrite;
     s.stripIds = !!data.stripIds;
+    // A disabled checkbox is not part of the form: keep the last choice
+    const { enrich, useCompendiums } = this.form.elements;
+    if ( !enrich.disabled ) s.enrich = !!data.enrich;
+    if ( !useCompendiums.disabled ) s.useCompendiums = !!data.useCompendiums;
   }
 
   #setField(name, value) {
@@ -193,6 +223,9 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       case "typeFilter":
         if ( TYPE_FILTERS[s.typeFilter] ) s.newPackType = TYPE_FILTERS[s.typeFilter];
         this.render({ parts: ["target"] });
+        break;
+      case "enrich":
+        this.form.elements.useCompendiums.disabled = !s.enrich;
         break;
       case "targetPack":
         this.form.querySelectorAll(".cji-new-pack").forEach(el => el.toggleAttribute("hidden", s.targetPack !== "new"));
@@ -254,7 +287,9 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }
     const idGen = () => foundry.utils.randomID();
     const migrationData = await dnd5e.migrations.getMigrationData();
-    const result = await analyzeEntries(parsed.entries, documentName, { migrationData, idGen });
+    const enrich = s.enrich && !!(await loadParser());
+    const result = await analyzeEntries(parsed.entries, documentName,
+      { migrationData, idGen, enrich, compendiums: enrich && s.useCompendiums });
     const documents = [...result.accepted, ...result.other.map(o => {
       const data = o.data ?? o;
       return { data, name: o.name ?? data.name, type: o.type ?? data.type };
@@ -268,7 +303,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       id: d.data._id, name: d.name, type: d.type, existing: index.get(d.data._id)?.name ?? d.data._id
     }));
     this.#analysis = {
-      pack, newPackSpec, accepted: result.accepted, rejected: result.rejected, other: result.other,
+      pack, newPackSpec, accepted: result.accepted, rejected: result.rejected, other: result.other, enrichment: result.enrichment,
       documents, overwriteIds: plan.overwriteIds, conflictIds: plan.conflictIds, conflicts, warnings
     };
     await saveChoices(s);

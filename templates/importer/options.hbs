@@ -9,4 +9,14 @@
     <div class="form-fields"><input type="checkbox" name="stripIds" {{checked stripIds}}></div>
     <p class="hint">{{localize "compendium-json-importer.Options.StripIdsHint"}}</p>
   </div>
+  <div class="form-group">
+    <label>{{localize "compendium-json-importer.Options.Enrich"}}</label>
+    <div class="form-fields"><input type="checkbox" name="enrich" {{checked enrich}} {{#unless enrichAvailable}}disabled{{/unless}}></div>
+    <p class="hint">{{localize (ifThen enrichAvailable "compendium-json-importer.Options.EnrichHint" "compendium-json-importer.Options.EnrichMissing")}}</p>
+  </div>
+  <div class="form-group">
+    <label>{{localize "compendium-json-importer.Options.UseCompendiums"}}</label>
+    <div class="form-fields"><input type="checkbox" name="useCompendiums" {{checked useCompendiums}} {{#unless enrich}}disabled{{/unless}}></div>
+    <p class="hint">{{localize "compendium-json-importer.Options.UseCompendiumsHint"}}</p>
+  </div>
 </fieldset>

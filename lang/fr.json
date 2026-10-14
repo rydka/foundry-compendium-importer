@@ -35,7 +35,12 @@
       "Overwrite": "Écraser",
       "OverwriteHint": "Supprime les documents existants de même nom (et de même type) avant l'import.",
       "StripIds": "Supprimer les _id",
-      "StripIdsHint": "Donne un nouvel identifiant à chaque document, document imbriqué et activité. Décochez pour garder les identifiants du fichier."
+      "StripIdsHint": "Donne un nouvel identifiant à chaque document, document imbriqué et activité. Décochez pour garder les identifiants du fichier.",
+      "Enrich": "Compléter les activités depuis le texte",
+      "EnrichHint": "Remplit les activités vides et les données légendaires à partir de la description. Les valeurs déjà présentes dans le fichier ne sont jamais modifiées.",
+      "EnrichMissing": "Nécessite le module actif « dnd5e-text-parser » (version compatible).",
+      "UseCompendiums": "Reprendre depuis les compendiums",
+      "UseCompendiumsHint": "Les objets, sorts et capacités des acteurs sont repris des compendiums quand ils y existent, puis ajustés au fichier. Nécessite l'option ci-dessus."
     },
     "Summary": {
       "Title": "Vérification avant l'import dans",
@@ -98,6 +103,35 @@
       "InvalidPackType": "« {type} » n'est pas un type de document qu'un compendium peut contenir. Choisissez Actor ou Item.",
       "MigrationFailed": "La mise à jour automatique vers dnd5e 6 a échoué : {message}. Corrigez ce document dans le fichier, puis relancez l'import.",
       "NotAnObject": "Cette entrée n'est pas un document (ce doit être un objet JSON). Retirez-la du fichier ou corrigez-la."
+    },
+    "Enrich": {
+      "Title": "Complétion depuis le texte",
+      "Enriched": "Documents enrichis : {count}",
+      "Unchanged": "Documents inchangés : {count}",
+      "NotEnriched": "Documents non enrichis : {count}",
+      "Reverted": "Importé sans enrichissement, qui a été refusé : {reason}",
+      "FromCompendium": "Repris d'un compendium",
+      "NotFound": "Introuvables dans les compendiums, construits depuis le texte :",
+      "Ambiguous": "Plusieurs correspondances dans un même compendium, non utilisées :",
+      "Adjusted": "{field} : {from} → {to}",
+      "SourceSkipped": "Compendium {pack} ignoré : {message}",
+      "PdfVersion": "Version du PDF",
+      "Status": {
+        "enriched": "enrichi",
+        "notEnriched": "non enrichi",
+        "reverted": "importé sans enrichissement",
+        "unchanged": "inchangé"
+      }
+    },
+    "Sources": {
+      "Title": "Compendiums sources",
+      "MenuName": "Compendiums sources",
+      "MenuLabel": "Choisir les compendiums",
+      "MenuHint": "Compendiums consultés pour les objets des acteurs importés, et leur ordre de priorité.",
+      "Hint": "Le premier compendium de la liste qui contient un objet l'emporte. Décochez les compendiums à ignorer.",
+      "Up": "Monter",
+      "Down": "Descendre",
+      "Reset": "Rétablir l'ordre par défaut"
     }
   }
 }

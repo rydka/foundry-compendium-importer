@@ -35,7 +35,12 @@
       "Overwrite": "Overwrite",
       "OverwriteHint": "Delete existing documents with the same name (and type) before importing.",
       "StripIds": "Remove _id",
-      "StripIdsHint": "Give every document, embedded document and activity a new identifier. Uncheck to keep the identifiers of the file."
+      "StripIdsHint": "Give every document, embedded document and activity a new identifier. Uncheck to keep the identifiers of the file.",
+      "Enrich": "Complete activities from the text",
+      "EnrichHint": "Fill the empty activities and the legendary data from the description. Values already in the file are never changed.",
+      "EnrichMissing": "Requires the active module \"dnd5e-text-parser\" (compatible version).",
+      "UseCompendiums": "Take items from compendiums",
+      "UseCompendiumsHint": "Items, spells and features of actors are taken from the compendiums when they exist there, then adjusted to the file. Requires the option above."
     },
     "Summary": {
       "Title": "Review before importing into",
@@ -98,6 +103,35 @@
       "InvalidPackType": "\"{type}\" is not a document type a compendium can hold. Choose Actor or Item.",
       "MigrationFailed": "The automatic update to dnd5e 6 failed: {message}. Fix this document in the file, then import again.",
       "NotAnObject": "This entry is not a document (it must be a JSON object). Remove it from the file or fix it."
+    },
+    "Enrich": {
+      "Title": "Completion from the text",
+      "Enriched": "Enriched documents: {count}",
+      "Unchanged": "Unchanged documents: {count}",
+      "NotEnriched": "Not enriched documents: {count}",
+      "Reverted": "Imported without enrichment, which was refused: {reason}",
+      "FromCompendium": "Taken from a compendium",
+      "NotFound": "Not found in the compendiums, built from the text:",
+      "Ambiguous": "Several matches in the same compendium, not used:",
+      "Adjusted": "{field}: {from} → {to}",
+      "SourceSkipped": "Compendium {pack} ignored: {message}",
+      "PdfVersion": "PDF version",
+      "Status": {
+        "enriched": "enriched",
+        "notEnriched": "not enriched",
+        "reverted": "imported without enrichment",
+        "unchanged": "unchanged"
+      }
+    },
+    "Sources": {
+      "Title": "Compendium sources",
+      "MenuName": "Compendium sources",
+      "MenuLabel": "Choose the compendiums",
+      "MenuHint": "Compendiums searched for the items of imported actors, and their priority order.",
+      "Hint": "The first compendium of the list that contains an item decides. Uncheck the compendiums to ignore.",
+      "Up": "Move up",
+      "Down": "Move down",
+      "Reset": "Restore the default order"
     }
   }
 }

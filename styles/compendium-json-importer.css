@@ -52,3 +52,27 @@
 .cji-open-importer {
   flex: 1 1 100%;
 }
+
+.compendium-json-importer .cji-enrich details {
+  margin: 0.25rem 0;
+}
+
+.compendium-json-importer .cji-source-list {
+  list-style: none;
+  margin: 0.25rem 0;
+  padding: 0;
+}
+
+.compendium-json-importer .cji-source-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.compendium-json-importer .cji-source-list label {
+  flex: 1;
+}
+
+.compendium-json-importer .cji-source-list button {
+  flex: 0 0 2rem;
+}
