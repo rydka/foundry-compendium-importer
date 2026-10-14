@@ -12,49 +12,17 @@ import { adjustToFacts, appendPdfNote, isMultiattackKey } from "./compendium.mjs
 
 const KEY = "compendium-json-importer.Enrich.";
 const clone = v => JSON.parse(JSON.stringify(v));
-const isObject = v => v !== null && typeof v === "object" && !Array.isArray(v);
-const SPELL_ONLY = new Set(["attack", "save"]);
-const FILLABLE = new Set(["attack", "save", "damage"]);
-
-/** Empty value (C3): undefined, null, "", [] or an object without keys. */
-export function isEmpty(v) {
-  return v === undefined || v === null || v === "" || (Array.isArray(v) && v.length === 0)
-    || (isObject(v) && Object.keys(v).length === 0);
-}
-
-function recordLeaves(path, value, filled) {
-  if (isObject(value) && Object.keys(value).length) {
-    for (const [k, v] of Object.entries(value)) recordLeaves(`${path}.${k}`, v, filled);
-  } else filled.push({ path, value });
-}
 
 /**
- * Fills the empty leaves of `target` from `patch`. Returns nothing; `filled` receives { path, value }.
- * `zeroEmpty`: paths (relative to `path`) where 0 / "0" count as empty.
+ * Empty-value helpers of the library (isEmpty, isEmptyUtility, mergeMissing), bound by `enrichEntry` from `ctx.parser`
+ * so that the pure core never imports a Foundry URL.
  */
-export function fillMissing(target, patch, { path = "", zeroEmpty = [], filled = [] } = {}) {
-  for (const [k, pv] of Object.entries(patch ?? {})) {
-    const p = path ? `${path}.${k}` : k;
-    const tv = target[k];
-    if (isObject(pv) && isObject(tv) && Object.keys(tv).length) {
-      fillMissing(tv, pv, { path: p, zeroEmpty, filled });
-      continue;
-    }
-    const empty = isEmpty(tv) || (zeroEmpty.includes(p) && (tv === 0 || tv === "0"));
-    if (empty && !isEmpty(pv)) {
-      target[k] = clone(pv);
-      recordLeaves(p, pv, filled);
-    }
-  }
-  return filled;
-}
-
-/** Empty "utility" activity (C3): nothing but a type, possibly an activation and a name. */
-export function isEmptyUtility(a) {
-  return a?.type === "utility" && isEmpty(a.roll?.formula) && isEmpty(a.effects) && isEmpty(a.consumption?.targets)
-    && isEmpty(a.uses?.max) && isEmpty(a.range?.value) && isEmpty(a.target?.template?.type)
-    && isEmpty(a.target?.affects?.type) && isEmpty(a.target?.affects?.count);
-}
+let lib = null;
+const isEmpty = v => lib.isEmpty(v);
+const isEmptyUtility = a => lib.isEmptyUtility(a);
+const merge = (target, patch, options) => lib.mergeMissing(target, patch, options);
+const SPELL_ONLY = new Set(["attack", "save"]);
+const FILLABLE = new Set(["attack", "save", "damage"]);
 
 // ---------------------------------------------------------------- facts of the file
 
@@ -62,7 +30,8 @@ const num = v => (v === "" || v === null || v === undefined || Number.isNaN(Numb
 const toPart = p => ({ number: p.number ?? null, denomination: p.denomination ?? null, bonus: p.bonus ?? "", type: [...(p.types ?? [])][0] ?? null, raw: "" });
 
 /** Non-empty values of the file, in the shape of a FeaturePlan (plus `quantity`). */
-export function factsFromItem(item) {
+export function factsFromItem(item, parser) {
+  if (parser) lib = parser;
   const facts = {};
   const system = item?.system ?? {};
   const acts = Array.isArray(system.activities) ? system.activities : Object.values(system.activities ?? {});
@@ -138,7 +107,7 @@ function fillActivity(act, gen, filled, base, { weapon, converted } = {}) {
   if (!isEmpty(act.range?.value) && g.range) delete g.range;
   else if (g.range && act.range?.units && act.range.units !== "self") delete g.range.units;
   if (!isEmpty(act.target?.template?.type) && g.target) delete g.target.template;
-  fillMissing(act, g, { path: base, filled });
+  filled.push(...merge(act, g, { path: base }));
   if (g.range?.value && act.range?.units === "self" && act.range.value === g.range.value) act.range.units = g.range.units ?? "ft";
 }
 
@@ -150,10 +119,10 @@ function pickGenerated(generated, used, wanted) {
 }
 
 function applyActivities(item, generated, ctx, filled) {
-  const acts = activitiesOf(item) ?? (item.system.activities = {});
+  const acts = () => activitiesOf(item) ?? (item.system.activities = {});
   const used = new Set();
   const weaponHasBase = item.type === "weapon" && !(isEmpty(item.system.damage?.base?.number) && isEmpty(item.system.damage?.base?.custom?.formula));
-  const existing = Object.values(acts);
+  const existing = Object.values(activitiesOf(item) ?? {});
   let converted = 0;
   for (const act of existing) {
     if (!isEmptyUtility(act)) continue;
@@ -163,8 +132,8 @@ function applyActivities(item, generated, ctx, filled) {
     next._id = act._id;
     if (!isEmpty(act.activation)) next.activation = clone(act.activation);
     if (!isEmpty(act.name)) next.name = act.name;
-    acts[act._id ?? next._id] = next;
-    recordLeaves(`system.activities.${next._id}`, g, filled);
+    acts()[act._id ?? next._id] = next;
+    filled.push(...merge({}, g, { path: `system.activities.${next._id}` }));
     converted++;
   }
   for (const act of existing) {
@@ -178,9 +147,9 @@ function applyActivities(item, generated, ctx, filled) {
       if (used.has(n) || !SPELL_ONLY.has(g.type)) continue;
       const next = clone(g);
       next._id = ctx.idGen();
-      acts[next._id] = next;
+      acts()[next._id] = next;
       used.add(n);
-      recordLeaves(`system.activities.${next._id}`, next, filled);
+      filled.push(...merge({}, next, { path: `system.activities.${next._id}` }));
     }
   }
 }
@@ -250,21 +219,22 @@ function legendaryCost(item, plan, notes) {
 
 function enrichText(item, plan, ctx, entry) {
   const filled = [];
-  item.system ??= {};
+  const hadSystem = item.system !== undefined;
+  const system = item.system ?? {};
   const generated = ctx.parser.toActivities(plan, { keys: ctx.keys, idGen: ctx.idGen, item }) ?? [];
   const patch = ctx.parser.toItemPatch(plan, { keys: ctx.keys, item }) ?? {};
   const lr = plan.legendaryResistance;
-  if (lr || !isEmpty(item.system.uses?.max) || !isEmpty(item.system.uses?.recovery)) {
+  if (lr || !isEmpty(system.uses?.max) || !isEmpty(system.uses?.recovery)) {
+    // The item keeps its uses: the activities must not consume item uses that are not there.
     delete patch.uses;
-    // The activities must not consume item uses that are not there.
-    if (lr || !isEmpty(item.system.uses?.max) || !isEmpty(item.system.uses?.recovery)) {
-      for (const g of generated) if (g.consumption?.targets) g.consumption.targets = g.consumption.targets.filter(t => t.type !== "itemUses");
-    }
+    for (const g of generated) if (g.consumption?.targets) g.consumption.targets = g.consumption.targets.filter(t => t.type !== "itemUses");
   }
+  item.system ??= system;
   if (!lr) applyActivities(item, generated, ctx, filled);
-  fillMissing(item.system, patch, { path: "system", filled });
+  filled.push(...merge(item.system, patch, { path: "system" }));
   if (lr) legendaryResistance(item, ctx, entry.notes, filled);
   else legendaryCost(item, plan, entry.notes);
+  if (!hadSystem && !Object.keys(item.system).length) delete item.system; // "unchanged" stays strictly identical
   entry.changes = describeFilled(plan, filled, ctx.parser);
   return filled;
 }
@@ -275,7 +245,7 @@ function replaceFromCompendium(item, match, plan, ctx, entry) {
   src.name = item.name;
   if (item.sort !== undefined) src.sort = item.sort;
   src._stats = { ...(src._stats ?? {}), compendiumSource: match.uuid ?? src._stats?.compendiumSource };
-  const facts = mergeFacts(factsFromItem(item), plan);
+  const facts = mergeFacts(factsFromItem(item, ctx.parser), plan);
   const { data, adjusted } = adjustToFacts(src, facts);
   if (facts.attack && !Object.values(data.system?.activities ?? {}).some(a => a.type === "attack")) {
     const g = (ctx.parser.toActivities(plan, { keys: ctx.keys, idGen: ctx.idGen, item: data }) ?? []).find(a => a.type === "attack");
@@ -333,24 +303,29 @@ function enrichItem(item, ctx, { fromActor }) {
 // ---------------------------------------------------------------- actor level
 
 const TRAITS = ["dr", "di", "dv", "ci"];
+const splitCustom = text => String(text ?? "").split(";").map(t => t.trim()).filter(Boolean);
 
-function mergeTraits(system, patch, changes) {
+/**
+ * The trait patch of toActorPatch is a union with the traits of the actor (arrays complete, `custom` a string):
+ * it is applied as it is, not with the "empty fields" merge. Returns the descriptors of what was added.
+ */
+function applyTraits(system, patch, changes) {
   for (const t of TRAITS) {
-    const p = patch?.traits?.[t];
+    const p = patch?.[t];
     if (!p) continue;
     const target = (system.traits ??= {})[t] ??= {};
     const added = { values: [], bypasses: [], custom: [] };
-    const union = (field, list, bucket) => {
-      const current = new Set(target[field] ?? []);
-      for (const v of list ?? []) if (!current.has(v)) { current.add(v); bucket.push(v); }
-      if (bucket.length) target[field] = [...current];
-    };
-    union("value", p.value, added.values);
-    if (t !== "ci") union("bypasses", p.bypasses, added.bypasses);
-    const parts = (Array.isArray(p.custom) ? p.custom : String(p.custom ?? "").split(";")).map(s => s.trim()).filter(Boolean);
-    const have = String(target.custom ?? "").split(";").map(s => s.trim()).filter(Boolean);
-    for (const c of parts) if (!have.some(h => h.toLowerCase() === c.toLowerCase())) { have.push(c); added.custom.push(c); }
-    if (added.custom.length) target.custom = have.join("; ");
+    for (const [field, bucket] of [["value", "values"], ["bypasses", "bypasses"]]) {
+      if (!Array.isArray(p[field])) continue;
+      const before = new Set(target[field] ?? []);
+      added[bucket] = p[field].filter(v => !before.has(v));
+      target[field] = [...p[field]];
+    }
+    if (typeof p.custom === "string") {
+      const before = splitCustom(target.custom).map(c => c.toLowerCase());
+      added.custom = splitCustom(p.custom).filter(c => !before.includes(c.toLowerCase()));
+      target.custom = p.custom;
+    }
     if (added.values.length || added.bypasses.length || added.custom.length) {
       changes.push({ key: `${KEY}Trait`, data: { trait: t, ...added } });
     }
@@ -379,7 +354,8 @@ function applyCastingFacts(spell, casting) {
   }
 }
 
-function addSpells(data, actorPlan, ctx, report) {
+function addSpells(data, actorPlan, ctx, report, summary) {
+  let first = true;
   const have = new Set((data.items ?? []).filter(i => i.type === "spell").map(i => ctx.parser.nameKey(i.name)));
   for (const casting of actorPlan?.spellcasting ?? []) {
     const stubs = new Map((ctx.parser.toSpellStubs(casting) ?? []).map(s => [ctx.parser.nameKey(s.name), s]));
@@ -409,7 +385,7 @@ function addSpells(data, actorPlan, ctx, report) {
           spell.type = "spell";
           spell.name = spell.name || name;
           spell.system ??= {};
-          fillMissing(spell.system, props, { path: "system" });
+          merge(spell.system, props, { path: "system" });
           if (props.level === undefined) entry.notes.push({ key: `${KEY}SpellLevelUnknown`, data: { name } });
           if (match?.status === "ambiguous") { entry.origin = "ambiguous"; entry.pack = match.packLabel; }
         }
@@ -417,44 +393,42 @@ function addSpells(data, actorPlan, ctx, report) {
         (data.items ??= []).push(spell);
         report.items.push(entry);
       }
-      if (list.mode === "slots" && list.level && list.slots) {
-        const slot = ((data.system.spells ??= {})[`spell${list.level}`] ??= {});
-        const filled = fillMissing(slot, { override: list.slots, value: list.slots }, { path: "", zeroEmpty: ["override", "value"] });
-        if (filled.length) report.changes.push({ key: `${KEY}Slots`, data: { level: list.level, slots: list.slots } });
-      }
     }
-    const attrs = (data.system.attributes ??= {});
-    const changes = [];
-    if (casting.ability && isEmpty(attrs.spellcasting)) { attrs.spellcasting = casting.ability; changes.push("ability"); }
-    if (casting.casterLevel) {
-      const spell = (attrs.spell ??= {});
-      if (isEmpty(spell.level) || spell.level === 0) { spell.level = casting.casterLevel; changes.push("level"); }
-    }
-    if (changes.length || casting.dc || casting.attack !== null) {
+    if (casting.dc || (casting.attack ?? null) !== null || (first && summary.length)) {
       report.changes.push({ key: `${KEY}Spellcasting`, data: { ability: casting.ability, dc: casting.dc, attack: casting.attack, level: casting.casterLevel } });
     }
+    first = false;
   }
 }
+
+const SLOT_LEVELS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const ZERO_IS_EMPTY = [
+  "system.resources.legact.max", "system.resources.legres.max", "system.attributes.spell.level",
+  ...SLOT_LEVELS.flatMap(n => [`system.spells.spell${n}.value`, `system.spells.spell${n}.override`])
+];
 
 function enrichActorData(data, original, ctx, report) {
   const { parser } = ctx;
   let plan;
   try { plan = parser.parseActor(original, { keys: ctx.keys }); } catch { plan = null; }
   if (!plan) return;
-  const patch = parser.toActorPatch(plan, { keys: ctx.keys, actor: data })?.system ?? {};
-  data.system ??= {};
-  const rest = { ...patch };
-  delete rest.traits; // merged as unions below
-  const filled = fillMissing(data.system, rest, {
-    path: "system",
-    zeroEmpty: ["system.resources.legact.max", "system.resources.legres.max"]
-  });
+  const { system: patch = {}, notes = [] } = parser.toActorPatch(plan, { keys: ctx.keys, actor: data }) ?? {};
+  const { traits, ...rest } = patch;
+  const system = data.system ?? {};
+  const filled = merge(system, rest, { path: "system", zeroIsEmpty: ZERO_IS_EMPTY });
+  const traitChanges = [];
+  if (traits) applyTraits(system, traits, traitChanges);
+  if (filled.length || traitChanges.length) data.system = system;
   for (const f of filled) {
     if (f.path === "system.resources.legact.max") report.changes.push({ key: `${KEY}Legact`, data: { value: f.value } });
     if (f.path === "system.resources.legres.max") report.changes.push({ key: `${KEY}Legres`, data: { value: f.value } });
+    const slot = /^system.spells.spell(d).override$/.exec(f.path);
+    if (slot) report.changes.push({ key: `${KEY}Slots`, data: { level: Number(slot[1]), slots: f.value } });
   }
-  mergeTraits(data.system, patch, report.changes);
-  addSpells(data, plan, ctx, report);
+  report.changes.push(...traitChanges);
+  if (notes.length) (report.notes ??= []).push(...notes);
+  const summary = filled.filter(f => /^system.attributes.(spellcasting|spell.level)$/.test(f.path));
+  addSpells(data, plan, ctx, report, summary);
 }
 
 // ---------------------------------------------------------------- entry point
@@ -475,6 +449,7 @@ function enrichActorData(data, original, ctx, report) {
 export function enrichEntry(data, documentName, ctx) {
   const report = { status: "unchanged", changes: [], items: [] };
   if (documentName !== "Item" && documentName !== "Actor") return { data, report };
+  lib = ctx.parser;
   const out = clone(data);
   const c = { ...ctx, useCompendiums: ctx.useCompendiums === true };
   const record = entry => { if (entry) report.items.push(entry); };

@@ -82,7 +82,7 @@ async function findInCompendiums(entries, parser, skipped) {
   for ( const { key, type } of lookups ) {
     const id = `${type}|${key}`;
     if ( matches.has(id) ) continue;
-    const found = findMatch(indexes, order, key, type);
+    const found = findMatch(indexes, order, key, type, { keyOf: parser.nameKey });
     if ( found.status === "ambiguous" ) matches.set(id, { status: "ambiguous", packLabel: game.packs.get(found.pack).metadata.label });
     if ( found.status !== "found" ) continue;
     if ( !wanted.has(found.pack) ) wanted.set(found.pack, new Map());

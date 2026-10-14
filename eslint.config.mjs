@@ -17,7 +17,7 @@ const foundryGlobals = {
 };
 
 export default [
-  { ignores: ["tools/**", "dist/**", "node_modules/**"] },
+  { ignores: [".atelier/**", "tools/**", "dist/**", "node_modules/**"] },
   js.configs.recommended,
   {
     files: ["scripts/**/*.{js,mjs}"],

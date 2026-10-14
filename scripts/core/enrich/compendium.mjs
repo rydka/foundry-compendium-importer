@@ -1,30 +1,7 @@
 /**
  * Compendium lookup helpers (C18-C21), pure: no Foundry global, no parser import.
- * The parser (dnd5e-text-parser) is always injected by the caller.
+ * The parser (dnd5e-text-parser) is always injected by the caller; names are compared with `parser.nameKey`.
  */
-
-const MENTION = new RegExp(
-  "\\(+\\s*(?:"
-    + "recharges?\\b[^)]*"
-    + "|se recharge[^)]*"
-    + "|\\d+\\s*/\\s*(?:day|jour|turn|tour|rest|repos)\\b[^)]*"
-    + "|costs?\\s+\\d+\\s+actions?[^)]*"
-    + "|coute\\s+\\d+\\s+actions?[^)]*"
-    + ")\\)+",
-  "g"
-);
-
-/** Matching key of a name: no accents, lower case, usage/cost mentions removed, only words and digits. */
-export function matchKey(name) {
-  return String(name ?? "")
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(MENTION, " ")
-    .replace(/['’`]/g, "")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
 
 /** Names whose items are never enriched nor taken from a compendium (Multiattack, out of scope). */
 export function isMultiattackKey(key) {
@@ -65,9 +42,10 @@ function indexEntries(indexByPack, pack) {
  * one entry = found, several = ambiguous.
  * @param {Map<string, {_id: string, name: string, type: string}[]>|object} indexByPack
  * @param {({pack: string, enabled?: boolean}|string)[]} order
- * @param {{ keyOf?: (name: string) => string }} [options]
+ * @param {{ keyOf: (name: string) => string }} options `keyOf` is the `nameKey` of the parser
  */
-export function findMatch(indexByPack, order, key, type, { keyOf = matchKey } = {}) {
+export function findMatch(indexByPack, order, key, type, { keyOf } = {}) {
+  if (typeof keyOf !== "function") throw new TypeError("findMatch: keyOf (parser.nameKey) is required");
   for (const source of order ?? []) {
     const pack = typeof source === "string" ? source : source.pack;
     if (typeof source !== "string" && source.enabled === false) continue;
@@ -247,10 +225,10 @@ export function adjustToFacts(data, facts = {}) {
   if (facts.range) {
     const { reach, value, long } = facts.range;
     if (isWeapon || isSpell) {
-      const range = system.range ??= {};
       for (const [k, v] of [["reach", reach], ["value", value], ["long", long]]) {
         if (v === null || v === undefined) continue;
-        if (Number(range[k]) !== Number(v)) {
+        if (Number(system.range?.[k]) !== Number(v)) {
+          const range = system.range ??= {};
           note(`range.${k}`, range[k] ?? null, v);
           range[k] = v;
           range.units = "ft";
@@ -272,16 +250,17 @@ export function adjustToFacts(data, facts = {}) {
       ? { max: String(facts.uses.max), recovery: [{ period: facts.uses.period, type: "recoverAll" }] }
       : null;
   if (usesFact) {
-    const uses = system.uses ??= {};
+    const uses = system.uses ?? {};
     const fromRec = uses.recovery?.[0];
     const sig = (max, rec) => `${max ?? ""}|${rec?.period ?? ""}|${rec?.period === "recharge" ? rec.formula : ""}`;
     const sigTo = sig(usesFact.max, usesFact.recovery[0]);
-    if (sig(uses.max, fromRec) !== sigTo) {
+    const changed = sig(uses.max, fromRec) !== sigTo;
+    if (changed) {
       note("uses", sig(uses.max, fromRec) === "||" ? null : sig(uses.max, fromRec), sigTo);
       system.uses = { ...uses, max: usesFact.max, recovery: usesFact.recovery };
     }
     const a = list[0];
-    if (a && !(a.consumption?.targets ?? []).some(t => t.type === "itemUses")) {
+    if (changed && a && !(a.consumption?.targets ?? []).some(t => t.type === "itemUses")) {
       a.consumption = { ...(a.consumption ?? {}), targets: [...(a.consumption?.targets ?? []), { type: "itemUses", target: "", value: "1" }] };
     }
   }
@@ -294,9 +273,9 @@ export function adjustToFacts(data, facts = {}) {
       if (act.type !== to) { note("activation", act.type ?? null, to); act.type = to; }
     }
     for (const a of list) {
-      const act = a.activation ??= {};
-      const costDiffers = cost !== null && cost !== undefined && Number(act.value) !== Number(cost);
-      if (act.type !== to || costDiffers) {
+      const costDiffers = cost !== null && cost !== undefined && Number(a.activation?.value) !== Number(cost);
+      if (a.activation?.type !== to || costDiffers) {
+        const act = a.activation ??= {};
         note("activation", `${act.type ?? ""} ${act.value ?? ""}`.trim() || null, `${to}${cost ? ` ${cost}` : ""}`);
         act.type = to;
         if (cost !== null && cost !== undefined) act.value = cost;
