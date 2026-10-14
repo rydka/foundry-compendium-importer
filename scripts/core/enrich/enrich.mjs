@@ -353,10 +353,17 @@ function modeProps(list) {
   }
 }
 
+/**
+ * DC and attack bonus of the spellcasting trait, on the activities of a spell taken from a compendium.
+ * The compendium spells leave the attack `classification` empty: an attack of a spell is a spell attack
+ * unless the classification says otherwise (weapon, unarmed).
+ */
 function applyCastingFacts(spell, casting) {
   for (const act of Object.values(spell.system?.activities ?? {})) {
     if (act.type === "save" && casting.dc) act.save = { ...(act.save ?? {}), dc: { calculation: "", formula: String(casting.dc) } };
-    if (act.type === "attack" && act.attack?.type?.classification === "spell" && casting.attack !== null && casting.attack !== undefined) {
+    const classification = act.attack?.type?.classification;
+    const spellAttack = act.type === "attack" && (isEmpty(classification) || classification === "spell");
+    if (spellAttack && casting.attack !== null && casting.attack !== undefined) {
       act.attack = { ...act.attack, flat: true, bonus: String(casting.attack) };
     }
   }
