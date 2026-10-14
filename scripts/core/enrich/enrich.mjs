@@ -425,12 +425,12 @@ function enrichActorData(data, original, ctx, report) {
   for (const f of filled) {
     if (f.path === "system.resources.legact.max") report.changes.push({ key: `${KEY}Legact`, data: { value: f.value } });
     if (f.path === "system.resources.legres.max") report.changes.push({ key: `${KEY}Legres`, data: { value: f.value } });
-    const slot = /^system.spells.spell(d).override$/.exec(f.path);
+    const slot = /^system\.spells\.spell(\d)\.override$/.exec(f.path);
     if (slot) report.changes.push({ key: `${KEY}Slots`, data: { level: Number(slot[1]), slots: f.value } });
   }
   report.changes.push(...traitChanges);
   if (notes.length) (report.notes ??= []).push(...notes);
-  const summary = filled.filter(f => /^system.attributes.(spellcasting|spell.level)$/.test(f.path));
+  const summary = filled.filter(f => /^system\.attributes\.(spellcasting|spell\.level)$/.test(f.path));
   addSpells(data, plan, ctx, report, summary);
 }
 
