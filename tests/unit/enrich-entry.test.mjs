@@ -1,7 +1,7 @@
 // C3 (empty-only policy), C4 (nothing invented), C11-C13 inputs, C12 exception, C14 statuses,
 // C19-C22 (compendium reuse and spells) of enrichEntry, against a fake parser (see support/fake-parser.mjs).
 import { describe, expect, it } from "vitest";
-import { enrichEntry, factsFromItem, fillMissing, isEmpty, isEmptyUtility } from "../../scripts/core/enrich/enrich.mjs";
+import { enrichEntry, factsFromItem as rawFacts } from "../../scripts/core/enrich/enrich.mjs";
 import { changedLeaves, counter, deepFreeze, makeParser } from "../support/fake-parser.mjs";
 
 const KEY = "compendium-json-importer.Enrich.";
@@ -17,35 +17,12 @@ const feat = (name, activities, system = {}) => ({
   system: { description: { value: `<p><strong>${name}.</strong> text</p>` }, activities, ...system }
 });
 const ctx = (parser, extra = {}) => ({ parser, keys: {}, idGen: counter(), pdfLabel: "PDF version", ...extra });
+const lib = makeParser();
+const { isEmpty } = lib;
+const factsFromItem = (item) => rawFacts(item, lib);
 const acts = (d) => Object.values(d.system.activities);
 
 describe("helpers", () => {
-  it("isEmpty", () => {
-    for (const v of [undefined, null, "", [], {}]) expect(isEmpty(v)).toBe(true);
-    for (const v of [0, "0", false, "x", [0], { a: 1 }]) expect(isEmpty(v)).toBe(false);
-  });
-
-  it("isEmptyUtility: only a type, an activation and a name", () => {
-    expect(isEmptyUtility(utility())).toBe(true);
-    expect(isEmptyUtility({ ...utility(), range: { value: "5" } })).toBe(false);
-    expect(isEmptyUtility({ ...utility(), roll: { formula: "1d6" } })).toBe(false);
-    expect(isEmptyUtility({ ...utility(), uses: { max: "3" } })).toBe(false);
-    expect(isEmptyUtility({ ...utility(), type: "attack" })).toBe(false);
-  });
-
-  it("fillMissing fills empty leaves only and records them", () => {
-    const target = { a: "keep", b: "", c: { d: 1, e: null }, z: 0 };
-    const filled = fillMissing(target, { a: "NEW", b: "x", c: { d: 9, e: 2 }, f: { g: 1 }, z: 5 }, { zeroEmpty: [] });
-    expect(target).toEqual({ a: "keep", b: "x", c: { d: 1, e: 2 }, z: 0, f: { g: 1 } });
-    expect(filled.map((f) => f.path).sort()).toEqual(["b", "c.e", "f.g"]);
-  });
-
-  it("fillMissing: zeroEmpty paths treat 0 as empty", () => {
-    const target = { max: 0 };
-    fillMissing(target, { max: 3 }, { zeroEmpty: ["max"] });
-    expect(target.max).toBe(3);
-  });
-
   it("factsFromItem reads only non-empty values of the file", () => {
     expect(factsFromItem({ type: "feat", system: { activities: { u: utility("u") } } })).toEqual({ activation: { type: "action", cost: 1 } });
     expect(factsFromItem({ type: "feat", system: {} })).toEqual({});
@@ -291,7 +268,7 @@ describe("enrichEntry: actor data (C11, C13)", () => {
   });
 
   it("traits: union with the existing values, never removing, with bypasses and custom text", () => {
-    const parser = withPlan({ traits: { dr: { value: ["fire", "cold"], bypasses: ["mgc"], custom: ["from Vampire's bite"] }, ci: { value: ["charmed"], bypasses: [], custom: [] } } });
+    const parser = withPlan({ traits: { dr: { value: ["cold", "acid", "fire"], bypasses: ["mgc"], custom: "keep me; from Vampire's bite" }, ci: { value: ["charmed"] } } });
     const system = { traits: { dr: { value: ["cold", "acid"], bypasses: [], custom: "keep me" }, di: { value: ["poison"] }, ci: { value: [] } } };
     const { data, report } = enrichEntry(actorWith(system), "Actor", ctx(parser));
     expect(data.system.traits.dr.value.sort()).toEqual(["acid", "cold", "fire"]);
@@ -507,5 +484,23 @@ describe("enrichEntry: spells of the casting traits (C22)", () => {
     const { data, report } = enrichEntry({ name: "M", type: "npc", system: {}, items: [] }, "Actor", ctx(makeParser({}, { spellcasting: [] })));
     expect(data.items).toEqual([]);
     expect(report.status).toBe("unchanged");
+  });
+});
+
+describe("enrichEntry: unchanged documents", () => {
+  it("an item with nothing to enrich is returned strictly equal to the input", () => {
+    const item = feat("Plain", { u1: utility("u1", "Plain") });
+    const before = JSON.stringify(item);
+    const { data, report } = enrichEntry(deepFreeze(item), "Item", ctx(makeParser()));
+    expect(JSON.stringify(data)).toBe(before);
+    expect(data).toEqual(item);
+    expect(report.status === "unchanged" || report.status === "notEnriched").toBe(true);
+  });
+
+  it("an item without a system key stays without one", () => {
+    const item = { _id: "A".repeat(16), name: "Bare", type: "feat" };
+    const { data } = enrichEntry(item, "Item", ctx(makeParser()));
+    expect(data).toEqual(item);
+    expect("system" in data).toBe(false);
   });
 });

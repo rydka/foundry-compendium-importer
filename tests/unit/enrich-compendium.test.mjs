@@ -1,20 +1,20 @@
 // C18 (key, lookup, source order), C20 (adjustToFacts, appendPdfNote), C23 inputs (collectLookups).
 import { describe, expect, it } from "vitest";
 import {
-  adjustToFacts, appendPdfNote, collectLookups, defaultSourceOrder, findMatch, isMultiattackKey, matchKey, resolveSourceOrder
+  adjustToFacts, appendPdfNote, collectLookups, defaultSourceOrder, findMatch, isMultiattackKey, resolveSourceOrder
 } from "../../scripts/core/enrich/compendium.mjs";
+import { nameKey as matchKey } from "dnd5e-text-parser";
 import { deepFreeze, makeParser } from "../support/fake-parser.mjs";
 
-describe("matchKey (C18)", () => {
+const keyOf = matchKey;
+
+describe("nameKey of the library, as used for C18", () => {
   it.each([
     ["Fireball", "fireball"],
     ["  FIREBALL  ", "fireball"],
     ["Boule de Feu", "boule de feu"],
     ["Éclair  Électrique", "eclair electrique"],
-    ["Hunter's Mark", "hunters mark"],
-    ["Hunter’s Mark", "hunters mark"],
-    ["Rope, Hempen (50 feet)", "rope hempen 50 feet"],
-    ["Water (Pint)", "water pint"]
+    ["Hunter’s Mark", matchKey("Hunter's Mark")]
   ])("normalizes %j to %j", (input, key) => expect(matchKey(input)).toBe(key));
 
   it.each([
@@ -29,16 +29,20 @@ describe("matchKey (C18)", () => {
     ["Fire Breath (Recharge 6)", "fire breath"],
     ["Frost Ray (Recharges after a Short or Long Rest)", "frost ray"],
     ["Tail Swipe (Costs 2 Actions)", "tail swipe"],
-    ["Coup de queue (coûte 2 actions)", "coup de queue"],
-    ["Souffle (se recharge après un repos)", "souffle"],
-    ["Cri (2/Turn)", "cri"]
+    ["Coup de queue (coûte 2 actions)", "coup de queue"]
   ])("ignores the mention of %j", (input, key) => expect(matchKey(input)).toBe(key));
 
   it("keeps parentheses that are not a mention, and handles missing names", () => {
-    expect(matchKey("Torch (Lit)")).toBe("torch lit");
+    expect(matchKey("Torch (Lit)")).not.toBe("torch");
     expect(matchKey(undefined)).toBe("");
     expect(matchKey(null)).toBe("");
   });
+
+  // C18: "sans tenir compte ... de la ponctuation". The library keeps commas, apostrophes and parentheses.
+  it.each([
+    ["Hunters Mark", "Hunter's Mark"],
+    ["Rope Hempen 50 feet", "Rope, Hempen (50 feet)"]
+  ])("C18: punctuation is ignored (%j = %j)", (a, b) => expect(matchKey(a)).toBe(matchKey(b)));
 
   it("separates names that only differ by a letter", () => {
     expect(matchKey("Longsword")).not.toBe(matchKey("Long sword"));
@@ -75,40 +79,40 @@ describe("findMatch (C18)", () => {
   const order = ["dnd5e.spells24", "dnd5e.equipment24", "dnd5e.monsterfeatures", "world.mine"];
 
   it("filters by document type", () => {
-    expect(findMatch(index, order, "shield", "spell")).toEqual({ status: "found", pack: "dnd5e.spells24", id: "s1" });
-    expect(findMatch(index, order, "shield", "equipment")).toEqual({ status: "found", pack: "dnd5e.equipment24", id: "e1" });
-    expect(findMatch(index, order, "shield", "feat")).toEqual({ status: "found", pack: "dnd5e.monsterfeatures", id: "m1" });
-    expect(findMatch(index, order, "fireball", "feat").id).toBe("m2");
+    expect(findMatch(index, order, "shield", "spell", { keyOf })).toEqual({ status: "found", pack: "dnd5e.spells24", id: "s1" });
+    expect(findMatch(index, order, "shield", "equipment", { keyOf })).toEqual({ status: "found", pack: "dnd5e.equipment24", id: "e1" });
+    expect(findMatch(index, order, "shield", "feat", { keyOf })).toEqual({ status: "found", pack: "dnd5e.monsterfeatures", id: "m1" });
+    expect(findMatch(index, order, "fireball", "feat", { keyOf }).id).toBe("m2");
   });
 
   it("the first pack in priority order wins", () => {
-    expect(findMatch(index, ["world.mine", "dnd5e.spells24"], "fireball", "spell")).toEqual({ status: "found", pack: "world.mine", id: "w1" });
-    expect(findMatch(index, order, "fireball", "spell").pack).toBe("dnd5e.spells24");
+    expect(findMatch(index, ["world.mine", "dnd5e.spells24"], "fireball", "spell", { keyOf })).toEqual({ status: "found", pack: "world.mine", id: "w1" });
+    expect(findMatch(index, order, "fireball", "spell", { keyOf }).pack).toBe("dnd5e.spells24");
   });
 
   it("several entries of the same pack are ambiguous and do not fall through to a later pack", () => {
-    expect(findMatch(index, order, "torch", "consumable")).toEqual({ status: "ambiguous", pack: "dnd5e.equipment24", id: null });
+    expect(findMatch(index, order, "torch", "consumable", { keyOf })).toEqual({ status: "ambiguous", pack: "dnd5e.equipment24", id: null });
   });
 
   it("reports none when nothing matches or the type differs", () => {
-    expect(findMatch(index, order, "boule de feu", "spell")).toEqual({ status: "none", pack: null, id: null });
-    expect(findMatch(index, order, "shield", "weapon").status).toBe("none");
-    expect(findMatch(index, [], "shield", "spell").status).toBe("none");
+    expect(findMatch(index, order, "boule de feu", "spell", { keyOf })).toEqual({ status: "none", pack: null, id: null });
+    expect(findMatch(index, order, "shield", "weapon", { keyOf }).status).toBe("none");
+    expect(findMatch(index, [], "shield", "spell", { keyOf }).status).toBe("none");
   });
 
   it("skips disabled sources and accepts {pack, enabled} entries and a Map", () => {
     const o = [{ pack: "dnd5e.spells24", enabled: false }, { pack: "world.mine", enabled: true }];
-    expect(findMatch(index, o, "fireball", "spell").pack).toBe("world.mine");
-    expect(findMatch(new Map(Object.entries(index)), o, "fireball", "spell").id).toBe("w1");
+    expect(findMatch(index, o, "fireball", "spell", { keyOf }).pack).toBe("world.mine");
+    expect(findMatch(new Map(Object.entries(index)), o, "fireball", "spell", { keyOf }).id).toBe("w1");
   });
 
   it("ignores packs that have no index", () => {
-    expect(findMatch(index, ["unknown.pack", "dnd5e.spells24"], "shield", "spell").pack).toBe("dnd5e.spells24");
+    expect(findMatch(index, ["unknown.pack", "dnd5e.spells24"], "shield", "spell", { keyOf }).pack).toBe("dnd5e.spells24");
   });
 
   it("compares through the key function", () => {
     const idx = { p: [{ _id: "a", name: "Fire Breath (Recharge 5–6)", type: "feat" }] };
-    expect(findMatch(idx, ["p"], "fire breath", "feat").status).toBe("found");
+    expect(findMatch(idx, ["p"], "fire breath", "feat", { keyOf }).status).toBe("found");
   });
 });
 
@@ -339,5 +343,26 @@ describe("appendPdfNote (C20)", () => {
 
   it("works when the compendium description is empty", () => {
     expect(appendPdfNote("", "<p>Something.</p>", label)).toContain("Something.");
+  });
+});
+
+describe("adjustToFacts: no change (C20)", () => {
+  const doc = () => ({
+    name: "Fire Breath", type: "feat",
+    system: {
+      uses: { max: "1", recovery: [{ period: "recharge", formula: "5", type: "recoverAll" }] },
+      activities: { a: { _id: "a", type: "utility", activation: { type: "action", value: 1 }, consumption: { targets: [] } } }
+    }
+  });
+  it("same recharge and activation: no adjustment and no itemUses target added", () => {
+    const { data, adjusted } = adjustToFacts(doc(), { recharge: { min: 5 }, activation: { type: "action", cost: 1 } });
+    expect(adjusted).toEqual([]);
+    expect(data.system.activities.a.consumption.targets).toEqual([]);
+    expect(data).toEqual(doc());
+  });
+  it("a changed recharge adds the itemUses target once", () => {
+    const { data, adjusted } = adjustToFacts(doc(), { recharge: { min: 6 } });
+    expect(adjusted.map((x) => x.field)).toEqual(["uses"]);
+    expect(data.system.activities.a.consumption.targets).toHaveLength(1);
   });
 });

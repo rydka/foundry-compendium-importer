@@ -1,7 +1,8 @@
 // Fake dnd5e-text-parser (API v1) for unit tests of core/enrich: plans are looked up by feature name,
 // so the tests control exactly what the "library" recognizes. Real parsing is tested in the library and,
 // end to end, in the integration specs.
-import { matchKey } from "../../scripts/core/enrich/compendium.mjs";
+// The pure helpers (nameKey, mergeMissing, isEmpty, isEmptyUtility, toActorPatch) are those of the real library.
+import { isEmpty, isEmptyUtility, mergeMissing, nameKey, toActorPatch } from "dnd5e-text-parser";
 
 export const emptyPlan = (extra = {}) => ({
   skip: null, activation: null, attack: null, range: null, target: null, damage: [], save: null,
@@ -15,12 +16,15 @@ export const emptyPlan = (extra = {}) => ({
  */
 export function makeParser(plans = {}, actorPlan = null) {
   return {
-    nameKey: matchKey,
+    nameKey, mergeMissing, isEmpty, isEmptyUtility,
     parseFeature: (name) => (plans[name] ? emptyPlan(plans[name]) : emptyPlan()),
     toActivities: (plan) => JSON.parse(JSON.stringify(plan._activities ?? [])),
     toItemPatch: (plan) => JSON.parse(JSON.stringify(plan._patch ?? {})),
     parseActor: () => actorPlan,
-    toActorPatch: (plan) => ({ system: JSON.parse(JSON.stringify(plan?._patch ?? {})) }),
+    // `_patch` (real format: traits as a complete union, attributes.spellcasting, spells.spellN) wins; else the real translation
+    toActorPatch: (plan, options) => (plan?._patch
+      ? { system: JSON.parse(JSON.stringify(plan._patch)), notes: [] }
+      : toActorPatch(plan, options)),
     toSpellStubs: () => [],
     describe: () => [],
     keysFromConfig: () => ({})
