@@ -114,8 +114,9 @@ export function scoreFeatures(cases, output) {
     let expected = minus(expectedAll, before);
     let produced = minus(after, filterTokens(before, c));
     if (c.onlySkip) {
-      // Multiattack: the document must come back untouched
-      const same = o.output && JSON.stringify(o.input) === JSON.stringify(o.output);
+      // Multiattack: the document must come back untouched (the dnd5e migration adds schema defaults: compare facts and activity types)
+      const types = (d) => Object.values(d?.system?.activities ?? {}).map((a) => a.type).join();
+      const same = o.output && !minus(itemTokens(o.output), itemTokens(o.input)).length && types(o.input) === types(o.output);
       expected = expectedAll;
       produced = same ? expectedAll : ["skip=changed"];
     } else if (c.expectAmbiguous) {
