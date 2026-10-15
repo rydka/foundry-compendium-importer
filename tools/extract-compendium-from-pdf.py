@@ -581,13 +581,13 @@ def parse_abilities(lines):
                 if re.search(r"\bSTR\b.*\bDEX\b.*\bCON\b.*\bINT\b.*\bWIS\b.*\bCHA\b", l, re.I)), -1)
     if idx < 0:
         return None
-    v_line = lines[idx + 1] if idx + 1 < len(lines) else ""
-    v_line = re.sub(r"\([^)]*\)", " ", v_line)  # "20 (+5) 15 (+2)": scores only, not the modifiers
-    nums = [int(m.group(1)) for m in re.finditer(r"\b(\d{1,2})\b", v_line)]
-    nums = nums[:6]
-    if len(nums) < 6:
-        return None
-    return {"str": nums[0], "dex": nums[1], "con": nums[2], "int": nums[3], "wis": nums[4], "cha": nums[5]}
+    # The scores are on the next line, or a little further when lines of the other column interleave.
+    for v_line in lines[idx + 1:idx + 4]:
+        v_line = re.sub(r"\([^)]*\)", " ", v_line)  # "20 (+5) 15 (+2)": scores only, not the modifiers
+        nums = [int(m.group(1)) for m in re.finditer(r"\b(\d{1,2})\b", v_line)]
+        if len(nums) >= 6:
+            return {"str": nums[0], "dex": nums[1], "con": nums[2], "int": nums[3], "wis": nums[4], "cha": nums[5]}
+    return None
 
 
 def parse_trait_csv_line(lines, label):
@@ -653,9 +653,9 @@ def parse_senses_text(raw):
         m = re.match(rf"^({'|'.join(SENSE_TYPES)})\s+(\d+)\s*(?:ft\.?|feet|m\.?)?\s*(.*)$", part, re.I)
         if m:
             ranges[m.group(1).lower()] = int(m.group(2))
-            if m.group(3).strip():
+            if m.group(3).strip() and is_plausible_custom(m.group(3)):
                 special.append(f"{m.group(1).lower()} {m.group(3).strip()}")
-        elif not re.match(r"^passive\s+perception\b", part, re.I):
+        elif not re.match(r"^passive\s+perception\b", part, re.I) and is_plausible_custom(part):
             special.append(part)
     if not ranges and not special:
         return None
@@ -668,8 +668,9 @@ def parse_languages_text(raw):
         return None
     value, custom, communication = [], [], {}
     for part in split_csvish(raw):
+        part = re.split(r"\d", part)[0].strip() if not re.match(r"^telepathy\b", part, re.I) else part
         low = part.lower().strip(" .")
-        if low in {"", "-", "—", "–", "none"}:
+        if low == "none" or not re.search(r"[a-z]", low):  # "—", or the glyph of a private-use font
             continue
         if low == "all":
             value.append("ALL")
@@ -732,6 +733,33 @@ def challenge_line(lines):
     return next((l for l in lines[idx + 1:idx + 4] if re.match(rf"^{CR_VALUE_RE}\s*(\(|\+|$)", l)), None)
 
 
+def stat_line(lines, label, looks_like):
+    """The value line of a label: the rest of its line, or the first of the three following lines that looks like the
+    value (two-column layouts interleave lines of the other column before or after it)."""
+    idx = next((i for i, l in enumerate(lines) if re.match(rf"^{re.escape(label)}\b", l, re.I)), -1)
+    if idx < 0:
+        return None
+    rest = re.sub(rf"^{re.escape(label)}\s*", "", lines[idx], flags=re.I).strip()
+    candidates = [rest] if rest and not STAT_LABEL_RE.match(rest) else []
+    for line in lines[idx + 1:idx + 4]:
+        if STAT_LABEL_RE.match(line) or ABILITY_ROW_RE.search(line):
+            break
+        candidates.append(line)
+    return next((c for c in candidates if looks_like(c)), None)
+
+
+def looks_like_senses(line):
+    return bool(re.search(rf"\b({'|'.join(SENSE_TYPES)})\s+\d+|\bpassive\s+perception\b", line, re.I))
+
+
+def looks_like_languages(line):
+    low = line.lower()
+    if not re.search(r"[a-z]", low):
+        return True  # "—" or the glyph of a private-use font: no language
+    return bool(re.search(r"\b(languages?|speak|understand|telepathy|all|any|none)\b", low)
+                or any(re.search(rf"\b{re.escape(name)}\b", low) for name in LANGUAGE_KEYS))
+
+
 def parse_stat_lines(lines):
     """Deterministic read of the stat lines of a page (challenge, senses, languages, saves, skills, traits)."""
     challenge = parse_challenge_text(challenge_line(lines))
@@ -742,8 +770,8 @@ def parse_stat_lines(lines):
         "cr": challenge["cr"] if challenge else None,
         "xp": challenge["xp"] if challenge else None,
         "prof": prof,
-        "senses": parse_senses_text(labelled_value(lines, "Senses")),
-        "languages": parse_languages_text(labelled_value(lines, "Languages")),
+        "senses": parse_senses_text(stat_line(lines, "Senses", looks_like_senses)),
+        "languages": parse_languages_text(stat_line(lines, "Languages", looks_like_languages)),
         "saves": parse_saving_throws_text(labelled_value(lines, "Saving Throws")),
         "skills_raw": labelled_value(lines, "Skills"),
         "traits": {},
@@ -778,30 +806,35 @@ def apply_stat_lines(creature, lines):
     return creature
 
 
-def map_damage_list(raw):
+def is_plausible_custom(part):
+    """A custom trait entry is short prose without numbers; interleaved lines of the other column are not."""
+    return bool(re.search(r"[A-Za-z]", part)) and not re.search(r"[\d:.]", part) and len(part) <= 60
+
+
+def map_known_list(raw, known, allow_custom=True):
     out = {"value": [], "custom": ""}
     for p in split_csvish(raw):
         low = p.lower()
-        hit = next((dt for dt in DAMAGE_TYPES if dt in low), None)
+        hit = next((k for k in known if k in low), None)
         if hit:
             out["value"].append(hit)
-        else:
+        elif allow_custom and is_plausible_custom(p):
             out["custom"] += ("; " if out["custom"] else "") + p
     out["value"] = sorted(set(out["value"]))
+    return out
+
+
+def map_damage_list(raw):
+    out = map_known_list(raw, DAMAGE_TYPES)
+    # A custom damage entry qualifies attacks or sources ("from nonmagical attacks"); a bare spell list does not.
+    out["custom"] = "; ".join(c for c in out["custom"].split("; ")
+                              if re.search(r"\b(non)?magical\b|\bsilver|\badamantine\b|\bspells?\b|\battacks?\b|\bweapons?\b|\bfrom\b", c, re.I))
     return out
 
 
 def map_condition_list(raw):
-    out = {"value": [], "custom": ""}
-    for p in split_csvish(raw):
-        low = p.lower()
-        hit = next((ct for ct in CONDITION_TYPES if ct in low), None)
-        if hit:
-            out["value"].append(hit)
-        else:
-            out["custom"] += ("; " if out["custom"] else "") + p
-    out["value"] = sorted(set(out["value"]))
-    return out
+    # Condition lists only name conditions: anything else is a line of the other column.
+    return map_known_list(raw, CONDITION_TYPES, allow_custom=False)
 
 
 def clean_block_name(name):
