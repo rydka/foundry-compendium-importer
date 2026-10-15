@@ -319,3 +319,61 @@ test("C12: Legendary Resistance is no longer a legendary action; the exception i
     expect(r.types).toContain("special");
   }
 });
+
+// ---------------------------------------------------------------- B8: damage type choices and conditional second result
+
+const util = (id) => ({ [id]: { _id: id, type: "utility", name: "", activation: { type: "action", value: 1, condition: "" }, roll: { formula: "" } } });
+const feat = (id, actId, name, html) => ({ _id: id, name, type: "feat", img: "icons/svg/aura.svg", system: { description: { value: html }, activities: util(actId) } });
+
+test("B8: a 'X or Y' damage type and a conditional second result are written without inventing anything", async ({ foundry }) => {
+  const actorData = {
+    _id: "B8ACTOR000000001", name: "B8 Test Beast", type: "npc",
+    system: { details: { cr: 3 } },
+    items: [
+      feat("B8ITEMCHOICE0001", "B8ACTCHOICE00001", "Storm Bite",
+        "<p><small>Action</small><br/><strong>Storm Bite.</strong> <em>Melee Attack Roll:</em> +5, reach 5 ft. <em>Hit:</em> 9 (2d8) lightning or thunder damage.</p>"),
+      feat("B8ITEMCOND000001", "B8ACTCOND0000001", "Gore",
+        "<p><small>Action</small><br/><strong>Gore.</strong> <em>Melee Attack Roll:</em> +6, reach 5 ft. <em>Hit:</em> 9 (2d8) piercing damage, or 11 (2d8 + 2) piercing damage if the target is Bloodied.</p>")
+    ]
+  };
+  const out = await foundry(async (entry) => {
+    const api = game.modules.get("compendium-json-importer").api;
+    const r = await api.analyze([entry], "Actor", { enrich: true, compendiums: false });
+    const res = { rejected: r.rejected.map((x) => ({ name: x.name, reasons: x.reasons.map((q) => q.key) })), accepted: r.accepted.length };
+    if (!r.accepted.length) return res;
+    res.enrichment = r.accepted[0].enrichment;
+    const data = r.accepted[0].data;
+    delete data._id;
+    const actor = await Actor.create(data, { keepId: false });
+    try {
+      res.valid = actor.validate({ strict: false }) !== false;
+      res.invalid = actor.validate?.({ strict: false, fallback: false }) === false;
+      res.items = {};
+      for (const item of actor.items) {
+        res.items[item.name] = item.system.activities.map((a) => ({
+          type: a.type, attack: a.attack ? { bonus: a.attack.bonus, flat: a.attack.flat } : null,
+          damage: (a.damage?.parts ?? []).map((p) => ({ number: p.number, denomination: p.denomination, bonus: p.bonus, types: [...(p.types ?? [])], custom: p.custom?.enabled ? p.custom.formula : null })),
+          description: a.description?.chatFlavor ?? ""
+        }));
+      }
+      return res;
+    } finally { await actor.delete(); }
+  }, actorData);
+  evidence("B8-choix-et-condition.json", out);
+  expect(out.rejected, "the actor is accepted").toEqual([]);
+  expect(out.invalid, "the created actor is valid").toBeFalsy();
+  const types = (name) => out.items[name].flatMap((a) => a.damage.flatMap((p) => p.types));
+  // (a) choice: dnd5e needs one or no type; whatever the importer writes must be one of the two listed, or none
+  const choice = out.items["Storm Bite"].flatMap((a) => a.damage);
+  expect(choice.length, "the dice are written").toBeGreaterThan(0);
+  expect(`${choice[0].number}d${choice[0].denomination}`).toBe("2d8");
+  expect(types("Storm Bite").every((t) => ["lightning", "thunder"].includes(t)), JSON.stringify(types("Storm Bite"))).toBe(true);
+  expect(types("Storm Bite").length, "no type is chosen for the user (at most one of the listed)").toBeLessThanOrEqual(1);
+  // (b) conditional second result: only piercing, no extra invented type, the base hit is kept
+  const gore = out.items["Gore"].flatMap((a) => a.damage);
+  expect(gore.length).toBeGreaterThanOrEqual(1);
+  expect(types("Gore").every((t) => t === "piercing")).toBe(true);
+  expect(`${gore[0].number}d${gore[0].denomination}`).toBe("2d8");
+  const attack = out.items["Gore"].find((a) => a.type === "attack");
+  expect(attack?.attack.bonus ?? null).not.toBeNull();
+});
