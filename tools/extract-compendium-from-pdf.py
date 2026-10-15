@@ -165,9 +165,8 @@ def build_llm_prompt(lines):
         "- Use null for unknown structured fields.",
         "- For action or feature blocks, split at the first period after the name.",
         "- Put parenthetical tags like (Recharge 5-6) into meta.",
-        '- Copy the stat lines as written: saving_throws "Str +11, Wis +9", skills "Perception +4",',
-        '  senses "darkvision 120 ft., passive Perception 13", languages "Common, Abyssal",',
-        '  challenge "18 (20,000 XP)", proficiency_bonus "+6".',
+        "- Copy the Saving Throws, Skills, Senses, Languages, Challenge and Proficiency Bonus lines verbatim into",
+        "  saving_throws, skills, senses, languages, challenge and proficiency_bonus; null when the line is absent.",
         "",
         "Text lines:",
         lines_text,
@@ -788,16 +787,19 @@ def apply_stat_lines(creature, lines):
     """Completes a creature (regex or LLM) with the stat lines read from the page. The lines win over the LLM
     for what they state (the LLM shifts the trait lists); what they do not state is left as it is."""
     stats = parse_stat_lines(lines)
-    if stats["cr"] is not None:
+    # A recognised stat block (Challenge line) is authoritative, absent lines included: the LLM copies the examples
+    # of the prompt ("Str +11, Wis +9") when the block has no such line.
+    authoritative = stats["cr"] is not None
+    if authoritative:
         creature["cr"] = stats["cr"]
         creature["xp"] = stats["xp"]
     if stats["prof"] is not None:
         creature["prof"] = stats["prof"]
     for key in ("senses", "languages", "saves"):
-        if stats[key]:
+        if stats[key] or authoritative:
             creature[key] = stats[key]
     skills = parse_skills_text(stats["skills_raw"], creature.get("abilities"), creature.get("prof"), creature.get("cr"))
-    if skills:
+    if skills or authoritative:
         creature["skills"] = skills
     if stats["traits"]:
         traits = creature.setdefault("traits", {})
@@ -1292,7 +1294,12 @@ def parse_creature_from_lines(lines, page_number):
     idx_size = next((i for i, l in enumerate(lines)
                      if re.match(r"^(Tiny|Small|Medium|Large|Huge|Gargantuan)\b", l, re.I) and "," in l), -1)
     if idx_size > 0:
+        # The name is the line above the size line; on two-column pages, lines of the other column may sit between.
         name = norm_name(lines[idx_size - 1])
+        for candidate in reversed(lines[max(0, idx_size - 6):idx_size]):
+            if re.match(r"^[A-Z][^.:]{0,40}$", candidate) and len(candidate.split()) <= 4:
+                name = norm_name(candidate)
+                break
     else:
         before = [l for l in lines[:idx_ac] if l and not re.match(r"^Proficiency Bonus\b", l, re.I)]
         name = norm_name(before[-1] if before else "Unknown Creature")
