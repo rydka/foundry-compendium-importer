@@ -29,6 +29,10 @@ Hooks.once("init", () => {
   // Contents of a pack changed (documents created, updated or deleted): the preloaded indexes are stale.
   // Packs created or deleted need no hook: the source order read at each analysis reflects them.
   Hooks.on("updateCompendium", invalidateIndexes);
+  // Compile the templates of both windows now: the first opening no longer waits for one request per part.
+  const templates = [ImporterApp, SourcesApp].flatMap(app => Object.values(app.PARTS).map(part => part.template));
+  foundry.applications.handlebars.loadTemplates(templates)
+    .catch(err => console.warn(`${MODULE_ID} | preloading the templates failed`, err));
 });
 
 Hooks.once("ready", () => {
