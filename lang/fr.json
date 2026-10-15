@@ -136,6 +136,7 @@
       "LegendaryResistanceReplaced": "Résistance légendaire : l'action légendaire est remplacée par une activation spéciale.",
       "LegendaryCost": "Coût de l'action légendaire : {from} → {to} (le texte l'emporte).",
       "SpellLevelUnknown": "Niveau du sort {name} inconnu : à renseigner à la main.",
+      "ActivityAdded": "Activité ajoutée : {name}",
       "Legact": "Actions légendaires : {value}",
       "Legres": "Résistances légendaires : {value}/jour",
       "Trait": "{trait} : + {values} {bypasses} {custom}",

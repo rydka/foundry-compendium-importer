@@ -136,6 +136,7 @@
       "LegendaryResistanceReplaced": "Legendary Resistance: the legendary action is replaced by a special activation.",
       "LegendaryCost": "Legendary action cost: {from} → {to} (the text wins).",
       "SpellLevelUnknown": "Level of the spell {name} unknown: to be set by hand.",
+      "ActivityAdded": "Activity added: {name}",
       "Legact": "Legendary actions: {value}",
       "Legres": "Legendary resistances: {value}/day",
       "Trait": "{trait}: + {values} {bypasses} {custom}",

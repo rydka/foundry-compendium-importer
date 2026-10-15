@@ -120,9 +120,94 @@ function pickGenerated(generated, used, wanted) {
   return generated[i];
 }
 
-function applyActivities(item, generated, ctx, filled) {
+// ---------------------------------------------------------------- variants (B10)
+
+/**
+ * Indexes of the generated activities that come from `plan.variants` (conditional results, B9): `toActivities`
+ * names each of them after its variant ("Gore (if the target is Bloodied)"), the main activities have no name.
+ */
+function variantIndexes(generated, plan) {
+  const names = new Set((plan?.variants ?? []).map(v => lib.nameKey(v.name)).filter(Boolean));
+  const out = new Set();
+  generated.forEach((g, n) => { if (names.has(lib.nameKey(g.name))) out.add(n); });
+  return out;
+}
+
+const partKey = p => JSON.stringify([p.number ?? null, p.denomination ?? null, String(p.bonus ?? ""), [...(p.types ?? [])].sort()]);
+const partsKey = parts => (parts ?? []).map(partKey).sort().join("|");
+
+/** An activity of the item already plays this variant: same name, same condition, or the same damage parts. */
+function hasEquivalent(acts, variant, condition) {
+  const name = lib.nameKey(variant.name);
+  const cond = lib.nameKey(condition);
+  const parts = partsKey(variant.damage?.parts);
+  return Object.values(acts ?? {}).some(a => {
+    if (isEmptyUtility(a)) return false;
+    if (name && lib.nameKey(a.name) === name) return true;
+    if (cond && lib.nameKey(a.activation?.condition) === cond) return true;
+    return Boolean(parts) && partsKey(a.damage?.parts) === parts;
+  });
+}
+
+/** Inserts `next` right after the activity `afterId` (at the end without it), keeping the order of the keys. */
+function insertActivity(item, next, afterId) {
+  const out = {};
+  let placed = false;
+  for (const [id, act] of Object.entries(activitiesOf(item) ?? {})) {
+    out[id] = act;
+    if (id === afterId) { out[next._id] = next; placed = true; }
+  }
+  if (!placed) out[next._id] = next;
+  item.system.activities = out;
+}
+
+/**
+ * The variant is the same attack (or save) as its origin, with other damage: it takes the item-uses consumption of
+ * the origin (as `toActivities` does), and its attack bonus or save DC when the origin states one (the file wins, C3).
+ */
+function alignToOrigin(next, origin) {
+  if (!origin) return;
+  const own = (next.consumption?.targets ?? []).filter(t => t.type !== "itemUses");
+  const uses = (origin.consumption?.targets ?? []).filter(t => t.type === "itemUses").map(clone);
+  const targets = [...own, ...uses];
+  if (targets.length) next.consumption = { ...(next.consumption ?? {}), targets };
+  else delete next.consumption;
+  if (next.attack && origin.attack?.flat && !isEmpty(origin.attack.bonus)) {
+    next.attack = { ...next.attack, flat: true, bonus: String(origin.attack.bonus) };
+  }
+  const dc = origin.save?.dc;
+  if (next.save && dc && isEmpty(dc.calculation) && !isEmpty(dc.formula)) next.save.dc = clone(dc);
+}
+
+/**
+ * Adds the variants of the text as new activities, each after its origin (the activity of the item that plays the
+ * main result of the same type), unless the item already has an equivalent one. Returns the added activities.
+ * @param {object} item
+ * @param {object[]} generated   result of `toActivities`
+ * @param {Set<number>} variants indexes of the variants in `generated`
+ * @param {(g: object) => string|undefined} originOf  id of the origin activity of a variant, in the item
+ */
+function addVariants(item, generated, variants, plan, ctx, originOf) {
+  const added = [];
+  for (const n of variants) {
+    const g = generated[n];
+    const variant = (plan.variants ?? []).find(v => lib.nameKey(v.name) === lib.nameKey(g.name));
+    if (hasEquivalent(activitiesOf(item), g, variant?.condition)) continue;
+    const originId = originOf(g);
+    const next = clone(g);
+    next._id = ctx.idGen();
+    alignToOrigin(next, originId ? activitiesOf(item)?.[originId] : null);
+    insertActivity(item, next, originId);
+    added.push(next);
+  }
+  return added;
+}
+
+function applyActivities(item, generated, ctx, filled, plan) {
   const acts = () => activitiesOf(item) ?? (item.system.activities = {});
-  const used = new Set();
+  const variants = variantIndexes(generated, plan);
+  const used = new Set(variants); // a variant never fills an existing activity: it is added after its origin
+  const placed = new Map(); // index in `generated` -> id of the activity of the item that holds it
   const weaponHasBase = item.type === "weapon" && !(isEmpty(item.system.damage?.base?.number) && isEmpty(item.system.damage?.base?.custom?.formula));
   const existing = Object.values(activitiesOf(item) ?? {});
   let converted = 0;
@@ -135,13 +220,16 @@ function applyActivities(item, generated, ctx, filled) {
     if (!isEmpty(act.activation)) next.activation = clone(act.activation);
     if (!isEmpty(act.name)) next.name = act.name;
     acts()[act._id ?? next._id] = next;
+    placed.set(generated.indexOf(g), next._id);
     filled.push(...merge({}, g, { path: `system.activities.${next._id}` }));
     converted++;
   }
   for (const act of existing) {
     if (isEmptyUtility(act) || !FILLABLE.has(act.type)) continue;
     const g = pickGenerated(generated, used, x => x.type === act.type);
-    if (g) fillActivity(act, g, filled, `system.activities.${act._id}`, { weapon: weaponHasBase });
+    if (!g) continue;
+    placed.set(generated.indexOf(g), act._id);
+    fillActivity(act, g, filled, `system.activities.${act._id}`, { weapon: weaponHasBase });
   }
   if (!existing.length || converted) {
     for (const g of generated) {
@@ -151,9 +239,15 @@ function applyActivities(item, generated, ctx, filled) {
       next._id = ctx.idGen();
       acts()[next._id] = next;
       used.add(n);
+      placed.set(n, next._id);
       filled.push(...merge({}, next, { path: `system.activities.${next._id}` }));
     }
   }
+  const originOf = g => placed.get(generated.findIndex((x, n) => !variants.has(n) && x.type === g.type));
+  const added = addVariants(item, generated, variants, plan, ctx, originOf);
+  // One entry per added activity (not its fields: they are described by the "activity added" line, not as fills)
+  for (const next of added) filled.push({ path: `system.activities.${next._id}`, value: next });
+  return added;
 }
 
 function describeFilled(plan, filled, parser) {
@@ -169,10 +263,13 @@ function describeFilled(plan, filled, parser) {
     template: has(/\.target\.template/) ? plan.template : null,
     uses: has(/system\.uses/) ? plan.uses : null,
     recharge: has(/system\.uses/) ? plan.recharge : null,
-    activation: has(/\.activation\./) ? plan.activation : null
+    activation: has(/\.activation\./) ? plan.activation : null,
+    variants: [] // the added variants are reported by `activityAdded`, not described as activities of the plan
   };
   try { return parser.describe(partial) ?? []; } catch { return []; }
 }
+
+const activityAdded = next => ({ key: `${KEY}ActivityAdded`, data: { name: next.name ?? "" } });
 
 // ---------------------------------------------------------------- one item
 
@@ -238,12 +335,12 @@ function enrichText(item, plan, ctx, entry) {
     stripItemUses();
   }
   item.system ??= system;
-  if (!lr) applyActivities(item, generated, ctx, filled);
+  const added = lr ? [] : applyActivities(item, generated, ctx, filled, plan);
   filled.push(...merge(item.system, patch, { path: "system" }));
   if (lr) legendaryResistance(item, ctx, entry.notes, filled);
   else legendaryCost(item, plan, entry.notes);
   if (!hadSystem && !Object.keys(item.system).length) delete item.system; // "unchanged" stays strictly identical
-  entry.changes = describeFilled(plan, filled, ctx.parser);
+  entry.changes = [...describeFilled(plan, filled, ctx.parser), ...added.map(activityAdded)];
   return filled;
 }
 
@@ -255,13 +352,19 @@ function replaceFromCompendium(item, match, plan, ctx, entry) {
   src._stats = { ...(src._stats ?? {}), compendiumSource: match.uuid ?? src._stats?.compendiumSource };
   const facts = mergeFacts(factsFromItem(item, ctx.parser), plan);
   const { data, adjusted } = adjustToFacts(src, facts);
+  const generated = ctx.parser.toActivities(plan, { keys: ctx.keys, idGen: ctx.idGen, item: data }) ?? [];
+  const variants = variantIndexes(generated, plan);
   if (facts.attack && !Object.values(data.system?.activities ?? {}).some(a => a.type === "attack")) {
-    const g = (ctx.parser.toActivities(plan, { keys: ctx.keys, idGen: ctx.idGen, item: data }) ?? []).find(a => a.type === "attack");
+    const g = generated.find((a, n) => a.type === "attack" && !variants.has(n));
     if (g) {
       (data.system.activities ??= {})[g._id] = g;
       adjusted.push({ field: "attackActivity", from: null, to: String(facts.attack.bonus) });
     }
   }
+  // Variants of the text (B10): added after the compendium activity of the same type, unless it already has one
+  const originOf = g => Object.values(activitiesOf(data) ?? {}).find(a => a.type === g.type)?._id;
+  const added = addVariants(data, generated, variants, plan, ctx, originOf);
+  entry.changes.push(...added.map(activityAdded));
   const desc = data.system.description ??= {};
   desc.value = appendPdfNote(desc.value ?? "", item.system?.description?.value ?? "", ctx.pdfLabel ?? "PDF", { name: item.name });
   entry.origin = "compendium";
