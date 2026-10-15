@@ -1,5 +1,5 @@
 /**
- * Enrichment of one document (C3-C14, C18-C23), pure and synchronous.
+ * Enrichment of one document (C3-C14, C18-C23, C25), pure and synchronous.
  * The text parser (dnd5e-text-parser API v1) is injected: no import of Foundry URLs here.
  *
  * Policy (C3): only empty fields are filled, never a filled one. Exceptions, both signalled in the report:
@@ -9,6 +9,7 @@
  */
 
 import { adjustToFacts, appendPdfNote, isMultiattackKey } from "./compendium.mjs";
+import { challengeRatingOf, formatChallengeRating } from "../challenge.mjs";
 
 const KEY = "compendium-json-importer.Enrich.";
 const clone = v => JSON.parse(JSON.stringify(v));
@@ -554,6 +555,20 @@ function enrichActorData(data, original, ctx, report) {
   addSpells(data, plan, ctx, report, summary);
 }
 
+/**
+ * C25: an NPC without a challenge rating takes the one stated in its texts ("Challenge 17 (18,000 XP)",
+ * "Facteur de puissance 17"). Only an empty field is filled (C3); the system defaults a missing `cr` to 1.
+ */
+function fillChallengeRating(data, report) {
+  if (data.type !== "npc") return;
+  const current = data.system?.details?.cr;
+  if (current !== undefined && current !== null && current !== "") return;
+  const value = challengeRatingOf(data);
+  if (value === null) return;
+  ((data.system ??= {}).details ??= {}).cr = value;
+  report.changes.push({ key: `${KEY}Cr`, data: { value: formatChallengeRating(value) } });
+}
+
 // ---------------------------------------------------------------- entry point
 
 /**
@@ -591,6 +606,7 @@ export function enrichEntry(data, documentName, ctx) {
     record(entry);
   }
   if (Array.isArray(out.items)) out.items = items;
+  fillChallengeRating(out, report);
   enrichActorData(out, data, c, report);
   return { data: out, report: finish(report) };
 }

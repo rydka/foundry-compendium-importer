@@ -148,6 +148,7 @@
       "ActivityAdded": "Activity added: {name}",
       "Legact": "Legendary actions: {value}",
       "Legres": "Legendary resistances: {value}/day",
+      "Cr": "Challenge rating filled in: {value}",
       "Trait": "{trait}: + {values} {bypasses} {custom}",
       "Slots": "Spell slots level {level}: {slots}",
       "Spellcasting": "Spellcasting: ability {ability}, DC {dc}, attack {attack}, caster level {level}",

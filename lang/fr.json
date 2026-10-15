@@ -148,6 +148,7 @@
       "ActivityAdded": "Activité ajoutée : {name}",
       "Legact": "Actions légendaires : {value}",
       "Legres": "Résistances légendaires : {value}/jour",
+      "Cr": "FP renseigné : {value}",
       "Trait": "{trait} : + {values} {bypasses} {custom}",
       "Slots": "Emplacements de sorts de niveau {level} : {slots}",
       "Spellcasting": "Incantation : caractéristique {ability}, DD {dc}, attaque {attack}, niveau de lanceur {level}",
