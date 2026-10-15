@@ -23,7 +23,7 @@ Foundry v14, dnd5e 6.x. Toute API utilisée doit exister dans ces versions. Cons
 | `scripts/foundry/` | Couche Foundry : `importer-app` (fenêtre `ImporterApp`), `validator` (contrôle et migration en mémoire), `import-runner` (écritures), `directory-button`, `settings`, `enrichment` (chargement de la bibliothèque, lecture des packs), `enrich-summary` (`describeReport`, descripteurs `{ key, data, group, raw, origin, paths }` du parseur), `sources-app` (menu des sources) |
 | `styles/compendium-json-importer.css` | Styles, tous sous la classe `.compendium-json-importer` |
 | `lang/` | Traductions `en` et `fr`, clés sous `compendium-json-importer.*` |
-| `templates/importer/` | Parties Handlebars de la fenêtre (source, target, options, status, summary) |
+| `templates/importer/` | Parties Handlebars de la fenêtre (source, target, options repliables, summary, footer : boutons et ligne de progression `.cji-status`, collé en bas du contenu qui défile) |
 | `tests/unit/` | Tests Vitest avec les faux globaux Foundry de `tests/setup/` |
 | `tests/integration/` | Tests dans un vrai Foundry, servent de preuve de fonctionnement |
 

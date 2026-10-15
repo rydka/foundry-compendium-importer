@@ -1,7 +1,36 @@
+/* The window never grows past the screen (core max-height on .application): the content scrolls inside */
+.compendium-json-importer .window-content {
+  overflow-y: auto;
+}
+
 .compendium-json-importer .cji-section {
   border: none;
   margin: 0;
   padding: 0;
+}
+
+.compendium-json-importer .cji-options > summary {
+  cursor: var(--cursor-pointer, pointer);
+  font-weight: bold;
+  margin: 0.25rem 0;
+}
+
+/* Checkbox rows: the label gets the room, the box only needs a little */
+.compendium-json-importer .cji-options .form-group > label {
+  flex: 4;
+  line-height: 1.5;
+}
+
+/* Buttons and progress line always visible at the bottom of the scrolling content */
+.compendium-json-importer .cji-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  /* two layers of the (translucent) window background: the scrolled content does not show through */
+  background-color: var(--background);
+  background-image: linear-gradient(var(--background), var(--background));
 }
 
 .compendium-json-importer .cji-summary {
@@ -92,7 +121,8 @@
 }
 
 .compendium-json-importer .cji-status {
-  margin: 0.25rem 0;
+  flex: 1 1 100%;
+  margin: 0 0 0.25rem;
   font-style: italic;
 }
 

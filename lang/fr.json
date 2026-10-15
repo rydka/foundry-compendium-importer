@@ -34,6 +34,7 @@
       "UseExisting": "Importer dans ce compendium"
     },
     "Options": {
+      "Title": "Options",
       "Overwrite": "Écraser",
       "OverwriteHint": "Supprime les documents existants de même nom (et de même type) avant l'import.",
       "StripIds": "Supprimer les _id",

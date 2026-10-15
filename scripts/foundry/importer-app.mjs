@@ -33,8 +33,8 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static DEFAULT_OPTIONS = {
     id: MODULE_ID,
     tag: "form",
-    classes: [MODULE_ID],
-    window: { title: `${MODULE_ID}.Title`, icon: "fa-solid fa-file-import" },
+    classes: [MODULE_ID, "standard-form"],
+    window: { title: `${MODULE_ID}.Title`, icon: "fa-solid fa-file-import", resizable: true },
     position: { width: 560 },
     form: { handler: ImporterApp.#onSubmit, submitOnChange: false, closeOnSubmit: false },
     actions: { confirmImport: ImporterApp.#onConfirm, backToForm: ImporterApp.#onBack, useExistingPack: ImporterApp.#onUseExisting }
@@ -44,9 +44,9 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     source: { template: `${TPL}/source.hbs` },
     target: { template: `${TPL}/target.hbs` },
     options: { template: `${TPL}/options.hbs` },
-    status: { template: `${TPL}/status.hbs` },
     summary: { template: `${TPL}/summary.hbs` },
-    footer: { template: "templates/generic/form-footer.hbs" }
+    // The footer holds the buttons and the progress line; it sticks to the bottom of the scrolling content
+    footer: { template: `${TPL}/footer.hbs` }
   };
 
   #state = { ...loadChoices(), newPackLabel: "", newPackName: "", newPackType: "Actor" };
@@ -74,6 +74,11 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   async _onRender(context, options) {
     await super._onRender(context, options);
     if ( this.#step === "choose" ) this.#preload();
+    // The review summary follows the form: bring its title to the top of the scrolling content (the window keeps
+    // the height of the screen, the footer stays visible below)
+    else if ( !options.parts || options.parts.includes("summary") ) {
+      this.element.querySelector(".cji-summary h3")?.scrollIntoView({ block: "start" });
+    }
   }
 
   /**
@@ -178,6 +183,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     };
   }
 
+  /** Buttons of the footer (labels already translated). */
   #buttons() {
     if ( this.#step === "choose" ) {
       return [{ type: "submit", icon: "fa-solid fa-magnifying-glass", label: t("Button.Analyze"), cssClass: "primary" }];
