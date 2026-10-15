@@ -349,9 +349,10 @@ test("B8: a 'X or Y' damage type and a conditional second result are written wit
       res.valid = actor.validate({ strict: false }) !== false;
       res.invalid = actor.validate?.({ strict: false, fallback: false }) === false;
       res.items = {};
+      res.uses = Object.fromEntries(actor.items.map((i) => [i.name, i.system.uses?.max ?? ""]));
       for (const item of actor.items) {
         res.items[item.name] = item.system.activities.map((a) => ({
-          type: a.type, attack: a.attack ? { bonus: a.attack.bonus, flat: a.attack.flat } : null,
+          type: a.type, name: a.name, range: a.range ? { value: a.range.value, reach: a.range.reach, units: a.range.units } : null, consumption: (a.consumption?.targets ?? []).map((t) => ({ type: t.type, value: t.value })), attack: a.attack ? { bonus: a.attack.bonus, flat: a.attack.flat, type: a.attack.type?.value } : null,
           damage: (a.damage?.parts ?? []).map((p) => ({ number: p.number, denomination: p.denomination, bonus: p.bonus, types: [...(p.types ?? [])], custom: p.custom?.enabled ? p.custom.formula : null })),
           description: a.description?.chatFlavor ?? ""
         }));
@@ -369,11 +370,84 @@ test("B8: a 'X or Y' damage type and a conditional second result are written wit
   expect(`${choice[0].number}d${choice[0].denomination}`).toBe("2d8");
   expect(types("Storm Bite").every((t) => ["lightning", "thunder"].includes(t)), JSON.stringify(types("Storm Bite"))).toBe(true);
   expect(types("Storm Bite").length, "no type is chosen for the user (at most one of the listed)").toBeLessThanOrEqual(1);
-  // (b) conditional second result: only piercing, no extra invented type, the base hit is kept
-  const gore = out.items["Gore"].flatMap((a) => a.damage);
-  expect(gore.length).toBeGreaterThanOrEqual(1);
-  expect(types("Gore").every((t) => t === "piercing")).toBe(true);
-  expect(`${gore[0].number}d${gore[0].denomination}`).toBe("2d8");
-  const attack = out.items["Gore"].find((a) => a.type === "attack");
-  expect(attack?.attack.bonus ?? null).not.toBeNull();
+  // (b) conditional second result (B9): a second activity named after the condition, never a second damage part
+  const goreActs = out.items["Gore"];
+  expect(goreActs.map((a) => a.type), JSON.stringify(goreActs)).toEqual(["attack", "attack"]);
+  expect(goreActs.every((a) => a.damage.length === 1 && a.damage[0].types.every((t) => t === "piercing"))).toBe(true);
+  expect(`${goreActs[0].damage[0].number}d${goreActs[0].damage[0].denomination}+${goreActs[0].damage[0].bonus || 0}`).toBe("2d8+0");
+  expect(`${goreActs[1].damage[0].number}d${goreActs[1].damage[0].denomination}+${goreActs[1].damage[0].bonus}`).toBe("2d8+2");
+  expect(goreActs[1].name).toMatch(/bloodied/i);
+  expect(goreActs[0].attack.bonus).toBe("6");
+  expect(goreActs[1].attack.bonus).toBe("6");
+});
+
+test("B9: a melee/ranged variant becomes a second activity with the same uses; nothing else is invented", async ({ foundry }) => {
+  const actorData = {
+    _id: "B9ACTOR000000001", name: "B9 Test Hunter", type: "npc",
+    system: { details: { cr: 2 } },
+    items: [feat("B9ITEMSPEAR00001", "B9ACTSPEAR000001", "Hurled Spear (3/Day)",
+      "<p><small>Action</small><br/><strong>Hurled Spear (3/Day).</strong> <em>Melee or Ranged Attack Roll:</em> +5, reach 5 ft. or range 20/60 ft. <em>Hit:</em> 7 (1d6 + 4) piercing damage in melee or 5 (1d4 + 3) piercing damage at range.</p>")]
+  };
+  const out = await foundry(async (entry) => {
+    const api = game.modules.get("compendium-json-importer").api;
+    const r = await api.analyze([entry], "Actor", { enrich: true, compendiums: false });
+    const res = { rejected: r.rejected.map((x) => ({ name: x.name, reasons: x.reasons.map((q) => q.key) })) };
+    if (!r.accepted.length) return res;
+    const data = r.accepted[0].data;
+    delete data._id;
+    const actor = await Actor.create(data, { keepId: false });
+    try {
+      const item = actor.items.find((i) => i.name.startsWith("Hurled"));
+      res.uses = { max: item.system.uses?.max ?? "", recovery: item.system.uses?.recovery?.map((x) => x.period) ?? [] };
+      res.activities = item.system.activities.map((a) => ({
+        type: a.type, name: a.name, attackType: a.attack?.type?.value ?? null, bonus: a.attack?.bonus ?? null,
+        range: a.range ? { value: a.range.value, reach: a.range.reach, units: a.range.units } : null,
+        damage: (a.damage?.parts ?? []).map((p) => ({ n: p.number, d: p.denomination, bonus: p.bonus, types: [...(p.types ?? [])] })),
+        consumption: (a.consumption?.targets ?? []).map((t) => ({ type: t.type, value: t.value }))
+      }));
+      return res;
+    } finally { await actor.delete(); }
+  }, actorData);
+  evidence("B9-variante-melee-distance.json", out);
+  expect(out.rejected).toEqual([]);
+  expect(out.activities.length, JSON.stringify(out)).toBe(2);
+  expect(out.activities.every((a) => a.type === "attack" && a.damage.length === 1)).toBe(true);
+  expect(out.activities.map((a) => `${a.damage[0].n}d${a.damage[0].d}+${a.damage[0].bonus}`)).toEqual(["1d6+4", "1d4+3"]);
+  expect(out.activities.map((a) => a.attackType)).toEqual(["melee", "ranged"]);
+  expect(Number(out.uses.max)).toBe(3);
+  expect(out.activities.every((a) => a.consumption.length === 1 && a.consumption[0].type === "itemUses")).toBe(true);
+});
+
+test("B9/C3/C19: a variant next to a filled activity (C3) and on a feature that matches a compendium item (C19-C22): recorded, filled fields never modified", async ({ foundry }) => {
+  const html = "<p><small>Action</small><br/><strong>Bite.</strong> <em>Melee Attack Roll:</em> +6, reach 5 ft. <em>Hit:</em> 9 (2d8) piercing damage, or 11 (2d8 + 2) piercing damage if the target is Bloodied.</p>";
+  const filled = {
+    _id: "B9ITEMFILLED0001", name: "Gore Filled", type: "feat",
+    system: {
+      description: { value: html.replace("Bite.", "Gore Filled.") },
+      activities: { B9ACTFILLED00001: { _id: "B9ACTFILLED00001", type: "attack", name: "", activation: { type: "action", value: 1, condition: "" }, attack: { bonus: "9", flat: true, type: { value: "melee", classification: "weapon" } }, damage: { includeBase: false, parts: [{ number: 3, denomination: 6, bonus: "1", types: ["fire"] }] } } }
+    }
+  };
+  const bite = { _id: "B9ITEMBITE000001", name: "Bite", type: "feat", system: { description: { value: html }, activities: { B9ACTBITE0000001: { _id: "B9ACTBITE0000001", type: "utility", name: "", activation: { type: "action", value: 1, condition: "" } } } } };
+  const actor = { _id: "B9ACTORCOMP00001", name: "B9 Compendium Beast", type: "npc", system: { details: { cr: 3 } }, items: [filled, bite] };
+  const out = await foundry(async (entry) => {
+    const api = game.modules.get("compendium-json-importer").api;
+    const r = await api.analyze([entry], "Actor", { enrich: true, compendiums: true });
+    const res = { rejected: r.rejected.map((x) => ({ name: x.name, reasons: x.reasons.map((q) => q.key) })) };
+    if (!r.accepted.length) return res;
+    res.items = {};
+    for (const it of r.accepted[0].data.items) {
+      res.items[it.name] = {
+        origin: r.accepted[0].enrichment?.items?.find((e) => e.name === it.name)?.origin ?? null,
+        activities: Object.values(it.system?.activities ?? {}).map((a) => ({ type: a.type, name: a.name, attack: a.attack?.bonus ?? null, parts: (a.damage?.parts ?? []).map((p) => `${p.number}d${p.denomination}+${p.bonus} ${[...(p.types ?? [])].join("/")}`) }))
+      };
+    }
+    return res;
+  }, actor);
+  evidence("B9-C3-C19-variante.json", out);
+  expect(out.rejected).toEqual([]);
+  // C3: the filled activity keeps its bonus and its damage part
+  const f = out.items["Gore Filled"].activities.find((a) => a.type === "attack");
+  expect(f.attack).toBe("9");
+  expect(f.parts[0]).toBe("3d6+1 fire");
+  expect(out.items["Gore Filled"].activities.filter((a) => a.type === "attack").every((a) => a.parts.length <= 1)).toBe(true);
 });
