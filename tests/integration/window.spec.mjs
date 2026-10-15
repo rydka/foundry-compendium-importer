@@ -140,7 +140,7 @@ test("C8: a file declaring another document type than the compendium raises a wa
   await gamePage.selectOption(`${WIN} select[name=targetPack]`, `world.${actorPack}`);
   await chooseFile(gamePage, "formats/entries.json"); // declares type "Item"
   await analyze(gamePage);
-  await expect(gamePage.locator(`${WIN} .cji-warning`).first()).toBeVisible();
+  await expect(gamePage.locator(`${WIN} .cji-warning:not(.cji-target-problem)`).first()).toBeVisible();
   await gamePage.screenshot({ path: test.info().outputPath("C8-avertissement-type.png") });
 });
 
