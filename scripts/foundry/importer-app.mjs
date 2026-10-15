@@ -1,6 +1,6 @@
 import { MODULE_ID, TYPE_FILTERS } from "../constants.mjs";
 import { parseImportFile, ImportFormatError } from "../core/parse.mjs";
-import { slugify, suggestPackFields } from "../core/naming.mjs";
+import { slugify, suggestPackFields, worldPackId } from "../core/naming.mjs";
 import { analyzeEntries } from "./validator.mjs";
 import { applyConflictChoices, planImport, resolveTarget, runImport } from "./import-runner.mjs";
 import { loadChoices, saveChoices } from "./settings.mjs";
@@ -37,13 +37,14 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     window: { title: `${MODULE_ID}.Title`, icon: "fa-solid fa-file-import" },
     position: { width: 560 },
     form: { handler: ImporterApp.#onSubmit, submitOnChange: false, closeOnSubmit: false },
-    actions: { confirmImport: ImporterApp.#onConfirm, backToForm: ImporterApp.#onBack }
+    actions: { confirmImport: ImporterApp.#onConfirm, backToForm: ImporterApp.#onBack, useExistingPack: ImporterApp.#onUseExisting }
   };
 
   static PARTS = {
     source: { template: `${TPL}/source.hbs` },
     target: { template: `${TPL}/target.hbs` },
     options: { template: `${TPL}/options.hbs` },
+    status: { template: `${TPL}/status.hbs` },
     summary: { template: `${TPL}/summary.hbs` },
     footer: { template: "templates/generic/form-footer.hbs" }
   };
@@ -113,6 +114,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       newPackLabel: s.newPackLabel,
       newPackName: s.newPackName,
       newPackType: filterType ?? s.newPackType,
+      targetProblem: review ? null : this.#targetProblem(),
       overwrite: s.overwrite,
       stripIds: s.stripIds,
       enrichAvailable,
@@ -189,6 +191,59 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     return new Set(Array.from(boxes, box => box.value));
   }
 
+  // Target name, status line and buttons
+
+  /**
+   * The new compendium name is already taken: `{ message, pack }`, where `pack` is the existing collection when
+   * the window can import into it (visible, and of the type the filter allows), else null.
+   */
+  #targetProblem() {
+    const s = this.#state;
+    if ( s.targetPack !== "new" ) return null;
+    const name = String(s.newPackName ?? "").trim() || slugify(String(s.newPackLabel ?? "").trim());
+    const existing = name ? game.packs.get(worldPackId(name)) : null;
+    if ( !existing ) return null;
+    const filterType = TYPE_FILTERS[s.typeFilter];
+    const usable = existing.visible && (!filterType || (existing.documentName === filterType));
+    return {
+      message: t("Target.Exists", { name: existing.metadata.label, id: existing.collection }),
+      pack: usable ? existing.collection : null
+    };
+  }
+
+  /** Show (or hide) the target problem next to the name field, without a render. Returns the problem. */
+  #showTargetProblem(problem = this.#targetProblem()) {
+    const box = this.element?.querySelector(".cji-target-problem");
+    if ( !box ) return problem;
+    box.toggleAttribute("hidden", !problem);
+    box.querySelector(".cji-target-message").textContent = problem?.message ?? "";
+    const button = box.querySelector("button");
+    button.toggleAttribute("hidden", !problem?.pack);
+    button.dataset.pack = problem?.pack ?? "";
+    return problem;
+  }
+
+  /** The step in progress (italic) or an error (kept until the next analysis); null hides the line. */
+  #status(text, { error = false } = {}) {
+    const line = this.element?.querySelector(".cji-status");
+    if ( !line ) return;
+    line.textContent = text ?? "";
+    line.toggleAttribute("hidden", !text);
+    line.classList.toggle("cji-error", !!text && error);
+  }
+
+  /** Disable the footer buttons while the analysis runs. */
+  #setButtons(enabled) {
+    this.element?.querySelectorAll("footer button").forEach(button => { button.disabled = !enabled; });
+  }
+
+  static async #onUseExisting(event, target) {
+    if ( !target.dataset.pack ) return;
+    this.#readState();
+    this.#state.targetPack = target.dataset.pack;
+    await this.render({ parts: ["target"] });
+  }
+
   // Form changes
 
   #readState() {
@@ -252,6 +307,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
         this.form.querySelectorAll(".cji-new-pack").forEach(el => el.toggleAttribute("hidden", s.targetPack !== "new"));
         break;
     }
+    if ( ["newPackLabel", "newPackName", "targetPack"].includes(target.name) ) this.#showTargetProblem();
   }
 
   #onConflictChange(target) {
@@ -268,28 +324,48 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static async #onSubmit() {
     if ( this.#analyzing ) return;
     this.#analyzing = true;
+    this.#setButtons(false);
+    this.#status(null);
     try {
       await this.#analyze();
+    } catch(err) {
+      console.error(`${MODULE_ID} | analysis failed`, err);
+      this.#fail("Error.AnalysisFailed", { message: err.message });
     } finally {
       this.#analyzing = false;
+      if ( this.#step === "choose" ) {
+        // Back to a usable form: buttons on, the progress line gone, an error (if any) left in place
+        this.#setButtons(true);
+        if ( !this.element?.querySelector(".cji-status.cji-error") ) this.#status(null);
+      }
     }
   }
 
+  /** Notify and show the message in the window. */
   #fail(key, data) {
-    ui.notifications.error(t(key, data));
+    const message = t(key, data);
+    ui.notifications.error(message);
+    this.#status(message, { error: true });
   }
 
   async #analyze() {
     if ( !game.user.isGM ) return this.#fail("Error.NotGM");
-    if ( !this.#file ) return this.#fail("Error.NoFile");
     this.#readState();
     const s = this.#state;
     const filterType = TYPE_FILTERS[s.typeFilter];
     if ( filterType ) s.newPackType = filterType;
+    // The target is checked before anything else: a taken name is shown next to the field, not as a failure
+    if ( this.#showTargetProblem() ) return;
     const existing = s.targetPack === "new" ? null : game.packs.get(s.targetPack);
     if ( existing && filterType && (existing.documentName !== filterType) ) {
       return this.#fail("Error.PackType", { pack: existing.metadata.label, type: filterType });
     }
+    const { pack, newPackSpec, errors } = resolveTarget(s);
+    if ( errors.length ) {
+      errors.forEach(error => ui.notifications.error(reasonText(error)));
+      return this.#status(errors.map(reasonText).join(" "), { error: true });
+    }
+    if ( !this.#file ) return this.#fail("Error.NoFile");
     let parsed;
     try {
       parsed = parseImportFile(await this.#file.text(), this.#file.name);
@@ -297,9 +373,6 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       if ( err instanceof ImportFormatError ) return this.#fail(`Error.Format.${err.code}`, { line: err.line });
       throw err;
     }
-    const { pack, newPackSpec, errors } = resolveTarget(s);
-    errors.forEach(error => ui.notifications.error(reasonText(error)));
-    if ( errors.length ) return;
     const documentName = pack ? pack.documentName : newPackSpec.type;
     const warnings = [];
     if ( parsed.meta?.docType && (parsed.meta.docType !== documentName) ) {
@@ -309,12 +382,14 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const idGen = () => foundry.utils.randomID();
     const migrationData = await dnd5e.migrations.getMigrationData();
     const enrich = s.enrich && !!(await loadParser());
+    const onProgress = ({ stage, done, total }) => this.#status(t(`Progress.${stage}`, { done, total }));
     const result = await analyzeEntries(parsed.entries, documentName,
-      { migrationData, idGen, enrich, compendiums: enrich && s.useCompendiums });
+      { migrationData, idGen, enrich, compendiums: enrich && s.useCompendiums, onProgress });
     const documents = [...result.accepted, ...result.other.map(o => {
       const data = o.data ?? o;
       return { data, name: o.name ?? data.name, type: o.type ?? data.type };
     })];
+    onProgress({ stage: "checking" });
     const index = pack ? await pack.getIndex({ fields: ["name", "type"] }) : [];
     const plan = planImport(documents.map(d => d.data), index,
       { overwrite: s.overwrite, stripIds: s.stripIds, hasPack: !!pack, idGen });

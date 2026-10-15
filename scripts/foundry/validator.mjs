@@ -6,6 +6,14 @@ import { loadParser, prepareEnrichment } from "./enrichment.mjs";
 
 const KEY = "compendium-json-importer.Reason";
 const MAX_PATHS = 8;
+const PROGRESS_EVERY_MS = 50;
+
+/** Tell the caller which step is running, then let the browser paint it (the analysis itself is synchronous). */
+async function report(onProgress, step) {
+  if (!onProgress) return;
+  onProgress(step);
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
 
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const NOT_AN_OBJECT = { name: "", type: "", reasons: [{ key: `${KEY}.NotAnObject`, data: {} }] };
@@ -157,11 +165,14 @@ function checkEntry(entry, documentName, context) {
  * compendiums when `compendiums` is true); the result then holds an `enrichment` summary.
  * @param {object[]} entries
  * @param {string} documentName Document name of the target pack
- * @param {{migrationData?: object, idGen?: () => string, enrich?: boolean, compendiums?: boolean}} options
+ * `onProgress` receives `{ stage: "reading"|"analyzing", done?, total? }`; when given, the loop yields to the
+ * browser now and then so that the window can show the step.
+ * @param {{migrationData?: object, idGen?: () => string, enrich?: boolean, compendiums?: boolean,
+ *   onProgress?: (step: {stage: string, done?: number, total?: number}) => void}} options
  * @returns {Promise<{accepted: object[], rejected: object[], other: object[], documentName: string, enrichment?: object}>}
  */
 export async function analyzeEntries(entries, documentName, options = {}) {
-  const { migrationData, idGen = () => foundry.utils.randomID(), enrich = false, compendiums = enrich } = options;
+  const { migrationData, idGen = () => foundry.utils.randomID(), enrich = false, compendiums = enrich, onProgress } = options;
   const result = { accepted: [], rejected: [], other: [], documentName };
   const checked = CHECKED_DOCUMENTS.includes(documentName);
   const context = checked && { migrationData: migrationData ?? await dnd5e.migrations.getMigrationData(), idGen };
@@ -169,13 +180,19 @@ export async function analyzeEntries(entries, documentName, options = {}) {
     context.parser = await loadParser();
     result.enrichment = { unavailable: !context.parser, counts: { enriched: 0, unchanged: 0, notEnriched: 0, reverted: 0 } };
     if (context.parser) {
+      if (compendiums && documentName === "Actor") await report(onProgress, { stage: "reading" });
       const objects = entries.filter(isObject);
       const { skipped, ...prepared } = await prepareEnrichment(objects, documentName, { useCompendiums: compendiums });
       context.enrichment = { ...prepared, useCompendiums: compendiums };
       result.enrichment.skipped = skipped;
     }
   }
-  for (const entry of entries) {
+  let lastReport = 0;
+  for (const [i, entry] of entries.entries()) {
+    if (onProgress && (i === 0 || performance.now() - lastReport > PROGRESS_EVERY_MS)) {
+      await report(onProgress, { stage: "analyzing", done: i + 1, total: entries.length });
+      lastReport = performance.now();
+    }
     if (!isObject(entry)) {
       result.rejected.push(NOT_AN_OBJECT);
     } else if (!checked) {

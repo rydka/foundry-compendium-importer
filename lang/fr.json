@@ -29,7 +29,9 @@
       "NewLabel": "Libellé du nouveau compendium",
       "NewName": "Nom du nouveau compendium (id)",
       "NewNameHint": "Lettres minuscules, chiffres et tirets.",
-      "NewType": "Type de document"
+      "NewType": "Type de document",
+      "Exists": "Un compendium nommé {name} existe déjà dans ce monde ({id}). Choisissez un autre nom, ou importez dedans.",
+      "UseExisting": "Importer dans ce compendium"
     },
     "Options": {
       "Overwrite": "Écraser",
@@ -58,6 +60,11 @@
       "ActionNewId": "Nouvel identifiant",
       "Existing": "document existant : {name}"
     },
+    "Progress": {
+      "reading": "Lecture des compendiums…",
+      "analyzing": "Analyse {done}/{total}…",
+      "checking": "Vérification…"
+    },
     "Warning": {
       "DocType": "Le fichier déclare des documents de type {file}, mais le compendium contient des documents de type {pack}."
     },
@@ -72,6 +79,7 @@
       "Lost": "Les documents écrasés ont été supprimés et n'ont PAS pu être restaurés : {names}. Cause : {message}",
       "Skipped": "Certains documents n'ont pas été créés (refusés par un hook) ; les documents écrasés ont été remis en place : {names}",
       "SkippedLost": "Certains documents n'ont pas été créés (refusés par un hook) et les documents écrasés n'ont PAS pu être remis en place : {names}",
+      "AnalysisFailed": "L'analyse a échoué : {message}. Consultez la console (F12) pour le détail.",
       "ImportFailed": "L'import a échoué : {message}. Consultez la console (F12) pour le détail.",
       "Format": {
         "empty": "Le fichier est vide. Choisissez un fichier qui contient des documents.",
