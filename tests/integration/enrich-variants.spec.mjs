@@ -4,6 +4,7 @@
 // compendium (the compendium activity is adjusted, then the variant is added). No duplicate when an equivalent activity exists.
 import { expect, test } from "../../../../test-env/fixtures.mjs";
 import { evidence } from "./helpers.mjs";
+import { changedLeaves } from "../support/canon.mjs";
 
 test.describe.configure({ timeout: 240_000 });
 
@@ -60,7 +61,7 @@ test("B10 (1): a filled attack is unchanged and the variant is added with the sa
   // C3: the filled activity is the same data as in the file
   const kept = acts.find((a) => a._id === input._id);
   expect(kept.attack.bonus).toBe("9");
-  expect(kept.damage.parts).toEqual(input.damage.parts);
+  expect(changedLeaves(input, kept), "no filled leaf of the activity is modified (C3)").toEqual([]);
   expect(kept.consumption.targets[0].type).toBe("itemUses");
   // the variant
   const added = acts.find((a) => a._id !== input._id);
@@ -69,6 +70,9 @@ test("B10 (1): a filled attack is unchanged and the variant is added with the sa
   expect(added.damage.parts.length).toBe(1);
   expect(`${added.damage.parts[0].number}d${added.damage.parts[0].denomination}+${added.damage.parts[0].bonus}`).toBe("2d8+2");
   expect(added.damage.parts[0].types).toEqual(["piercing"]);
+  // the fixed attack bonus follows the original activity (+9), not the +6 of the text
+  expect(String(added.attack.bonus)).toBe("9");
+  expect(added.attack.flat).toBe(true);
   expect(added.consumption.targets.map((t) => t.type)).toEqual(["itemUses"]);
   // summary line
   expect(out.summary.lines.join("\n")).toMatch(NOTE_RE);
