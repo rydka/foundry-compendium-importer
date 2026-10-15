@@ -19,7 +19,7 @@ Foundry v14, dnd5e 6.x. Toute API utilisée doit exister dans ces versions. Cons
 | `module.json` | Manifeste. `version` est réécrite par le workflow de release. |
 | `scripts/main.mjs` | Point d'entrée : hooks `init` et `ready` (réglages, menu, bouton, API `game.modules.get(id).api`) |
 | `scripts/constants.mjs` | `MODULE_ID`, clés de réglages, taille de lot, filtres de type |
-| `scripts/core/` | Fonctions pures sans global Foundry (lint : `globals` vide) : `parse`, `normalize`, `ids`, `matching`, `naming`, `conformity`, `batch` ; `enrich/` : `enrich.mjs` (`enrichEntry`, le parseur est injecté : `isEmpty`, `isEmptyUtility`, `mergeMissing`, `nameKey` viennent de la bibliothèque), `compendium.mjs` (clés de recherche, ordre des sources, `adjustToFacts`) |
+| `scripts/core/` | Fonctions pures sans global Foundry (lint : `globals` vide) : `parse`, `normalize`, `ids`, `matching`, `naming`, `conformity`, `batch`, `challenge` (FP lu dans le texte d'un acteur) ; `enrich/` : `enrich.mjs` (`enrichEntry`, le parseur est injecté : `isEmpty`, `isEmptyUtility`, `mergeMissing`, `nameKey` viennent de la bibliothèque), `compendium.mjs` (clés de recherche, ordre des sources, `adjustToFacts`) |
 | `scripts/foundry/` | Couche Foundry : `importer-app` (fenêtre `ImporterApp`), `validator` (contrôle et migration en mémoire), `import-runner` (écritures), `directory-button`, `settings`, `enrichment` (chargement de la bibliothèque, lecture des packs), `enrich-summary` (`describeReport`, descripteurs `{ key, data, group, raw, origin, paths }` du parseur), `sources-app` (menu des sources) |
 | `styles/compendium-json-importer.css` | Styles, tous sous la classe `.compendium-json-importer` |
 | `lang/` | Traductions `en` et `fr`, clés sous `compendium-json-importer.*` |

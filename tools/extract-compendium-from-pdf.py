@@ -9,6 +9,11 @@ Optional LLM parsing (local Llama via HTTP):
   python extract-compendium-from-pdf.py --pdf "C:\\path\\file.pdf" --out-dir "C:\\out" --llm --llm-provider ollama --llm-model llama3.1:8b
   python extract-compendium-from-pdf.py --pdf "C:\\path\\file.pdf" --out-dir "C:\\out" --llm --llm-provider openai --llm-url http://localhost:8080/v1/chat/completions --llm-model llama3.1
 
+Two-column PDFs (lines of both columns interleave, e.g. "Better Undead Compendium.pdf"): the regex parser misses
+most stat blocks, use the LLM with --llm-mode prefer. The stat lines (challenge, senses, languages, saving throws,
+skills, damage and condition traits) are always read from the page text, see apply_stat_lines():
+  python extract-compendium-from-pdf.py --pdf "tools/Better Undead Compendium.pdf" --out-dir tools/out --llm --llm-model llama3.1:8b --llm-mode prefer --llm-timeout 300
+
 Dependencies:
   pip install pdfplumber
 """
@@ -38,6 +43,40 @@ CONDITION_TYPES = {
     "incapacitated", "invisible", "paralyzed", "petrified", "poisoned",
     "prone", "restrained", "stunned", "unconscious"
 }
+
+# Labels of the stat block lines. In some PDFs the label is alone on its line and the value follows on the next
+# line(s) ("Challenge Proficiency Bonus" / "18 (20,000 XP) +6"), see labelled_value().
+STAT_LABELS = [
+    "Armor Class", "Hit Points", "Speed", "Saving Throws", "Skills",
+    "Damage Vulnerabilities", "Damage Resistances", "Damage Immunities", "Condition Immunities",
+    "Senses", "Languages", "Challenge", "Proficiency Bonus",
+]
+STAT_LABEL_RE = re.compile(r"^(" + "|".join(re.escape(label) for label in STAT_LABELS) + r")\b", re.I)
+ABILITY_ROW_RE = re.compile(r"\bSTR\b.*\bDEX\b.*\bCON\b.*\bINT\b.*\bWIS\b.*\bCHA\b", re.I)
+
+# dnd5e 6.0.6 keys (CONFIG.DND5E.senses, CONFIG.DND5E.skills, CONFIG.DND5E.languages).
+SENSE_TYPES = ("blindsight", "darkvision", "tremorsense", "truesight")
+SKILL_KEYS = {
+    "acrobatics": "acr", "animal handling": "ani", "arcana": "arc", "athletics": "ath", "deception": "dec",
+    "history": "his", "insight": "ins", "intimidation": "itm", "investigation": "inv", "medicine": "med",
+    "nature": "nat", "perception": "prc", "performance": "prf", "persuasion": "per", "religion": "rel",
+    "sleight of hand": "slt", "stealth": "ste", "survival": "sur",
+}
+SKILL_ABILITIES = {
+    "acr": "dex", "ani": "wis", "arc": "int", "ath": "str", "dec": "cha", "his": "int", "ins": "wis",
+    "itm": "cha", "inv": "int", "med": "wis", "nat": "int", "prc": "wis", "prf": "cha", "per": "cha",
+    "rel": "int", "slt": "dex", "ste": "dex", "sur": "wis",
+}
+LANGUAGE_KEYS = {
+    "common sign language": "sign", "thieves' cant": "cant", "thieves cant": "cant", "deep speech": "deep",
+    "common": "common", "draconic": "draconic", "dwarvish": "dwarvish", "elvish": "elvish", "giant": "giant",
+    "gnomish": "gnomish", "goblin": "goblin", "halfling": "halfling", "orc": "orc", "aarakocra": "aarakocra",
+    "abyssal": "abyssal", "celestial": "celestial", "druidic": "druidic", "gith": "gith", "gnoll": "gnoll",
+    "infernal": "infernal", "primordial": "primordial", "aquan": "aquan", "auran": "auran", "ignan": "ignan",
+    "terran": "terran", "sylvan": "sylvan", "undercommon": "undercommon",
+}
+CR_FRACTIONS = {"1/8": 0.125, "1/4": 0.25, "1/2": 0.5, "⅛": 0.125, "¼": 0.25, "½": 0.5}
+CR_VALUE_RE = r"(\d+\s*/\s*\d+|[⅛¼½]|\d+(?:\.\d+)?)"
 
 
 def random_id(length=16):
@@ -105,6 +144,12 @@ def build_llm_prompt(lines):
         '  "damage_immunities": "string",',
         '  "damage_vulnerabilities": "string",',
         '  "condition_immunities": "string",',
+        '  "saving_throws": "string",',
+        '  "skills": "string",',
+        '  "senses": "string",',
+        '  "languages": "string",',
+        '  "challenge": "string",',
+        '  "proficiency_bonus": "string",',
         '  "features": [{"name": "string", "meta": "string", "text": "string"}],',
         '  "actions": [{"name": "string", "meta": "string", "text": "string"}],',
         '  "reactions": [{"name": "string", "meta": "string", "text": "string"}],',
@@ -120,6 +165,9 @@ def build_llm_prompt(lines):
         "- Use null for unknown structured fields.",
         "- For action or feature blocks, split at the first period after the name.",
         "- Put parenthetical tags like (Recharge 5-6) into meta.",
+        '- Copy the stat lines as written: saving_throws "Str +11, Wis +9", skills "Perception +4",',
+        '  senses "darkvision 120 ft., passive Perception 13", languages "Common, Abyssal",',
+        '  challenge "18 (20,000 XP)", proficiency_bonus "+6".',
         "",
         "Text lines:",
         lines_text,
@@ -397,7 +445,7 @@ def build_creature_from_llm(data, page_number):
     reactions = normalize_block_list(data.get("reactions"))
     legendary = normalize_block_list(data.get("legendary"))
 
-    return {
+    creature = {
         "kind": "creature",
         "page": page_number,
         "name": name,
@@ -416,6 +464,18 @@ def build_creature_from_llm(data, page_number):
         "reactions": reactions,
         "legendary": legendary,
     }
+    challenge = parse_challenge_text(coerce_trait_raw(data.get("challenge") or data.get("cr")))
+    prof = parse_proficiency_bonus_text(coerce_trait_raw(data.get("proficiency_bonus")))
+    if challenge:
+        creature["cr"] = challenge["cr"]
+        creature["xp"] = challenge["xp"]
+        prof = prof if prof is not None else challenge["prof"]
+    creature["prof"] = prof
+    creature["senses"] = parse_senses_text(coerce_trait_raw(data.get("senses")))
+    creature["languages"] = parse_languages_text(coerce_trait_raw(data.get("languages")))
+    creature["saves"] = parse_saving_throws_text(coerce_trait_raw(data.get("saving_throws")))
+    creature["skills"] = parse_skills_text(coerce_trait_raw(data.get("skills")), abilities, prof, creature.get("cr"))
+    return creature
 
 
 def build_magic_item_from_llm(data, page_number):
@@ -468,31 +528,44 @@ def parse_page_with_llm(lines, page_number, llm_config):
     return None
 
 
-def parse_hp(lines):
-    line = next((l for l in lines if re.match(r"^Hit Points\b", l, re.I)), None)
-    if not line:
+def labelled_value(lines, label, max_lines=3):
+    """Value of a stat block line: the rest of the line after the label or, when the label is alone on its line
+    (two-column layouts), the following lines until the next label (at most max_lines). None if the label is absent."""
+    idx = next((i for i, l in enumerate(lines) if re.match(rf"^{re.escape(label)}\b", l, re.I)), -1)
+    if idx < 0:
         return None
-    m = re.search(r"Hit Points\s+(\d+)\s*(?:\(([^)]+)\))?", line, re.I)
+    rest = re.sub(rf"^{re.escape(label)}\s*", "", lines[idx], flags=re.I)
+    rest = re.sub(r"^Proficiency Bonus\s*", "", rest, flags=re.I)  # "Challenge Proficiency Bonus" header
+    if rest.strip() and not STAT_LABEL_RE.match(rest):
+        return rest.strip()
+    parts = []
+    for line in lines[idx + 1:idx + 1 + max_lines]:
+        if STAT_LABEL_RE.match(line) or ABILITY_ROW_RE.search(line):
+            break
+        parts.append(line)
+    return norm_name(" ".join(parts)) or None
+
+
+def parse_hp(lines):
+    raw = labelled_value(lines, "Hit Points", max_lines=1)
+    m = re.match(r"(\d+)\s*(?:\(([^)]+)\))?", raw or "")
     if not m:
         return None
     return {"value": int(m.group(1)), "formula": norm_name(m.group(2) or "")}
 
 
 def parse_ac(lines):
-    line = next((l for l in lines if re.match(r"^Armor Class\b", l, re.I)), None)
-    if not line:
-        return None
-    m = re.search(r"Armor Class\s+(\d+)(?:\s*\(([^)]+)\))?", line, re.I)
+    raw = labelled_value(lines, "Armor Class", max_lines=1)
+    m = re.match(r"(\d+)(?:\s*\(([^)]+)\))?", raw or "")
     if not m:
         return None
     return {"value": int(m.group(1)), "detail": norm_name(m.group(2) or "")}
 
 
 def parse_speed(lines):
-    line = next((l for l in lines if re.match(r"^Speed\b", l, re.I)), None)
-    if not line:
+    s = labelled_value(lines, "Speed", max_lines=1)
+    if not s:
         return None
-    s = re.sub(r"^Speed\s+", "", line, flags=re.I)
     parts = [p.strip() for p in s.split(",")]
     move = {}
     for p in parts:
@@ -509,6 +582,7 @@ def parse_abilities(lines):
     if idx < 0:
         return None
     v_line = lines[idx + 1] if idx + 1 < len(lines) else ""
+    v_line = re.sub(r"\([^)]*\)", " ", v_line)  # "20 (+5) 15 (+2)": scores only, not the modifiers
     nums = [int(m.group(1)) for m in re.finditer(r"\b(\d{1,2})\b", v_line)]
     nums = nums[:6]
     if len(nums) < 6:
@@ -517,16 +591,191 @@ def parse_abilities(lines):
 
 
 def parse_trait_csv_line(lines, label):
-    line = next((l for l in lines if l.lower().startswith(label.lower())), None)
-    if not line:
-        return None
-    return re.sub(rf"^{re.escape(label)}\s*", "", line, flags=re.I).strip()
+    return labelled_value(lines, label)
 
 
 def split_csvish(value):
     if not value:
         return []
     return [x.strip() for x in value.replace(";", ",").split(",") if x.strip()]
+
+
+def parse_cr_value(raw):
+    """'18', '1/2', '½', '0.25' -> number (dnd5e system.details.cr), None otherwise."""
+    s = norm_name(raw).replace(" ", "")
+    if s in CR_FRACTIONS:
+        return CR_FRACTIONS[s]
+    m = re.match(r"^(\d+)/(\d+)$", s)
+    if m and int(m.group(2)):
+        return int(m.group(1)) / int(m.group(2))
+    try:
+        value = float(s)
+    except ValueError:
+        return None
+    return int(value) if value.is_integer() else value
+
+
+def parse_challenge_text(raw):
+    """'18 (20,000 XP) +6' -> {"cr": 18, "xp": 20000, "prof": 6}. XP and the proficiency bonus are optional."""
+    if not raw:
+        return None
+    m = re.match(rf"^(?:Challenge\s*(?:Rating)?\s*:?\s*)?{CR_VALUE_RE}(?:\s*\(\s*([\d,.\s]+?)\s*XP\s*\))?(?:\s*\+\s*(\d+))?",
+                 norm_name(raw), re.I)
+    if not m:
+        return None
+    cr = parse_cr_value(m.group(1))
+    if cr is None:
+        return None
+    xp = to_int(re.sub(r"[^\d]", "", m.group(2) or "")) if m.group(2) else None
+    prof = int(m.group(3)) if m.group(3) else None
+    return {"cr": cr, "xp": xp, "prof": prof}
+
+
+def parse_proficiency_bonus_text(raw):
+    m = re.search(r"\+\s*(\d+)", raw or "")
+    return int(m.group(1)) if m else None
+
+
+def proficiency_from_cr(cr):
+    """dnd5e: Proficiency.calculateMod(max(cr, 1))."""
+    if cr is None:
+        return None
+    return int((max(float(cr), 1) + 7) // 4)
+
+
+def parse_senses_text(raw):
+    """'darkvision 120 ft., passive Perception 13' -> system.attributes.senses (dnd5e 6: ranges, units, special)."""
+    if raw is None:
+        return None
+    ranges = {}
+    special = []
+    for part in split_csvish(raw):
+        m = re.match(rf"^({'|'.join(SENSE_TYPES)})\s+(\d+)\s*(?:ft\.?|feet|m\.?)?\s*(.*)$", part, re.I)
+        if m:
+            ranges[m.group(1).lower()] = int(m.group(2))
+            if m.group(3).strip():
+                special.append(f"{m.group(1).lower()} {m.group(3).strip()}")
+        elif not re.match(r"^passive\s+perception\b", part, re.I):
+            special.append(part)
+    if not ranges and not special:
+        return None
+    return {"ranges": ranges, "units": "ft", "special": "; ".join(special)}
+
+
+def parse_languages_text(raw):
+    """'Common, Abyssal, telepathy 60 ft.' -> system.traits.languages (value keys, custom text, communication)."""
+    if raw is None:
+        return None
+    value, custom, communication = [], [], {}
+    for part in split_csvish(raw):
+        low = part.lower().strip(" .")
+        if low in {"", "-", "—", "–", "none"}:
+            continue
+        if low == "all":
+            value.append("ALL")
+            continue
+        m = re.match(r"^telepathy\s+(\d+)\s*(?:ft\.?|feet|m\.?)?", low)
+        if m:
+            communication["telepathy"] = {"value": int(m.group(1)), "units": "ft"}
+            continue
+        key = next((k for name, k in LANGUAGE_KEYS.items() if low == name), None)
+        if key:
+            value.append(key)
+        else:
+            custom.append(part.strip(" ."))
+    if not value and not custom and not communication:
+        return None
+    return {"value": sorted(set(value)), "custom": "; ".join(custom), "communication": communication}
+
+
+def parse_saving_throws_text(raw):
+    """'Str +11, Wis +9' -> {"str": 11, "wis": 9}."""
+    if not raw:
+        return None
+    out = {}
+    for m in re.finditer(r"\b([A-Za-z]+)\s*([+-]\s*\d+)", raw):
+        key = normalize_ability_key(m.group(1))
+        if key:
+            out[key] = int(m.group(2).replace(" ", ""))
+    return out or None
+
+
+def parse_skills_text(raw, abilities=None, prof=None, cr=None):
+    """'Athletics +11, Perception +4' -> {"ath": 2, "prc": 1}: proficiency level (2 = expertise when the bonus
+    equals the ability modifier plus twice the proficiency bonus)."""
+    if not raw:
+        return None
+    prof = prof if prof is not None else proficiency_from_cr(cr)
+    out = {}
+    for m in re.finditer(r"([A-Za-z][A-Za-z ]*?)\s*([+-]\s*\d+)", raw):
+        key = SKILL_KEYS.get(m.group(1).strip().lower())
+        if not key:
+            continue
+        level = 1
+        bonus = int(m.group(2).replace(" ", ""))
+        score = (abilities or {}).get(SKILL_ABILITIES[key])
+        if prof and score is not None and bonus >= ability_mod_from_score(score) + 2 * prof:
+            level = 2
+        out[key] = level
+    return out or None
+
+
+def challenge_line(lines):
+    """'Challenge 5 (1,800 XP)' on one line, or the first '5 (1,800 XP) +3' line among the three after the label
+    (two-column layouts interleave lines of the other column)."""
+    idx = next((i for i, l in enumerate(lines) if re.match(r"^Challenge\b", l, re.I)), -1)
+    if idx < 0:
+        return None
+    rest = re.sub(r"^Challenge\s*(Rating)?\s*:?\s*(Proficiency Bonus)?\s*", "", lines[idx], flags=re.I)
+    if re.match(rf"^{CR_VALUE_RE}\s*(\(|\+|$)", rest):
+        return rest
+    return next((l for l in lines[idx + 1:idx + 4] if re.match(rf"^{CR_VALUE_RE}\s*(\(|\+|$)", l)), None)
+
+
+def parse_stat_lines(lines):
+    """Deterministic read of the stat lines of a page (challenge, senses, languages, saves, skills, traits)."""
+    challenge = parse_challenge_text(challenge_line(lines))
+    prof = parse_proficiency_bonus_text(labelled_value(lines, "Proficiency Bonus", max_lines=1))
+    if prof is None and challenge:
+        prof = challenge["prof"]
+    stats = {
+        "cr": challenge["cr"] if challenge else None,
+        "xp": challenge["xp"] if challenge else None,
+        "prof": prof,
+        "senses": parse_senses_text(labelled_value(lines, "Senses")),
+        "languages": parse_languages_text(labelled_value(lines, "Languages")),
+        "saves": parse_saving_throws_text(labelled_value(lines, "Saving Throws")),
+        "skills_raw": labelled_value(lines, "Skills"),
+        "traits": {},
+    }
+    for key, label, mapper in [("dr", "Damage Resistances", map_damage_list), ("di", "Damage Immunities", map_damage_list),
+                               ("dv", "Damage Vulnerabilities", map_damage_list), ("ci", "Condition Immunities", map_condition_list)]:
+        raw = labelled_value(lines, label)
+        if raw is not None:
+            stats["traits"][key] = mapper(raw)
+    return stats
+
+
+def apply_stat_lines(creature, lines):
+    """Completes a creature (regex or LLM) with the stat lines read from the page. The lines win over the LLM
+    for what they state (the LLM shifts the trait lists); what they do not state is left as it is."""
+    stats = parse_stat_lines(lines)
+    if stats["cr"] is not None:
+        creature["cr"] = stats["cr"]
+        creature["xp"] = stats["xp"]
+    if stats["prof"] is not None:
+        creature["prof"] = stats["prof"]
+    for key in ("senses", "languages", "saves"):
+        if stats[key]:
+            creature[key] = stats[key]
+    skills = parse_skills_text(stats["skills_raw"], creature.get("abilities"), creature.get("prof"), creature.get("cr"))
+    if skills:
+        creature["skills"] = skills
+    if stats["traits"]:
+        traits = creature.setdefault("traits", {})
+        for key in ("dr", "di", "dv", "ci"):
+            traits[key] = stats["traits"].get(key) or {"value": [], "custom": ""}
+    return creature
 
 
 def map_damage_list(raw):
@@ -1040,6 +1289,9 @@ def parse_creature_from_lines(lines, page_number):
         next((i for i, l in enumerate(lines) if re.match(r"^Senses\b", l, re.I)), -1)
     )
     traits_start = end_stats_idx + 1 if end_stats_idx >= 0 else idx_speed + 1
+    # Label alone on its line (two-column layouts): the value "18 (20,000 XP) +6" is on the next line.
+    if end_stats_idx >= 0 and traits_start < len(lines) and re.match(rf"^{CR_VALUE_RE}\s*(\(|\+|$)", lines[traits_start]):
+        traits_start += 1
     traits_end = actions_idx if actions_idx >= 0 else len(lines)
     trait_lines = [l for l in lines[traits_start:traits_end] if l and not re.match(r"^\d{3,}$", l)]
     traits = parse_named_blocks(trait_lines)
@@ -1055,7 +1307,7 @@ def parse_creature_from_lines(lines, page_number):
     legendary_lines = [l for l in lines[legendary_idx + 1:] if l and not re.match(r"^\d{3,}$", l)] if legendary_idx >= 0 else []
     legendary = parse_named_blocks(legendary_lines)
 
-    return {
+    creature = {
         "kind": "creature",
         "page": page_number,
         "name": name,
@@ -1074,6 +1326,7 @@ def parse_creature_from_lines(lines, page_number):
         "reactions": reactions,
         "legendary": legendary
     }
+    return apply_stat_lines(creature, lines)
 
 
 def parse_magic_item_from_lines(lines, page_number):
@@ -1219,6 +1472,26 @@ def build_actor(creature, embedded_items, pdf_name):
                 actor["system"]["traits"].setdefault(target, {})
                 actor["system"]["traits"][target]["value"] = creature["traits"][key]["value"]
                 actor["system"]["traits"][target]["custom"] = creature["traits"][key]["custom"]
+    # dnd5e 6.0.6: details.cr (number), attributes.senses.ranges, traits.languages, abilities.<x>.proficient,
+    # skills.<x>.value. The proficiency bonus of an NPC is derived from the CR by the system (attributes.prof is not
+    # stored), so the printed value only goes to the flag.
+    if creature.get("cr") is not None:
+        actor["system"].setdefault("details", {})["cr"] = creature["cr"]
+    if creature.get("xp") is not None:
+        actor["flags"]["pdf-importer"]["xp"] = creature["xp"]
+    if creature.get("prof") is not None:
+        actor["flags"]["pdf-importer"]["proficiencyBonus"] = creature["prof"]
+    if creature.get("senses"):
+        actor["system"].setdefault("attributes", {})["senses"] = deepcopy(creature["senses"])
+    if creature.get("languages"):
+        languages = deepcopy(creature["languages"])
+        if not languages.get("communication"):
+            languages.pop("communication", None)
+        actor["system"].setdefault("traits", {})["languages"] = languages
+    for ab in creature.get("saves") or {}:
+        actor["system"].setdefault("abilities", {}).setdefault(ab, {})["proficient"] = 1
+    for skill, level in (creature.get("skills") or {}).items():
+        actor["system"].setdefault("skills", {})[skill] = {"value": level, "ability": SKILL_ABILITIES[skill]}
     return actor
 
 
@@ -1305,7 +1578,7 @@ def main():
                 parsed = parse_page_with_llm(lines, page_num, llm_config)
                 if parsed:
                     if parsed.get("kind") == "creature":
-                        found_creatures.append(parsed)
+                        found_creatures.append(apply_stat_lines(parsed, lines))
                     elif parsed.get("kind") == "magicItem":
                         found_magic_items.append(parsed)
                     continue
@@ -1330,7 +1603,7 @@ def main():
                 parsed = parse_page_with_llm(lines, page_num, llm_config)
                 if parsed:
                     if parsed.get("kind") == "creature":
-                        found_creatures.append(parsed)
+                        found_creatures.append(apply_stat_lines(parsed, lines))
                     elif parsed.get("kind") == "magicItem":
                         found_magic_items.append(parsed)
                     continue
