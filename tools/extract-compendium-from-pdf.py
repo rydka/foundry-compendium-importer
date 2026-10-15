@@ -499,7 +499,7 @@ def parse_page_with_llm(lines, page_number, llm_config):
     started = time.time()
     try:
         response = call_llm(messages, llm_config)
-    except (urllib.error.URLError, json.JSONDecodeError) as exc:
+    except (OSError, json.JSONDecodeError) as exc:  # URLError and socket timeouts are OSErrors
         logging.warning("LLM request failed on page %s: %s", page_number, exc)
         return None
     elapsed = time.time() - started
