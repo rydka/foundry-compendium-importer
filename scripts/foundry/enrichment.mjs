@@ -54,18 +54,42 @@ export function getSourceOrder() {
   return resolveSources().filter(source => source.enabled).map(source => source.pack);
 }
 
-/** Read the indexes of the sources. A pack that cannot be read is skipped and reported. */
-async function loadIndexes(order, skipped) {
-  const indexes = new Map();
-  for ( const collection of order ) {
+/** Read the indexes of the sources, all at once. A pack that cannot be read is skipped and reported. */
+async function loadIndexes(order) {
+  const skipped = [];
+  const read = await Promise.all(order.map(async collection => {
     try {
-      indexes.set(collection, Array.from((await game.packs.get(collection).getIndex()).values()));
+      return [collection, Array.from((await game.packs.get(collection).getIndex()).values())];
     } catch(err) {
       console.warn(`${MODULE_ID} | ${collection} skipped`, err);
       skipped.push({ pack: collection, message: err.message });
+      return null;
     }
+  }));
+  return { indexes: new Map(read.filter(Boolean)), skipped };
+}
+
+// The indexes read for one source order, kept until the sources, the packs or their contents change.
+let indexCache = null;
+
+/**
+ * Indexes of the enabled sources, read in the background the first time (the window calls it when it opens,
+ * the analysis reuses the same promise). The cache follows the source order: a source toggled or reordered, a
+ * pack created or deleted changes the order and triggers a new read; `invalidateIndexes` handles the contents.
+ * @returns {Promise<{order: string[], indexes: Map<string, object[]>, skipped: {pack: string, message: string}[]}>}
+ */
+export function preloadIndexes() {
+  const order = getSourceOrder();
+  const key = order.join("\n");
+  if ( indexCache?.key !== key ) {
+    indexCache = { key, promise: loadIndexes(order).then(result => ({ order, ...result })) };
   }
-  return indexes;
+  return indexCache.promise;
+}
+
+/** Forget the indexes read so far (called when the contents of a compendium change). */
+export function invalidateIndexes() {
+  indexCache = null;
 }
 
 /**
@@ -77,8 +101,9 @@ async function findInCompendiums(entries, parser, skipped, { keys, plans }) {
   const matches = new Map();
   const lookups = collectLookups(entries, parser, { keys, plans });
   if ( !lookups.length ) return matches;
-  const order = getSourceOrder();
-  const table = new LookupTable(await loadIndexes(order, skipped), parser.nameKey);
+  const { order, indexes, skipped: unread } = await preloadIndexes();
+  skipped.push(...unread);
+  const table = new LookupTable(indexes, parser.nameKey);
   const wanted = new Map();
   for ( const { key, type } of lookups ) {
     const id = `${type}|${key}`;

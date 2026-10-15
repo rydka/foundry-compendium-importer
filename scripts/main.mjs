@@ -5,6 +5,7 @@ import { ImporterApp, openImporter } from "./foundry/importer-app.mjs";
 import { onRenderCompendiumDirectory } from "./foundry/directory-button.mjs";
 import { analyzeEntries } from "./foundry/validator.mjs";
 import { importFromAnalysis } from "./foundry/import-runner.mjs";
+import { invalidateIndexes } from "./foundry/enrichment.mjs";
 
 Hooks.once("init", () => {
   registerSettings();
@@ -25,6 +26,9 @@ Hooks.once("init", () => {
     restricted: true
   });
   Hooks.on("renderCompendiumDirectory", onRenderCompendiumDirectory);
+  // Contents of a pack changed (documents created, updated or deleted): the preloaded indexes are stale.
+  // Packs created or deleted need no hook: the source order read at each analysis reflects them.
+  Hooks.on("updateCompendium", invalidateIndexes);
 });
 
 Hooks.once("ready", () => {

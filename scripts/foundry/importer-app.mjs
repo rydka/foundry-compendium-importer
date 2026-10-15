@@ -4,7 +4,7 @@ import { slugify, suggestPackFields } from "../core/naming.mjs";
 import { analyzeEntries } from "./validator.mjs";
 import { applyConflictChoices, planImport, resolveTarget, runImport } from "./import-runner.mjs";
 import { loadChoices, saveChoices } from "./settings.mjs";
-import { loadParser } from "./enrichment.mjs";
+import { loadParser, preloadIndexes } from "./enrichment.mjs";
 import { describeReport } from "./enrich-summary.mjs";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -67,6 +67,23 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   // Rendering
+
+  /** @override */
+  async _onRender(context, options) {
+    await super._onRender(context, options);
+    if ( this.#step === "choose" ) this.#preload();
+  }
+
+  /**
+   * Start reading the source indexes in the background, so that the analysis finds them ready. Nothing happens
+   * when the enrichment or the compendium lookup is off; a failure is only logged (the analysis reports it).
+   */
+  #preload() {
+    const s = this.#state;
+    if ( !s.enrich || !s.useCompendiums || !game.user.isGM ) return;
+    loadParser().then(parser => parser && preloadIndexes())
+      .catch(err => console.warn(`${MODULE_ID} | preloading the compendium indexes failed`, err));
+  }
 
   /** @override */
   async _prepareContext(options) {
@@ -226,6 +243,10 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
         break;
       case "enrich":
         this.form.elements.useCompendiums.disabled = !s.enrich;
+        this.#preload();
+        break;
+      case "useCompendiums":
+        this.#preload();
         break;
       case "targetPack":
         this.form.querySelectorAll(".cji-new-pack").forEach(el => el.toggleAttribute("hidden", s.targetPack !== "new"));
