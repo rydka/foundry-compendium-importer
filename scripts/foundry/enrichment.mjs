@@ -114,14 +114,16 @@ async function findInCompendiums(entries, parser, skipped, { keys, plans }) {
     if ( !wanted.has(found.pack) ) wanted.set(found.pack, new Map());
     wanted.get(found.pack).set(found.id, id);
   }
-  for ( const [collection, ids] of wanted ) {
+  // The documents are needed before the review: the enrichment builds the actor items from them (adjusted
+  // values of the summary, C23) and the enriched actor is then validated (C2). All packs are read at once.
+  await Promise.all(Array.from(wanted, async ([collection, ids]) => {
     const pack = game.packs.get(collection);
     const documents = await pack.getDocuments({ _id__in: Array.from(ids.keys()) });
     for ( const doc of documents ) {
       const data = game.items.fromCompendium(doc, { clearFolder: true });
       matches.set(ids.get(doc.id), { status: "found", data, uuid: doc.uuid, packLabel: pack.metadata.label });
     }
-  }
+  }));
   return matches;
 }
 
