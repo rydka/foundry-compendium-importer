@@ -18,6 +18,14 @@ async function report(onProgress, step) {
   await (globalThis.scheduler?.yield ? scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0)));
 }
 
+let migrationDataPromise;
+
+/** The dnd5e migration data (two static JSON files), fetched once per session. */
+export function loadMigrationData() {
+  migrationDataPromise ??= dnd5e.migrations.getMigrationData();
+  return migrationDataPromise;
+}
+
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const NOT_AN_OBJECT = { name: "", type: "", reasons: [{ key: `${KEY}.NotAnObject`, data: {} }] };
 const label = (entry) => String(entry?.name ?? entry?._id ?? "");
@@ -178,7 +186,7 @@ export async function analyzeEntries(entries, documentName, options = {}) {
   const { migrationData, idGen = () => foundry.utils.randomID(), enrich = false, compendiums = enrich, onProgress } = options;
   const result = { accepted: [], rejected: [], other: [], documentName };
   const checked = CHECKED_DOCUMENTS.includes(documentName);
-  const context = checked && { migrationData: migrationData ?? await dnd5e.migrations.getMigrationData(), idGen };
+  const context = checked && { migrationData: migrationData ?? await loadMigrationData(), idGen };
   if (checked && enrich) {
     context.parser = await loadParser();
     result.enrichment = { unavailable: !context.parser, counts: { enriched: 0, unchanged: 0, notEnriched: 0, reverted: 0 } };

@@ -1,7 +1,7 @@
 import { MODULE_ID, TYPE_FILTERS } from "../constants.mjs";
 import { parseImportFile, ImportFormatError } from "../core/parse.mjs";
 import { slugify, suggestPackFields, worldPackId } from "../core/naming.mjs";
-import { analyzeEntries } from "./validator.mjs";
+import { analyzeEntries, loadMigrationData } from "./validator.mjs";
 import { applyConflictChoices, planImport, resolveTarget, runImport } from "./import-runner.mjs";
 import { loadChoices, saveChoices } from "./settings.mjs";
 import { loadParser, preloadIndexes } from "./enrichment.mjs";
@@ -53,6 +53,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
 
   #step = "choose";
   #file = null;
+  #fileText = null; // read as soon as the file is chosen
   #nameTouched = false;
   #analysis = null;
   #busy = false;
@@ -76,14 +77,23 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   /**
-   * Start reading the source indexes in the background, so that the analysis finds them ready. Nothing happens
-   * when the enrichment or the compendium lookup is off; a failure is only logged (the analysis reports it).
+   * Start in the background what the analysis will wait for: the dnd5e migration data, and the source indexes
+   * when the enrichment and the compendium lookup are on. A failure is only logged (the analysis reports it).
    */
   #preload() {
+    if ( !game.user.isGM ) return;
+    const quiet = err => console.warn(`${MODULE_ID} | preloading failed`, err);
+    loadMigrationData().catch(quiet);
     const s = this.#state;
-    if ( !s.enrich || !s.useCompendiums || !game.user.isGM ) return;
-    loadParser().then(parser => parser && preloadIndexes())
-      .catch(err => console.warn(`${MODULE_ID} | preloading the compendium indexes failed`, err));
+    if ( !s.enrich || !s.useCompendiums ) return;
+    loadParser().then(parser => parser && preloadIndexes()).catch(quiet);
+  }
+
+  /** The text of the chosen file, read once; read again if the first read failed (file changed on disk). */
+  #readFile() {
+    const read = this.#file.text();
+    read.catch(() => { this.#fileText = null; });
+    return read;
   }
 
   /** @override */
@@ -278,6 +288,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     switch ( target.name ) {
       case "sourceFile": {
         this.#file = target.files[0] ?? null;
+        this.#fileText = this.#file ? this.#readFile() : null;
         this.form.querySelector(".cji-file-name").textContent = this.#file?.name ?? t("Source.NoFile");
         if ( this.#file && !s.newPackLabel ) {
           const suggestion = suggestPackFields(this.#file.name);
@@ -368,7 +379,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     if ( !this.#file ) return this.#fail("Error.NoFile");
     let parsed;
     try {
-      parsed = parseImportFile(await this.#file.text(), this.#file.name);
+      parsed = parseImportFile(await (this.#fileText ??= this.#readFile()), this.#file.name);
     } catch(err) {
       if ( err instanceof ImportFormatError ) return this.#fail(`Error.Format.${err.code}`, { line: err.line });
       throw err;
@@ -380,7 +391,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       ui.notifications.warn(warnings.at(-1));
     }
     const idGen = () => foundry.utils.randomID();
-    const migrationData = await dnd5e.migrations.getMigrationData();
+    const migrationData = await loadMigrationData();
     const enrich = s.enrich && !!(await loadParser());
     const onProgress = ({ stage, done, total }) => this.#status(t(`Progress.${stage}`, { done, total }));
     const result = await analyzeEntries(parsed.entries, documentName,
