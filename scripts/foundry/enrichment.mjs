@@ -54,12 +54,22 @@ export function getSourceOrder() {
   return resolveSources().filter(source => source.enabled).map(source => source.pack);
 }
 
+/**
+ * Index entries of one pack. The lookup only needs `_id`, `name` and `type`, which the index sent with the
+ * world already holds for every pack: no request, and no wait on the fuller indexes dnd5e asks for at startup.
+ * An empty index is requested once (a pack really empty stays empty).
+ */
+async function readIndex(pack) {
+  const index = pack.index.size ? pack.index : await pack.getIndex();
+  return Array.from(index.values());
+}
+
 /** Read the indexes of the sources, all at once. A pack that cannot be read is skipped and reported. */
 async function loadIndexes(order) {
   const skipped = [];
   const read = await Promise.all(order.map(async collection => {
     try {
-      return [collection, Array.from((await game.packs.get(collection).getIndex()).values())];
+      return [collection, await readIndex(game.packs.get(collection))];
     } catch(err) {
       console.warn(`${MODULE_ID} | ${collection} skipped`, err);
       skipped.push({ pack: collection, message: err.message });

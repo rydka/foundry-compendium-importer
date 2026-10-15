@@ -6,13 +6,16 @@ import { loadParser, prepareEnrichment } from "./enrichment.mjs";
 
 const KEY = "compendium-json-importer.Reason";
 const MAX_PATHS = 8;
-const PROGRESS_EVERY_MS = 50;
+const PROGRESS_EVERY_MS = 250;
 
-/** Tell the caller which step is running, then let the browser paint it (the analysis itself is synchronous). */
+/**
+ * Tell the caller which step is running, then let the browser paint it (the analysis itself is synchronous).
+ * `scheduler.yield` resumes before the other pending tasks; on a busy main thread a timeout can wait much longer.
+ */
 async function report(onProgress, step) {
   if (!onProgress) return;
   onProgress(step);
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await (globalThis.scheduler?.yield ? scheduler.yield() : new Promise((resolve) => setTimeout(resolve, 0)));
 }
 
 const isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
