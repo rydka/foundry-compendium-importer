@@ -56,6 +56,25 @@ export function itemTokens(item) {
   const tpl = acts.map((a) => a.target?.template).find((x) => x?.type);
   if (tpl) t.push(`template=${tpl.type} ${Number(tpl.size)}${tpl.width ? `x${Number(tpl.width)}` : ""}`);
 
+  // B9: a conditional / alternative result is a second activity of the same kind (one "variant" group per extra activity)
+  const main = new Set([attack, save, typed("damage")].filter(Boolean));
+  for (const a of acts) {
+    if (main.has(a) || !["attack", "save", "damage"].includes(a.type) || !a.name) continue;
+    t.push("variant=activity");
+    if (a.type === "attack") {
+      const at = a.attack ?? {};
+      const b = Number(String(at.bonus ?? "").replace(/^[+]/, ""));
+      if (at.flat && Number.isFinite(b) && String(at.bonus ?? "") !== "") t.push(`variant.attack=${at.type?.value || "-"}/${at.type?.classification || "-"} ${signed(b)}`);
+    }
+    if (a.type === "save") {
+      const dc = a.save?.dc?.formula;
+      if ([...(a.save?.ability ?? [])].length && String(dc ?? "") !== "") t.push(`variant.save=${[...a.save.ability][0]} ${dc} ${a.damage?.onSave || "none"}`);
+      for (const p of a.damage?.parts ?? []) t.push(`variant.saveDamage=${storedPart(p)}`);
+    } else {
+      for (const p of a.damage?.parts ?? []) if (p.number || p.bonus) t.push(`variant.damage=${storedPart(p)}`);
+    }
+  }
+
   const lr = system.identifier === "legendary-resistance";
   const rec = system.uses?.recovery?.[0];
   if (lr) {
