@@ -38,6 +38,10 @@
       {{/if}}
       {{#if notFound.length}}<p>{{localize "compendium-json-importer.Enrich.NotFound"}} {{#each notFound}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>{{/if}}
       {{#if ambiguous.length}}<p class="cji-warning">{{localize "compendium-json-importer.Enrich.Ambiguous"}} {{#each ambiguous}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>{{/if}}
+      {{#if notAutomated.length}}
+      <h5>{{localize "compendium-json-importer.Enrich.NotAutomated"}}</h5>
+      <ul class="cji-not-automated">{{#each notAutomated}}<li>{{this}}</li>{{/each}}</ul>
+      {{/if}}
     </details>
     {{/each}}
   </div>

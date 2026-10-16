@@ -42,9 +42,40 @@ function localizeValue(table, value) {
 
 const tidy = line => line.replace(/\s{2,}/g, " ").trim();
 
+// ---------------------------------------------------------------- passive effects (C26)
+
+/** CONFIG.DND5E tables that may name the scope of a plan effect, per kind (abilities and skills share no key). */
+const SCOPE_TABLES = {
+  resistance: ["damageTypes"], vulnerability: ["damageTypes"], damageReduction: ["damageTypes"],
+  immunity: ["damageTypes", "conditionTypes"], sense: ["senses"], speed: ["movementTypes"],
+  save: ["abilities"], check: ["abilities", "skills"], abilityScore: ["abilities"],
+  advantage: ["abilities", "skills"], disadvantage: ["abilities", "skills"]
+};
+const SIGNED = new Set(["ac", "attack", "damage", "save", "check"]);
+
+function scopeLabel(kind, scope) {
+  for ( const table of SCOPE_TABLES[kind] ?? [] ) {
+    if ( CONFIG.DND5E?.[table]?.[scope] !== undefined ) return configLabel(table, scope);
+  }
+  return scope === "all" ? game.i18n.localize(`${KEY}Effect.All`) : scope;
+}
+
+/** One group `{ kind, value, scopes }` of an added effect -> "damage reduction −3: bludgeoning, piercing". */
+function effectText({ kind, value, scopes }) {
+  const key = `${KEY}Effect.${kind}`;
+  const shown = SIGNED.has(kind) && (typeof value === "number") && (value > 0) ? `+${value}` : (value ?? "");
+  const data = { value: shown, scopes: (scopes ?? []).map(s => scopeLabel(kind, s)).join(", ") };
+  return tidy(game.i18n.has(key) ? game.i18n.format(key, data) : `${kind} ${data.value} ${data.scopes}`);
+}
+
+const NOT_AUTOMATED = `${LIBRARY}.Note.NotAutomated`;
+
 /** Turn a descriptor (from the parser or from the importer) into a sentence. */
 function text(descriptor) {
   const { key, data = {} } = descriptor;
+  if ( key === `${KEY}EffectAdded` ) {
+    return tidy(game.i18n.format(key, { name: data.name ?? "", details: (data.effects ?? []).map(effectText).join("; ") }));
+  }
   const tables = labelsFor(descriptor);
   const values = {};
   for ( const [field, value] of Object.entries(data) ) values[field] = localizeValue(tables[field], value);
@@ -107,26 +138,40 @@ function adjustedText({ field, from, to }) {
 }
 
 /**
- * Localized view of the report of one document (C14, C23).
+ * Localized view of the report of one document (C14, C23). The `Note.NotAutomated` remarks of the parser (C26:
+ * what dnd5e cannot apply without inventing it) go to their own list, as the sentence of the text, prefixed by the
+ * name of the feature.
  * @param {{changes: object[], notes?: object[], items: object[], reasons?: object[]}} report
- * @returns {{lines: string[], compendium: object[], notFound: string[], ambiguous: string[], reasons: string[]}}
+ * @returns {{lines: string[], compendium: object[], notFound: string[], ambiguous: string[], reasons: string[], notAutomated: string[]}}
  */
 export function describeReport(report) {
-  const view = { lines: [...report.changes ?? [], ...report.notes ?? []].map(text), compendium: [], notFound: [], ambiguous: [], reasons: [] };
+  const view = { lines: [], compendium: [], notFound: [], ambiguous: [], reasons: [], notAutomated: [] };
+  const prefixed = (name, line) => (name ? `${name} : ${line}` : line);
+  /** Sentences of the descriptors, the "not automated" ones apart; `prefix` names the item on its sentences. */
+  const collect = (descriptors, name, { prefix = true } = {}) => {
+    const lines = [];
+    for ( const d of descriptors ) {
+      if ( d.key === NOT_AUTOMATED ) view.notAutomated.push(prefixed(name, String(d.data?.raw ?? "")));
+      else lines.push(prefixed(prefix ? name : "", text(d)));
+    }
+    return lines;
+  };
+  view.lines.push(...collect([...report.changes ?? [], ...report.notes ?? []], ""));
   for ( const item of report.items ?? [] ) {
+    const descriptors = [...item.changes ?? [], ...item.notes ?? []];
     if ( item.origin === "compendium" ) {
       view.compendium.push({
         name: item.name,
         pack: item.pack,
         uuid: item.uuid,
         adjusted: (item.adjusted ?? []).map(adjustedText),
-        lines: [...item.changes ?? [], ...item.notes ?? []].map(text)
+        lines: collect(descriptors, item.name, { prefix: false }) // the block already shows the name
       });
       continue;
     }
     if ( (item.origin === "notFound") || item.notFound ) view.notFound.push(item.name);
     if ( item.origin === "ambiguous" ) view.ambiguous.push(item.name);
-    view.lines.push(...[...item.changes ?? [], ...item.notes ?? []].map(d => `${item.name} : ${text(d)}`));
+    view.lines.push(...collect(descriptors, item.name));
   }
   view.reasons = (report.reasons ?? []).map(text);
   return view;
