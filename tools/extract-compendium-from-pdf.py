@@ -414,6 +414,36 @@ def normalize_block_entry(entry):
     }
 
 
+def split_merged_block(block):
+    """Splits a block whose name holds several blocks ("Multiattack. Strength Drain", text "The Hand of Shadow makes
+    two attacks. Strength Drain. Melee Weapon Attack: ..."): each name takes the text up to the next one. A name the
+    text does not repeat is merged into its neighbour: the attack keeps the text that holds the attack line."""
+    names = [norm_name(n) for n in re.split(r"\.\s+", block["name"]) if norm_name(n)]
+    if len(names) < 2 or not all(re.match(r"^[A-Z]", n) and len(n.split()) <= 5 for n in names):
+        return [block]
+    out = []
+    current = {"name": names[0], "meta": "", "text": ""}
+    text = block["text"]
+    for name in names[1:]:
+        m = re.search(rf"(?:^|(?<=[.!?:]\s)){re.escape(name)}(?:\s*\(([^)]+)\))?\.\s*", text)
+        if not m:
+            if re.search(r"\b(Weapon|Spell)\s+Attack:", text, re.I):
+                current["name"] = name  # the text is the attack: it is named after the attack, not "Multiattack"
+            continue
+        current["text"] = norm_name(text[:m.start()])
+        out.append(current)
+        current = {"name": name, "meta": norm_name(m.group(1) or ""), "text": ""}
+        text = text[m.end():]
+    current["text"] = norm_name(text)
+    current["meta"] = current["meta"] or block.get("meta") or ""
+    out.append(current)
+    return out
+
+
+def split_merged_blocks(blocks):
+    return [part for block in blocks for part in split_merged_block(block)]
+
+
 def normalize_block_list(raw):
     if not raw:
         return []
@@ -431,7 +461,7 @@ def normalize_block_list(raw):
         block = normalize_block_entry(raw)
         if block:
             blocks.append(block)
-    return blocks
+    return split_merged_blocks(blocks)
 
 
 def build_creature_from_llm(data, page_number, lines=None):
@@ -917,7 +947,7 @@ def parse_named_blocks(section_lines):
             cur["text"] = norm_name((cur["text"] + " " if cur["text"] else "") + line)
     if cur:
         blocks.append(cur)
-    return blocks
+    return split_merged_blocks(blocks)
 
 def parse_damage_parts_from_text(text):
     parts = []
