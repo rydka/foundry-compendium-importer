@@ -290,10 +290,13 @@ function effectGroups(effects) {
 /**
  * C26: a passive feature whose plan has effects receives the transferred ActiveEffect that `toEffects` builds
  * (one effect, `transfer: true`), whether the item comes from the text or from a compendium.
+ * C27: a feature that already has an effect (file or compendium) is left alone: nothing is added nor doubled,
+ * so a second import of the same file changes nothing.
  */
 function addPassiveEffects(item, plan, ctx, entry) {
   const { parser } = ctx;
   if (!plan.effects?.length || typeof parser.toEffects !== "function") return;
+  if (Array.isArray(item.effects) && item.effects.length) return;
   let effects;
   try { effects = parser.toEffects(plan, { keys: ctx.keys, idGen: ctx.idGen, name: item.name, img: item.img }) ?? []; } catch { return; }
   for (const n of effects.notes ?? []) entry.notes.push(n);
