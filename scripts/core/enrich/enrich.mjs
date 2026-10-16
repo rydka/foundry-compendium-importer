@@ -265,12 +265,44 @@ function describeFilled(plan, filled, parser) {
     uses: has(/system\.uses/) ? plan.uses : null,
     recharge: has(/system\.uses/) ? plan.recharge : null,
     activation: has(/\.activation\./) ? plan.activation : null,
-    variants: [] // the added variants are reported by `activityAdded`, not described as activities of the plan
+    variants: [], // the added variants are reported by `activityAdded`, not described as activities of the plan
+    effects: [] // the passive effect is reported by `addPassiveEffects` (C26)
   };
   try { return parser.describe(partial) ?? []; } catch { return []; }
 }
 
 const activityAdded = next => ({ key: `${KEY}ActivityAdded`, data: { name: next.name ?? "" } });
+
+// ---------------------------------------------------------------- passive effects (C26, C27)
+
+/** The effects of a plan for the report: one group per kind and value, with its scopes ("−3: bludgeoning, piercing"). */
+function effectGroups(effects) {
+  const groups = [];
+  for (const e of effects) {
+    const on = e.on ?? null;
+    let g = groups.find(x => x.kind === e.kind && x.value === e.value && x.on === on);
+    if (!g) { g = { kind: e.kind, value: e.value ?? null, on, scopes: [] }; groups.push(g); }
+    if (e.scope && !g.scopes.includes(e.scope)) g.scopes.push(e.scope);
+  }
+  return groups;
+}
+
+/**
+ * C26: a passive feature whose plan has effects receives the transferred ActiveEffect that `toEffects` builds
+ * (one effect, `transfer: true`), whether the item comes from the text or from a compendium.
+ */
+function addPassiveEffects(item, plan, ctx, entry) {
+  const { parser } = ctx;
+  if (!plan.effects?.length || typeof parser.toEffects !== "function") return;
+  let effects;
+  try { effects = parser.toEffects(plan, { keys: ctx.keys, idGen: ctx.idGen, name: item.name, img: item.img }) ?? []; } catch { return; }
+  for (const n of effects.notes ?? []) entry.notes.push(n);
+  const transferred = effects.filter(e => e.transfer);
+  if (!transferred.length) return;
+  item.effects = [...(item.effects ?? []), ...transferred];
+  entry.changes.push({ key: `${KEY}EffectAdded`, data: { name: item.name, effects: effectGroups(plan.effects) } });
+  entry.status = "enriched";
+}
 
 // ---------------------------------------------------------------- one item
 
@@ -403,6 +435,7 @@ function enrichItem(item, ctx, { fromActor }) {
     const filled = enrichText(result, plan, ctx, entry);
     entry.status = filled.length ? "enriched" : "unchanged";
   }
+  addPassiveEffects(result, plan, ctx, entry);
   for (const n of plan.notes ?? []) entry.notes.push(n);
   for (const n of plan.ambiguous ?? []) entry.notes.push(n);
 
