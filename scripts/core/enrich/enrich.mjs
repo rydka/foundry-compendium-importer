@@ -114,6 +114,42 @@ function fillActivity(act, gen, filled, base, { weapon, converted } = {}) {
   if (g.range?.value && act.range?.units === "self" && act.range.value === g.range.value) act.range.units = g.range.units ?? "ft";
 }
 
+// Abilities a weapon attack can use, the default first (dnd5e: melee STR, ranged DEX; finesse and natural both).
+const WEAPON_ABILITIES = { melee: ["str", "dex"], ranged: ["dex", "str"] };
+const abilityMod = score => (Number.isFinite(Number(score)) && score !== "" && score !== null ? Math.floor((Number(score) - 10) / 2) : null);
+
+/**
+ * Weapon of an NPC whose attack keeps the base damage: dnd5e adds the modifier of `attack.ability` to the base, so
+ * the total of the stat block ("Hit: 7 (1d4 + 4)") is only reached when the ability is the one whose modifier is the
+ * written bonus (Poltergeist, STR 1 DEX 18: the default STR would roll 1d4-5). An empty ability is filled with it,
+ * as the system's own NPCs do (Air Elemental, Thunderous Slam: ability dex); with no matching ability, the default
+ * one is written and the remainder goes to an empty `damage.base.bonus`. Filled fields are never changed (C3).
+ */
+function alignWeaponAbility(item, act, gen, abilities, filled) {
+  if (!abilities || !isEmpty(act.attack?.ability) || act.damage?.includeBase === false || !isEmpty(act.damage?.parts)) return;
+  const classification = act.attack?.type?.classification || gen.attack?.type?.classification;
+  if (classification && classification !== "weapon") return;
+  const base = item.system.damage.base;
+  const written = gen.damage?.parts?.[0];
+  if (!written || base.custom?.enabled || isEmpty(base.number)) return;
+  if (Number(written.number) !== Number(base.number) || Number(written.denomination) !== Number(base.denomination)) return;
+  const writtenBonus = isEmpty(written.bonus) ? 0 : Number(written.bonus);
+  const baseBonus = isEmpty(base.bonus) ? 0 : Number(base.bonus);
+  if (!Number.isFinite(writtenBonus) || !Number.isFinite(baseBonus)) return;
+  const candidates = WEAPON_ABILITIES[act.attack?.type?.value || gen.attack?.type?.value] ?? WEAPON_ABILITIES.melee;
+  const mods = Object.fromEntries(candidates.map(a => [a, abilityMod(abilities[a]?.value)]));
+  if (mods[candidates[0]] === null) return;
+  let ability = candidates.find(a => mods[a] === writtenBonus - baseBonus);
+  if (!ability) {
+    if (!isEmpty(base.bonus)) return; // the file's bonus stays, nothing explains the written total
+    ability = candidates[0];
+    base.bonus = String(writtenBonus - mods[ability]);
+    filled.push({ path: "system.damage.base.bonus", value: base.bonus });
+  }
+  act.attack = { ...(act.attack ?? {}), ability };
+  filled.push({ path: `system.activities.${act._id}.attack.ability`, value: ability });
+}
+
 function pickGenerated(generated, used, wanted) {
   const i = generated.findIndex((g, n) => !used.has(n) && wanted(g));
   if (i < 0) return null;
@@ -231,6 +267,7 @@ function applyActivities(item, generated, ctx, filled, plan) {
     if (!g) continue;
     placed.set(generated.indexOf(g), act._id);
     fillActivity(act, g, filled, `system.activities.${act._id}`, { weapon: weaponHasBase });
+    if (weaponHasBase && act.type === "attack") alignWeaponAbility(item, act, g, ctx.abilities, filled);
   }
   if (!existing.length || converted) {
     for (const g of generated) {
@@ -636,6 +673,7 @@ export function enrichEntry(data, documentName, ctx) {
     return { data: item, report: finish(report) };
   }
   const items = [];
+  c.abilities = out.system?.abilities ?? null; // weapon attacks of the actor take the ability of the written bonus
   for (const it of out.items ?? []) {
     const { item, entry } = enrichItem(it, c, { fromActor: true });
     items.push(item);
