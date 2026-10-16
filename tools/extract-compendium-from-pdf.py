@@ -1099,6 +1099,36 @@ def is_numeric_bonus(value):
     return isinstance(value, str) and re.match(r"^-?\d+(\.\d+)?$", value.strip())
 
 
+# Abilities a weapon attack of an NPC can use, the default first (dnd5e: melee STR, ranged DEX; natural weapons
+# and finesse accept both).
+WEAPON_ATTACK_ABILITIES = {"melee": ("str", "dex"), "ranged": ("dex", "str")}
+
+
+def pick_weapon_attack_ability(mode_value, abilities, written_bonus):
+    """Chooses the ability of a weapon attack from the bonus written in the stat block ("1d4 + 4").
+
+    dnd5e adds the modifier of `attack.ability` to the base damage of a weapon, so the base keeps the dice only
+    and the ability must be the one whose modifier is the written bonus, as the system's own NPCs do (Air
+    Elemental, Thunderous Slam: 2d8, ability dex). Returns (ability, extra): `extra` is the part of the written
+    bonus the modifier does not explain (goes to `damage.base.bonus`), or None when the scores are unknown."""
+    candidates = WEAPON_ATTACK_ABILITIES.get(mode_value) or WEAPON_ATTACK_ABILITIES["melee"]
+    mods = {a: ability_mod_from_score((abilities or {}).get(a)) for a in candidates}
+    default = candidates[0]
+    if written_bonus is None or mods[default] is None:
+        return default, None
+    for ability in candidates:
+        if mods[ability] == written_bonus:
+            return ability, 0
+    return default, written_bonus - mods[default]
+
+
+def written_bonus_of(damage_part):
+    """Numeric bonus of a built damage part ("" counts as 0), None for a custom formula."""
+    if damage_part["custom"]["enabled"]:
+        return None
+    return int(damage_part["bonus"]) if is_numeric_bonus(damage_part["bonus"]) else 0
+
+
 def build_damage_part(formula, dtype):
     data = {
         "number": None,
@@ -1172,24 +1202,25 @@ def apply_parsed_attack_to_weapon_item(item_data, creature, parsed_attack, secti
 
     item_data.setdefault("system", {})
     item_data["system"].setdefault("damage", {})
+    abilities = creature.get("abilities") or {}
+    # Weapon: the base keeps the dice only, the ability of the attack supplies the written bonus and the
+    # remainder, if any, goes to `damage.base.bonus` (dnd5e adds the modifier of the ability itself).
     if base_part:
         base_damage = build_damage_part(base_part["formula"], base_part["dtype"])
-        if mode["classification"] == "weapon" and not base_damage["custom"]["enabled"]:
-            abilities = creature.get("abilities") or {}
-            mod = ability_mod_from_score(abilities.get(ability))
-            if mod is not None and is_numeric_bonus(base_damage["bonus"]):
-                extra = int(base_damage["bonus"]) - mod
+        if mode["classification"] == "weapon":
+            ability, extra = pick_weapon_attack_ability(mode["value"], abilities, written_bonus_of(base_damage))
+            if extra is not None:
                 base_damage["bonus"] = str(extra) if extra else ""
         item_data["system"]["damage"]["base"] = base_damage
 
     if parsed_attack.get("versatile"):
         vers = parsed_attack["versatile"]
         versatile_damage = build_damage_part(vers["formula"], vers["dtype"])
-        if mode["classification"] == "weapon" and not versatile_damage["custom"]["enabled"]:
-            abilities = creature.get("abilities") or {}
+        if mode["classification"] == "weapon":
+            written = written_bonus_of(versatile_damage)
             mod = ability_mod_from_score(abilities.get(ability))
-            if mod is not None and is_numeric_bonus(versatile_damage["bonus"]):
-                extra = int(versatile_damage["bonus"]) - mod
+            if written is not None and mod is not None:
+                extra = written - mod
                 versatile_damage["bonus"] = str(extra) if extra else ""
         item_data["system"]["damage"]["versatile"] = versatile_damage
         props = set(item_data["system"].get("properties") or [])
