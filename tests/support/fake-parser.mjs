@@ -25,6 +25,8 @@ export function makeParser(plans = {}, actorPlan = null) {
     toActorPatch: (plan, options) => (plan?._patch
       ? { system: JSON.parse(JSON.stringify(plan._patch)), notes: [] }
       : toActorPatch(plan, options)),
+    // `_effects` (effects built by the "library") and `_effectNotes` (its Note.NotAutomated remarks)
+    toEffects: (plan) => Object.assign(JSON.parse(JSON.stringify(plan._effects ?? [])), { notes: JSON.parse(JSON.stringify(plan._effectNotes ?? [])) }),
     toSpellStubs: () => [],
     describe: () => [],
     keysFromConfig: () => ({})
