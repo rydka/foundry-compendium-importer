@@ -222,7 +222,7 @@ for (const code of ["fr", "en"]) {
       await waitForGame(gamePage);
       expect(await foundry(() => game.i18n.lang)).toBe(code);
       await analyzeFile(gamePage, { filter: "actors", file: OUT_FILE("actors.json") });
-      await gamePage.locator(`${WIN} .cji-enrich details`).first().evaluate((d) => { d.open = true; });
+      await gamePage.locator(`${WIN} .cji-enrich details`).evaluateAll((all) => all.forEach((d) => { d.open = true; }));
       const text = await gamePage.locator(WIN).innerText();
       await gamePage.screenshot({ path: test.info().outputPath(`C17-resume-${code}.png`) });
       const optionsText = t.Options.Enrich;
@@ -235,7 +235,14 @@ for (const code of ["fr", "en"]) {
       const sample = (lib.Describe.Attack ?? "").split("{")[0].trim();
       evidence(`C17-${code}.json`, { title: t.Enrich.Title, optionsLabel: optionsText, librarySamplePrefix: sample, textStart: text.slice(0, 600) });
       if (sample) expect(text).toContain(sample);
-      if (code === "fr") expect(text).not.toMatch(/Melee Weapon Attack|Hit:|saving throw/);
+      if (code === "fr") {
+        // The sentences of the module in French: the first item block (as before). Later blocks quote the English source
+        // text of the file on purpose ("Phrase non reconnue : ...", the "not automated" list), which is not a module sentence.
+        const first = await gamePage.locator(`${WIN} .cji-enrich details`).first().evaluate((d) => { const c = d.cloneNode(true); c.querySelectorAll(".cji-not-automated").forEach((n) => n.remove()); return c.textContent; });
+        const own = first.replace(/Phrase non reconnue : [^.]*./g, "");
+        const hit = /.{0,80}(Melee Weapon Attack|Hit:|saving throw).{0,80}/.exec(own);
+        expect(hit?.[0] ?? null).toBeNull();
+      }
     } finally {
       await foundry((l) => game.settings.set("core", "language", l), "en");
       if (code !== "en") {

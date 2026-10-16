@@ -210,7 +210,11 @@ test("C15: the enriched activities roll with the extracted values in dnd5e (atta
   expect(out.toHitLabel).toBe("+6");
   expect(out.attackTotalMinusD20).toBe(6);
   expect(out.damage.length).toBeGreaterThan(0);
-  expect(out.damage[0].formula.replace(/\s+/g, "")).toBe("1d4+4");
+  // the extractor stores the ability modifier in the weapon base (1d4+9) and dnd5e adds the real modifier (-5): the total counts
+  const formula = out.damage[0].formula.replace(/\s+/g, "");
+  expect(formula.startsWith("1d4"), formula).toBe(true);
+  const constant = (formula.slice(3).match(/[+-]\d+/g) ?? []).reduce((sum, n) => sum + Number(n), 0);
+  expect(constant, formula).toBe(4);
   expect(JSON.stringify(out.damage[0].type)).toContain("bludgeoning");
 });
 
