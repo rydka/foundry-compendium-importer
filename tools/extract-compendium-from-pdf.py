@@ -1053,6 +1053,20 @@ def parse_save_from_text(text):
     return {"dc": dc, "ability": ability, "parts": parts, "onSave": on_save, "range": range_info, "area": area, "target": target}
 
 
+FIRST_DAMAGE_RE = re.compile(r"\(\s*\d+d\d+[^)]*\)\s*[a-z]+\s+damage|\b\d+d\d+(?:\s*[+\-]\s*\d+)?\s*[a-z]+\s+damage", re.I)
+
+
+def hit_damage_clause(text):
+    """The damage of the hit: the sentence of the first damage, with its "plus ..." parts. Damage taken later stays in
+    the description only (Abduct: "... is transported to a demiplane ... and takes 10 (3d6) necrotic damage at the
+    start of each of its turns" is not a part of the attack)."""
+    m = FIRST_DAMAGE_RE.search(text or "")
+    if not m:
+        return text
+    end = re.search(r"\.(?=\s+[A-Z]|\s*$)", text[m.end():])
+    return text[m.start():m.end() + (end.start() if end else len(text))]
+
+
 def parse_attack_from_text(text):
     cleaned = norm_name(text)
     cleaned = cleaned.replace("\u2212", "-").replace("\u2013", "-").replace("\u2014", "-").replace("\uFF0B", "+")
@@ -1069,7 +1083,7 @@ def parse_attack_from_text(text):
     to_hit = int(re.sub(r"\s+", "", m.group(3)))
     range_text = re.sub(r"[.\s]+$", "", norm_name(m.group(4)))
     hit_text = norm_name(m.group(5) or "")
-    damage_text = hit_text or range_text
+    damage_text = hit_damage_clause(hit_text or range_text)
     range_info = parse_attack_range_info(range_text)
     target = parse_target_from_text(range_text)
     parsed_parts = parse_damage_parts_from_text(damage_text)
