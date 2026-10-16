@@ -12,7 +12,13 @@ Optional LLM parsing (local Llama via HTTP):
 Two-column PDFs (lines of both columns interleave, e.g. "Better Undead Compendium.pdf"): the regex parser misses
 most stat blocks, use the LLM with --llm-mode prefer. The stat lines (challenge, senses, languages, saving throws,
 skills, damage and condition traits) are always read from the page text, see apply_stat_lines():
-  python extract-compendium-from-pdf.py --pdf "tools/Better Undead Compendium.pdf" --out-dir tools/out --llm --llm-model llama3.1:8b --llm-mode prefer --llm-timeout 300
+  python extract-compendium-from-pdf.py --pdf "tools/Better Undead Compendium.pdf" --out-dir tools/out --llm --llm-model llama3.1:8b --llm-mode prefer --llm-timeout 300 --expect-creatures 12
+
+Names and number of creatures come from the page text, never from the LLM: every page with a stat block (size and
+type line followed by "Armor Class") gives one creature named after the block title, see find_stat_block_title().
+A block that neither the LLM nor the regex parser can read stops the extraction and nothing is written; so does a
+number of blocks other than --expect-creatures. Armor class, hit points, speed and ability scores are read from the
+text too; the LLM answers with a fixed seed (--llm-seed) and temperature 0.
 
 Dependencies:
   pip install pdfplumber
@@ -184,11 +190,18 @@ def call_llm(messages, config):
     headers = {"Content-Type": "application/json"}
 
     if provider == "ollama":
+        options = {}
         if config.get("temperature") is not None:
-            payload["options"] = {"temperature": config["temperature"]}
+            options["temperature"] = config["temperature"]
+        if config.get("seed") is not None:
+            options["seed"] = config["seed"]
+        if options:
+            payload["options"] = options
     else:
         if config.get("temperature") is not None:
             payload["temperature"] = config["temperature"]
+        if config.get("seed") is not None:
+            payload["seed"] = config["seed"]
         api_key = config.get("api_key")
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
@@ -421,15 +434,17 @@ def normalize_block_list(raw):
     return blocks
 
 
-def build_creature_from_llm(data, page_number):
+def build_creature_from_llm(data, page_number, lines=None):
     name = norm_name(data.get("name") or "")
     if not name:
         return None
 
-    ac = coerce_ac(data.get("ac") or data.get("armor_class"))
-    hp = coerce_hp(data.get("hp") or data.get("hit_points"))
-    speed = coerce_speed(data.get("speed"))
-    abilities = coerce_abilities(data.get("abilities"))
+    # The values read from the page text win over the LLM (same result from one run to the next).
+    lines = lines or []
+    ac = parse_ac(lines) or coerce_ac(data.get("ac") or data.get("armor_class"))
+    hp = parse_hp(lines) or coerce_hp(data.get("hp") or data.get("hit_points"))
+    speed = parse_speed(lines) or coerce_speed(data.get("speed"))
+    abilities = parse_abilities(lines) or coerce_abilities(data.get("abilities"))
 
     if not has_required_creature_stats(ac, hp, speed, abilities):
         return None
@@ -517,7 +532,7 @@ def parse_page_with_llm(lines, page_number, llm_config):
         return None
     if kind_key in {"creature", "monster", "npc"}:
         logging.info("LLM page %s: kind=creature", page_number)
-        creature = build_creature_from_llm(data, page_number)
+        creature = build_creature_from_llm(data, page_number, lines)
         if not creature:
             logging.info("LLM page %s: ignored (missing stat block)", page_number)
         return creature
@@ -545,8 +560,24 @@ def labelled_value(lines, label, max_lines=3):
     return norm_name(" ".join(parts)) or None
 
 
+def labelled_match(lines, label, pattern):
+    """Value of a stat line that must match `pattern`: the rest of the label's line, or the first of the three
+    following lines that matches (two-column layouts put a line of the other column in between: "Hit Points Marshal
+    Undead." / "136 (16d8 + 64) Unless the Phantom...")."""
+    idx = next((i for i, l in enumerate(lines) if re.match(rf"^{re.escape(label)}\b", l, re.I)), -1)
+    if idx < 0:
+        return None
+    rest = re.sub(rf"^{re.escape(label)}\s*", "", lines[idx], flags=re.I).strip()
+    for candidate in [rest] + lines[idx + 1:idx + 4]:
+        if candidate is not rest and (STAT_LABEL_RE.match(candidate) or ABILITY_ROW_RE.search(candidate)):
+            break
+        if re.match(pattern, candidate, re.I):
+            return candidate
+    return None
+
+
 def parse_hp(lines):
-    raw = labelled_value(lines, "Hit Points", max_lines=1)
+    raw = labelled_match(lines, "Hit Points", r"\d+\b")
     m = re.match(r"(\d+)\s*(?:\(([^)]+)\))?", raw or "")
     if not m:
         return None
@@ -554,7 +585,7 @@ def parse_hp(lines):
 
 
 def parse_ac(lines):
-    raw = labelled_value(lines, "Armor Class", max_lines=1)
+    raw = labelled_match(lines, "Armor Class", r"\d+\b")
     m = re.match(r"(\d+)(?:\s*\(([^)]+)\))?", raw or "")
     if not m:
         return None
@@ -562,7 +593,7 @@ def parse_ac(lines):
 
 
 def parse_speed(lines):
-    s = labelled_value(lines, "Speed", max_lines=1)
+    s = labelled_match(lines, "Speed", r"((walk|fly|swim|climb|burrow)\s+)?\d+\s*ft")
     if not s:
         return None
     parts = [p.strip() for p in s.split(",")]
@@ -1315,6 +1346,43 @@ def make_actor_data(name, atype="npc"):
     return {"_id": random_id(), "name": name, "type": atype, "system": {}, "items": []}
 
 
+CREATURE_TYPES = ("aberration", "beast", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "giant",
+                  "humanoid", "monstrosity", "ooze", "plant", "undead")
+# Size and type line of a stat block: "Medium undead (ghost), any alignment", "Medium undead/fiend (wraith)".
+SIZE_TYPE_RE = re.compile(r"^(Tiny|Small|Medium|Large|Huge|Gargantuan)\b[A-Za-z/ ]*?\b(" + "|".join(CREATURE_TYPES)
+                          + r")s?\b", re.I)
+SECTION_TITLES = {"action", "actions", "bonus action", "bonus actions", "reaction", "reactions", "legendary actions",
+                  "lair actions", "mythic actions", "traits"}
+TITLE_SMALL_WORDS = {"of", "the", "a", "an", "and", "in", "on"}
+
+
+def is_title_line(line):
+    """A stat block title: a short Title Case line, not a feature ("Shadow Meld."), a section or a stat label."""
+    s = norm_name(line)
+    words = s.split()
+    if not words or len(words) > 4 or len(s) > 40 or s[-1] in ".,:;" or s.lower() in SECTION_TITLES:
+        return False
+    if SIZE_TYPE_RE.match(s) or STAT_LABEL_RE.match(s) or not words[0][0].isupper():
+        return False
+    return all(w[0].isupper() or w.lower() in TITLE_SMALL_WORDS for w in words)
+
+
+def find_stat_block_title(lines):
+    """Name of the stat block of a page, read from the text (never from the LLM): the nearest title line above the
+    size and type line that an "Armor Class" line follows. On two-column pages, lines of the other column sit in
+    between ("Phantom" / "Shadow Meld." / "While in dim light..." / "Medium undead/fiend (wraith), neutral evil").
+    None when the page has no stat block."""
+    for i, line in enumerate(lines):
+        if not SIZE_TYPE_RE.match(line):
+            continue
+        if not any(re.match(r"^Armor Class\b", l, re.I) for l in lines[i + 1:i + 6]):
+            continue
+        for candidate in reversed(lines[max(0, i - 12):i]):
+            if is_title_line(candidate):
+                return norm_name(candidate)
+    return None
+
+
 def parse_creature_from_lines(lines, page_number):
     idx_ac = next((i for i, l in enumerate(lines) if re.match(r"^Armor Class\b", l, re.I)), -1)
     idx_hp = next((i for i, l in enumerate(lines) if re.match(r"^Hit Points\b", l, re.I)), -1)
@@ -1593,7 +1661,10 @@ def main():
                         help="LLM usage: fallback, prefer, or only.")
     parser.add_argument("--llm-timeout", type=int, default=60, help="LLM request timeout in seconds.")
     parser.add_argument("--llm-temperature", type=float, default=0.0, help="LLM sampling temperature.")
+    parser.add_argument("--llm-seed", type=int, default=0, help="LLM sampling seed (same answers from run to run).")
     parser.add_argument("--llm-api-key", default="", help="API key for openai-compatible endpoints.")
+    parser.add_argument("--expect-creatures", type=int, default=0,
+                        help="Number of stat blocks the PDF must contain (0 = no check). Stops the extraction otherwise.")
     parser.add_argument("--log-level", default="INFO", help="Logging level (DEBUG, INFO, WARNING, ERROR).")
     args = parser.parse_args()
 
@@ -1618,6 +1689,7 @@ def main():
             "mode": args.llm_mode,
             "timeout": args.llm_timeout,
             "temperature": args.llm_temperature,
+            "seed": args.llm_seed,
             "api_key": api_key,
         }
         logging.info(
@@ -1631,6 +1703,17 @@ def main():
 
     found_creatures = []
     found_magic_items = []
+    blocks = []  # stat blocks read from the page text: {"page", "name"}
+
+    def accept_creature(creature, lines, title, page_num):
+        """A creature takes the name of its stat block in the text, never the LLM's; one found on a page whose text
+        has no stat block is dropped (the number of creatures is the number of blocks of the text)."""
+        if not title:
+            logging.warning("Page %s: creature %r ignored, no stat block in the page text", page_num, creature.get("name"))
+            return False
+        creature["name"] = title
+        found_creatures.append(apply_stat_lines(creature, lines))
+        return True
 
     with pdfplumber.open(pdf_path) as pdf:
         total_pages = len(pdf.pages)
@@ -1643,41 +1726,54 @@ def main():
             if not joined or len(joined) < args.min_text:
                 logging.debug("Page %s: skipped (min text)", page_num)
                 continue
+            title = find_stat_block_title(lines)
+            if title:
+                logging.info("Page %s: stat block %r", page_num, title)
+                blocks.append({"page": page_num, "name": title})
 
             if llm_config and llm_config["mode"] in {"prefer", "only"}:
                 logging.info("Page %s: LLM parse (prefer/only)", page_num)
                 parsed = parse_page_with_llm(lines, page_num, llm_config)
-                if parsed:
-                    if parsed.get("kind") == "creature":
-                        found_creatures.append(apply_stat_lines(parsed, lines))
-                    elif parsed.get("kind") == "magicItem":
-                        found_magic_items.append(parsed)
+                if parsed and parsed.get("kind") == "creature" and accept_creature(parsed, lines, title, page_num):
                     continue
-                if llm_config["mode"] == "only":
+                if parsed and parsed.get("kind") == "magicItem" and not title:
+                    found_magic_items.append(parsed)
+                    continue
+                if llm_config["mode"] == "only" and not title:
                     logging.info("Page %s: LLM only mode, skipping fallback", page_num)
                     continue
 
             creature = parse_creature_from_lines(lines, page_num)
-            if creature:
+            if creature and accept_creature(creature, lines, title, page_num):
                 logging.info("Page %s: regex creature detected", page_num)
-                found_creatures.append(creature)
                 continue
 
-            magic_item = parse_magic_item_from_lines(lines, page_num)
-            if magic_item:
-                logging.info("Page %s: regex magic item detected", page_num)
-                found_magic_items.append(magic_item)
-                continue
-
-            if llm_config and llm_config["mode"] == "fallback":
-                logging.info("Page %s: LLM parse (fallback)", page_num)
-                parsed = parse_page_with_llm(lines, page_num, llm_config)
-                if parsed:
-                    if parsed.get("kind") == "creature":
-                        found_creatures.append(apply_stat_lines(parsed, lines))
-                    elif parsed.get("kind") == "magicItem":
-                        found_magic_items.append(parsed)
+            if not title:
+                magic_item = parse_magic_item_from_lines(lines, page_num)
+                if magic_item:
+                    logging.info("Page %s: regex magic item detected", page_num)
+                    found_magic_items.append(magic_item)
                     continue
+
+            if llm_config and (llm_config["mode"] == "fallback" or title):
+                # Fallback mode, or a stat block of the text that the first LLM answer and the regex both missed.
+                logging.info("Page %s: LLM parse (%s)", page_num, "fallback" if llm_config["mode"] == "fallback" else "retry")
+                parsed = parse_page_with_llm(lines, page_num, llm_config)
+                if parsed and parsed.get("kind") == "creature":
+                    accept_creature(parsed, lines, title, page_num)
+                elif parsed and parsed.get("kind") == "magicItem" and not title:
+                    found_magic_items.append(parsed)
+
+    # Every stat block of the text gives a creature: a missing one stops the extraction, no incomplete file.
+    found_pages = {c["page"] for c in found_creatures}
+    missing = [b for b in blocks if b["page"] not in found_pages]
+    for b in missing:
+        logging.error("Stat block %r (page %s) could not be extracted", b["name"], b["page"])
+    if missing:
+        raise SystemExit(f"Extraction stopped: {len(missing)} of {len(blocks)} stat blocks missing, nothing written.")
+    if args.expect_creatures and len(blocks) != args.expect_creatures:
+        raise SystemExit(f"Extraction stopped: {len(blocks)} stat blocks in the text "
+                         f"({', '.join(b['name'] for b in blocks)}), {args.expect_creatures} expected, nothing written.")
 
     items = []
     actors = []
