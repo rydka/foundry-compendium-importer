@@ -1368,6 +1368,19 @@ def apply_save_activity_to_feat(item_data, save_data, section_label, name):
     item_data["system"]["activities"] = {activity_id: activity}
 
 
+def add_save_after_attack(item_data, text, section_label, name):
+    """An attack whose hit calls for a saving throw ("Hit: 24 (4d8 + 6) necrotic damage. The target must succeed on
+    a DC 16 Constitution saving throw or ...") gets a save activity after its attack activity. The damage of the hit
+    belongs to the attack: the save has none."""
+    save = parse_save_from_text(text or "")
+    if not save:
+        return
+    save = dict(save, parts=[], onSave="none")
+    holder = {}
+    apply_save_activity_to_feat(holder, save, section_label, f"{name} (save)" if name else "Save")
+    item_data.setdefault("system", {}).setdefault("activities", {}).update(holder["system"]["activities"])
+
+
 def apply_utility_activity_to_feat(item_data, section_label, name):
     activity_id = random_id()
     activation_type = get_activation_type_from_section(section_label)
@@ -1798,6 +1811,7 @@ def build_items_for_creature(creature):
             meta = f"<em>{block['meta']}</em><br/>" if block.get("meta") else ""
             wpn["system"]["description"]["value"] = f"<p>{meta}{block['text']}</p>"
             apply_parsed_attack_to_weapon_item(wpn, creature, parsed_attack, section_label, block["name"])
+            add_save_after_attack(wpn, block["text"], section_label, block["name"])
             created.append(wpn)
 
             emb = deepcopy(wpn)
