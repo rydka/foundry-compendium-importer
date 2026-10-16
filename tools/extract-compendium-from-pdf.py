@@ -17,8 +17,9 @@ skills, damage and condition traits) are always read from the page text, see app
 Names and number of creatures come from the page text, never from the LLM: every page with a stat block (size and
 type line followed by "Armor Class") gives one creature named after the block title, see find_stat_block_title().
 A block that neither the LLM nor the regex parser can read stops the extraction and nothing is written; so does a
-number of blocks other than --expect-creatures. Armor class, hit points, speed and ability scores are read from the
-text too; the LLM answers with a fixed seed (--llm-seed) and temperature 0.
+number of blocks other than --expect-creatures. The block is read from the page layout (columns, fonts), see
+read_stat_block(): stat lines, and every trait and action with its exact text. The LLM is only asked when the
+layout cannot be read (and for magic items), with a fixed seed (--llm-seed) and temperature 0.
 
 Dependencies:
   pip install pdfplumber
@@ -1427,6 +1428,233 @@ def find_stat_block_title(lines):
     return None
 
 
+# ---------------------------------------------------------------- stat block read from the page layout
+# The stat block is read column by column with the fonts of its words: the title is set large, the section headers
+# ("Actions") in a medium font, and each trait or action starts with its name in bold italic ("Soul Drain."). A
+# medium heading that is not a section ("Threadnotes: ...") starts a sidebar, which ends the block.
+
+SECTION_KEYS = {"actions": "actions", "action": "actions", "bonus actions": "bonus", "bonus action": "bonus",
+                "reactions": "reactions", "reaction": "reactions", "legendary actions": "legendary",
+                "lair actions": "legendary", "mythic actions": "legendary"}
+# Section headers that are a trait of their own (the Lich's "Spellcasting" header and its text)
+HEADER_TRAITS = {"spellcasting", "innate spellcasting"}
+TITLE_MIN_SIZE = 15
+HEADER_MIN_SIZE = 10
+
+
+def font_family(fontname):
+    """'GAAAAA+ScalySansRemakeBoldItal' -> 'scalysansremake'."""
+    name = str(fontname or "").split("+")[-1].lower()
+    return re.sub(r"[-_,]?(regular|regul|bold|ital|italic|oblique|medium|semibold|light|mt|psmt)+$", "", name)
+
+
+def is_bold_italic(word):
+    name = str(word.get("fontname") or "").lower()
+    return "bold" in name and "ital" in name
+
+
+def is_footer_line(text):
+    """Running header/footer of the page: letters doubled many times ("TTTTTTTTHHHHHHHH...", "1111111111555...")."""
+    compact = re.sub(r"\s+", "", text)
+    return bool(compact) and bool(re.fullmatch(r"(?:(.)\1{3,})+[’']?(?:(.)\2{3,})*", compact))
+
+
+def column_split(words, width):
+    """x of the gap between the two columns (the fewest words crossing it near the middle), None for one column."""
+    best = None
+    for x in range(int(width * 0.4), int(width * 0.6) + 1):
+        crossing = sum(1 for w in words if w["x0"] < x < w["x1"])
+        key = (crossing, abs(x - width / 2))
+        if best is None or key < best[0]:
+            best = (key, x)
+    if best is None or best[0][0] > 3:
+        return None
+    return best[1]
+
+
+def join_words(words):
+    """Words of a line with a space only where the layout has one (a word set in another font is a word of its own:
+    "invisible" in italic then "." stays "invisible.")."""
+    out = ""
+    prev = None
+    for w in words:
+        if prev is not None:
+            out += "" if w["x0"] - prev["x1"] < 1.0 else " "
+        out += w["text"]
+        prev = w
+    return norm_name(out)
+
+
+def group_lines(words):
+    lines = []
+    for w in sorted(words, key=lambda w: (round(w["top"], 1), w["x0"])):
+        if lines and abs(w["top"] - lines[-1]["top"]) <= 2.5:
+            lines[-1]["words"].append(w)
+        else:
+            lines.append({"top": w["top"], "words": [w]})
+    for line in lines:
+        line["words"].sort(key=lambda w: w["x0"])
+        line["text"] = join_words(line["words"])
+        line["size"] = max(float(w.get("size") or 0) for w in line["words"])
+    return lines
+
+
+def page_columns(page):
+    """Lines of the page, column after column (left then right)."""
+    words = page.extract_words(x_tolerance=1.5, y_tolerance=3, keep_blank_chars=False, extra_attrs=["fontname", "size"])
+    split = column_split(words, float(page.width))
+    if split is None:
+        return [group_lines(words)]
+    return [group_lines([w for w in words if (w["x0"] + w["x1"]) / 2 < split]),
+            group_lines([w for w in words if (w["x0"] + w["x1"]) / 2 >= split])]
+
+
+def entry_start(line, body_family):
+    """(name, meta, rest of the line) when the line starts a trait or an action: a name in bold italic, with or
+    without its final period ("Gory Feast The Striga feasts..."). None otherwise."""
+    words = line["words"]
+    if not words or not is_bold_italic(words[0]) or font_family(words[0].get("fontname")) != body_family:
+        return None
+    n = 0
+    while n < len(words) and is_bold_italic(words[n]):
+        n += 1
+    head = join_words(words[:n])
+    rest = join_words(words[n:])
+    m = re.match(r"^(.+?)(?:\s*\(([^)]*)\))?\s*[.:]?$", head)
+    name, meta = (norm_name(m.group(1)), norm_name(m.group(2) or "")) if m else (head.rstrip(".:"), "")
+    if meta and rest.startswith(")"):
+        rest = rest[1:].lstrip(". ")
+    # A meta in regular font after the name: "Name (Recharge 5-6)." is sometimes split over two fonts
+    mm = re.match(r"^\(([^)]*)\)\.?\s*(.*)$", rest)
+    if not meta and mm:
+        meta, rest = norm_name(mm.group(1)), mm.group(2)
+    return name, meta, rest
+
+
+def read_stat_block(page, title):
+    """Reads the stat block `title` of a page from its layout. Returns {"stat_lines", "features", "actions", "bonus",
+    "reactions", "legendary"} with the exact text of each trait and action, or None when the title is not found."""
+    columns = page_columns(page)
+    start = None
+    for c, lines in enumerate(columns):
+        for i, line in enumerate(lines):
+            if line["size"] >= TITLE_MIN_SIZE and line["text"] == title:
+                start = (c, i)
+                break
+        if start:
+            break
+    if not start:
+        return None
+    body_lines = [l for lines in columns for l in lines
+                  if l["size"] < HEADER_MIN_SIZE and re.match(r"^Armor Class\b", l["text"])]
+    if not body_lines:
+        return None
+    body_family = font_family(body_lines[0]["words"][0].get("fontname"))
+
+    block = {"stat_lines": [], "features": [], "actions": [], "bonus": [], "reactions": [], "legendary": []}
+    section = "features"
+    current = None
+    in_entries = False
+
+    def close():
+        nonlocal current
+        if current:
+            current["text"] = norm_name(current["text"])
+            block[current.pop("section")].append(current)
+        current = None
+
+    c0, i0 = start
+    for c in range(c0, len(columns)):
+        lines = columns[c][i0 + 1:] if c == c0 else columns[c]
+        continuation = c != c0
+        for line in lines:
+            text = line["text"]
+            if is_footer_line(text):
+                continue
+            if line["size"] >= TITLE_MIN_SIZE:
+                break  # another title: the block is over
+            body = any(font_family(w.get("fontname")) == body_family for w in line["words"])
+            low = text.lower()
+            if line["size"] >= HEADER_MIN_SIZE:
+                if low in SECTION_KEYS:
+                    close()
+                    section, in_entries, continuation = SECTION_KEYS[low], True, False
+                    continue
+                if low in HEADER_TRAITS and in_entries:
+                    close()
+                    current = {"section": "features", "name": text, "meta": "", "text": ""}
+                    continuation = False
+                    continue
+                if not body:
+                    if continuation:
+                        continue  # lore above the rest of the block in the other column
+                    break  # a sidebar ("Threadnotes: ...") or a heading: the block is over
+            if not body:
+                if continuation:
+                    continue  # quote in another font at the top of the other column
+                if in_entries:
+                    break
+                continue
+            start_entry = entry_start(line, body_family)
+            first_font = str(line["words"][0].get("fontname") or "").lower()
+            if continuation and not start_entry and not ("ital" in first_font and current):
+                # The other column continues the block with a trait, an action, or an italic sub-entry of the last
+                # trait ("Harmed by Running Water." among the Vampire Weaknesses); otherwise it is lore.
+                break
+            continuation = False
+            if start_entry:
+                close()
+                name, meta, rest = start_entry
+                current = {"section": section, "name": name, "meta": meta, "text": rest}
+                in_entries = True
+            elif not in_entries:
+                block["stat_lines"].append(text)
+            elif current:
+                current["text"] += " " + text
+            elif section == "legendary":
+                current = {"section": "features", "name": "Legendary Actions", "meta": "", "text": text}
+            else:
+                break
+        else:
+            continue
+        break
+    close()
+    return block
+
+
+def parse_creature_from_layout(page, title, page_number):
+    """Creature of the stat block `title`, read from the page layout (stat lines, traits and actions with their exact
+    text). None when the block cannot be read whole (the LLM then decides)."""
+    block = read_stat_block(page, title)
+    if not block:
+        return None
+    lines = block["stat_lines"]
+    ac, hp, speed, abilities = parse_ac(lines), parse_hp(lines), parse_speed(lines), parse_abilities(lines)
+    if not has_required_creature_stats(ac, hp, speed, abilities):
+        return None
+    creature = {
+        "kind": "creature",
+        "page": page_number,
+        "name": title,
+        "ac": ac,
+        "hp": hp,
+        "speed": speed,
+        "abilities": abilities,
+        "traits": {
+            "dr": map_damage_list(parse_trait_csv_line(lines, "Damage Resistances")),
+            "di": map_damage_list(parse_trait_csv_line(lines, "Damage Immunities")),
+            "dv": map_damage_list(parse_trait_csv_line(lines, "Damage Vulnerabilities")),
+            "ci": map_condition_list(parse_trait_csv_line(lines, "Condition Immunities")),
+        },
+        "features": block["features"],
+        "actions": block["actions"],
+        "bonus": block["bonus"],
+        "reactions": block["reactions"],
+        "legendary": block["legendary"],
+    }
+    return apply_stat_lines(creature, lines)
+
+
 def parse_creature_from_lines(lines, page_number):
     idx_ac = next((i for i, l in enumerate(lines) if re.match(r"^Armor Class\b", l, re.I)), -1)
     idx_hp = next((i for i, l in enumerate(lines) if re.match(r"^Hit Points\b", l, re.I)), -1)
@@ -1595,6 +1823,8 @@ def build_items_for_creature(creature):
 
     for a in creature.get("actions", []):
         handle_action_block(a, "Action")
+    for b in creature.get("bonus", []):
+        handle_action_block(b, "Bonus Action")
     for r in creature.get("reactions", []):
         handle_action_block(r, "Reaction")
     for l in creature.get("legendary", []):
@@ -1774,6 +2004,11 @@ def main():
             if title:
                 logging.info("Page %s: stat block %r", page_num, title)
                 blocks.append({"page": page_num, "name": title})
+                # The stat block read from the page layout gives the exact texts: the LLM is not asked
+                creature = parse_creature_from_layout(page, title, page_num)
+                if creature and accept_creature(creature, lines, title, page_num):
+                    logging.info("Page %s: stat block read from the layout", page_num)
+                    continue
 
             if llm_config and llm_config["mode"] in {"prefer", "only"}:
                 logging.info("Page %s: LLM parse (prefer/only)", page_num)
