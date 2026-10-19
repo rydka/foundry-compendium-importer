@@ -3,9 +3,12 @@ import { parseImportFile, ImportFormatError } from "../core/parse.mjs";
 import { slugify, suggestPackFields, worldPackId } from "../core/naming.mjs";
 import { analyzeEntries, loadMigrationData } from "./validator.mjs";
 import { applyConflictChoices, planImport, resolveTarget, runImport } from "./import-runner.mjs";
-import { loadChoices, saveChoices } from "./settings.mjs";
+import { aiConfig, loadChoices, saveChoices } from "./settings.mjs";
 import { loadParser, preloadIndexes } from "./enrichment.mjs";
 import { describeReport } from "./enrich-summary.mjs";
+import { extractFromPdf, PdfImportError } from "./pdf-import.mjs";
+
+const PDF_FILE = /\.pdf$/i;
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const { FormDataExtended } = foundry.applications.ux;
@@ -37,7 +40,10 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     window: { title: `${MODULE_ID}.Title`, icon: "fa-solid fa-file-import", resizable: true },
     position: { width: 560 },
     form: { handler: ImporterApp.#onSubmit, submitOnChange: false, closeOnSubmit: false },
-    actions: { confirmImport: ImporterApp.#onConfirm, backToForm: ImporterApp.#onBack, useExistingPack: ImporterApp.#onUseExisting }
+    actions: {
+      confirmImport: ImporterApp.#onConfirm, backToForm: ImporterApp.#onBack, useExistingPack: ImporterApp.#onUseExisting,
+      cancelAnalysis: ImporterApp.#onCancelAnalysis
+    }
   };
 
   static PARTS = {
@@ -58,6 +64,12 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   #analysis = null;
   #busy = false;
   #analyzing = false;
+  #abort = null; // AbortController of a PDF read in progress (the Cancel button)
+
+  /** The chosen file is a PDF: read by pdf.js at analysis time, never as text. */
+  #isPdf() {
+    return PDF_FILE.test(this.#file?.name ?? "");
+  }
 
   /** @override */
   _attachFrameListeners() {
@@ -144,6 +156,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   #summaryContext() {
     const a = this.#analysis;
     return {
+      pdf: this.#pdfContext(),
       enrich: this.#enrichContext(),
       counts: {
         conform: a.accepted.length,
@@ -161,6 +174,38 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
         { value: "newId", label: t("Summary.ActionNewId") }
       ],
       target: a.pack ? a.pack.metadata.label : a.newPackSpec.label
+    };
+  }
+
+  /**
+   * What the PDF read found and what went wrong (C4): pages, stat blocks found and read, magic items, entries of
+   * the other type ignored, problems (name, page, reason) first, the blocks read with their page and a badge for
+   * those read by the local AI. Null for a .json or .db file.
+   */
+  #pdfContext() {
+    const report = this.#analysis.pdf;
+    if ( !report ) return null;
+    const page = p => (p ? t("Pdf.Page", { page: p }) : "");
+    const ignored = [];
+    if ( report.ignoredOtherType?.Item ) ignored.push(t("Pdf.IgnoredItems", { count: report.ignoredOtherType.Item }));
+    if ( report.ignoredOtherType?.Actor ) ignored.push(t("Pdf.IgnoredActors", { count: report.ignoredOtherType.Actor }));
+    const blocks = report.blocks.filter(b => b.status !== "failed");
+    const seconds = ((report.timings?.open ?? 0) + (report.timings?.pages ?? 0) + (report.timings?.extract ?? 0) + (report.timings?.ai ?? 0)) / 1000;
+    return {
+      fileName: report.fileName,
+      pages: report.pages,
+      seconds: seconds.toFixed(1),
+      found: report.stats?.blocksFound ?? report.blocks.length,
+      read: blocks.length,
+      aiCount: blocks.filter(b => b.status === "ai").length,
+      items: report.items.length,
+      ignored,
+      problems: report.problems.map(p => ({
+        name: p.name ?? t("Pdf.WholePage"), page: page(p.page),
+        reason: t(`Pdf.Reason.${p.reason}`, { ...(p.detail ?? {}), missing: (p.detail?.missing ?? []).join(", ") })
+      })),
+      blocks: blocks.map(b => ({ name: b.name, page: page(b.page), ai: b.status === "ai" })),
+      itemList: report.items.map(i => ({ name: i.name, page: page(i.page) }))
     };
   }
 
@@ -248,9 +293,23 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     line.classList.toggle("cji-error", !!text && error);
   }
 
-  /** Disable the footer buttons while the analysis runs. */
-  #setButtons(enabled) {
-    this.element?.querySelectorAll("footer button").forEach(button => { button.disabled = !enabled; });
+  /**
+   * Disable the footer buttons while the analysis runs. The Cancel button of the analysis is shown only while a
+   * cancellable (PDF) analysis runs.
+   */
+  #setButtons(enabled, { cancellable = false } = {}) {
+    this.element?.querySelectorAll("footer button").forEach(button => {
+      if ( button.dataset.action === "cancelAnalysis" ) {
+        button.hidden = enabled || !cancellable;
+        button.disabled = false;
+      } else button.disabled = !enabled;
+    });
+  }
+
+  static async #onCancelAnalysis() {
+    if ( !this.#abort ) return;
+    this.#status(t("Progress.cancelling"));
+    this.#abort.abort();
   }
 
   static async #onUseExisting(event, target) {
@@ -294,7 +353,8 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     switch ( target.name ) {
       case "sourceFile": {
         this.#file = target.files[0] ?? null;
-        this.#fileText = this.#file ? this.#readFile() : null;
+        // A PDF is read by pdf.js at analysis time (200 MB decoded as text would be wasted)
+        this.#fileText = (this.#file && !this.#isPdf()) ? this.#readFile() : null;
         this.form.querySelector(".cji-file-name").textContent = this.#file?.name ?? t("Source.NoFile");
         if ( this.#file && !s.newPackLabel ) {
           const suggestion = suggestPackFields(this.#file.name);
@@ -341,7 +401,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   static async #onSubmit() {
     if ( this.#analyzing ) return;
     this.#analyzing = true;
-    this.#setButtons(false);
+    this.#setButtons(false, { cancellable: this.#isPdf() });
     this.#status(null);
     try {
       await this.#analyze();
@@ -350,6 +410,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       this.#fail("Error.AnalysisFailed", { message: err.message });
     } finally {
       this.#analyzing = false;
+      this.#abort = null;
       if ( this.#step === "choose" ) {
         // Back to a usable form: buttons on, the progress line gone, an error (if any) left in place
         this.#setButtons(true);
@@ -383,14 +444,30 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       return this.#status(errors.map(reasonText).join(" "), { error: true });
     }
     if ( !this.#file ) return this.#fail("Error.NoFile");
-    let parsed;
-    try {
-      parsed = parseImportFile(await (this.#fileText ??= this.#readFile()), this.#file.name);
-    } catch(err) {
-      if ( err instanceof ImportFormatError ) return this.#fail(`Error.Format.${err.code}`, { line: err.line });
-      throw err;
-    }
     const documentName = pack ? pack.documentName : newPackSpec.type;
+    const onProgress = ({ stage, done, total, name }) => this.#status(t(`Progress.${stage}`, { done, total, name }));
+    let parsed;
+    if ( this.#isPdf() ) {
+      this.#abort = new AbortController();
+      try {
+        parsed = await extractFromPdf(this.#file, {
+          fileName: this.#file.name, documentName, signal: this.#abort.signal, onProgress, ai: aiConfig()
+        });
+      } catch(err) {
+        if ( err instanceof PdfImportError ) {
+          if ( err.code === "aborted" ) return this.#status(null);
+          return this.#fail(`Error.Pdf.${err.code}`, { message: err.message });
+        }
+        throw err;
+      }
+    } else {
+      try {
+        parsed = parseImportFile(await (this.#fileText ??= this.#readFile()), this.#file.name);
+      } catch(err) {
+        if ( err instanceof ImportFormatError ) return this.#fail(`Error.Format.${err.code}`, { line: err.line });
+        throw err;
+      }
+    }
     const warnings = [];
     if ( parsed.meta?.docType && (parsed.meta.docType !== documentName) ) {
       warnings.push(t("Warning.DocType", { file: parsed.meta.docType, pack: documentName }));
@@ -399,7 +476,6 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     const idGen = () => foundry.utils.randomID();
     const migrationData = await loadMigrationData();
     const enrich = s.enrich && !!(await loadParser());
-    const onProgress = ({ stage, done, total }) => this.#status(t(`Progress.${stage}`, { done, total }));
     const result = await analyzeEntries(parsed.entries, documentName,
       { migrationData, idGen, enrich, compendiums: enrich && s.useCompendiums, onProgress });
     const documents = [...result.accepted, ...result.other.map(o => {
@@ -417,7 +493,8 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
     }));
     this.#analysis = {
       pack, newPackSpec, accepted: result.accepted, rejected: result.rejected, other: result.other, enrichment: result.enrichment,
-      documents, overwriteIds: plan.overwriteIds, conflictIds: plan.conflictIds, conflicts, warnings
+      documents, overwriteIds: plan.overwriteIds, conflictIds: plan.conflictIds, conflicts, warnings,
+      pdf: parsed.report ?? null
     };
     await saveChoices(s);
     this.#step = "review";

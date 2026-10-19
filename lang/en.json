@@ -4,17 +4,18 @@
     "Menu": {
       "Name": "Compendium JSON Importer",
       "Label": "Open the importer",
-      "Hint": "Import actors and items from a .json or .db file into a compendium."
+      "Hint": "Import actors and items from a .json, .db or .pdf file into a compendium."
     },
     "Button": {
       "Import": "Import",
       "Analyze": "Analyze file",
       "Confirm": "Import {count} documents",
-      "Cancel": "Cancel"
+      "Cancel": "Cancel",
+      "CancelAnalysis": "Cancel the reading"
     },
     "Source": {
       "Label": "Source file",
-      "Hint": "A .json or .db file. Selected:",
+      "Hint": "A .json, .db or .pdf file. Selected:",
       "NoFile": "no file"
     },
     "Filter": {
@@ -64,7 +65,11 @@
     "Progress": {
       "reading": "Reading compendiums…",
       "analyzing": "Analyzing {done}/{total}…",
-      "checking": "Checking…"
+      "checking": "Checking…",
+      "pdfOpen": "Opening the PDF…",
+      "pdfPage": "Reading the PDF, page {done}/{total}…",
+      "pdfAi": "Local AI: block {done}/{total} ({name})…",
+      "cancelling": "Cancelling…"
     },
     "Warning": {
       "DocType": "The file declares documents of type {file}, but the compendium contains {pack} documents."
@@ -91,7 +96,15 @@
       "NoTarget": "No target compendium. Pass a compendium (pack) or a newPackSpec in the options.",
       "BadAnalysis": "The analysis is not valid. Pass the result of the analyze function.",
       "AnalysisType": "The analysis holds {analysis} documents but the target compendium holds {pack} documents. Analyze the file again for this compendium.",
-      "DuplicateIds": "Several documents of the file share the same _id: {ids}. Check \"Remove _id\" or give each document a unique _id."
+      "DuplicateIds": "Several documents of the file share the same _id: {ids}. Check \"Remove _id\" or give each document a unique _id.",
+      "Pdf": {
+        "scanned": "This PDF contains no text (scanned PDF?). Nothing was imported.",
+        "encrypted": "This PDF is protected by a password. Remove the protection, then import again.",
+        "invalid": "This file is not a readable PDF: {message}",
+        "readerUnavailable": "The PDF reader of Foundry is not available (pdf.js missing or too old). Check the console (F12).",
+        "parserMissing": "Importing a PDF requires the active module \"dnd5e-text-parser\" (compatible version).",
+        "aborted": "The reading was cancelled."
+      }
     },
     "Reason": {
       "MissingType": "The document has no type. Add a type such as one of: character, npc, weapon, spell.",
@@ -189,6 +202,31 @@
       "Up": "Move up",
       "Down": "Move down",
       "Reset": "Restore the default order"
+    },
+    "Pdf": {
+      "Title": "PDF read",
+      "Pages": "Pages read: {count} ({seconds} s)",
+      "Blocks": "Stat blocks found: {found}, creatures extracted: {read}",
+      "BlocksAi": "(of which read by the local AI: {count})",
+      "Items": "Magic items found: {count}",
+      "IgnoredItems": "{count} magic items ignored: run the import again with an Item compendium to get them.",
+      "IgnoredActors": "{count} creatures ignored: run the import again with an Actor compendium to get them.",
+      "BlocksTitle": "Creatures read ({count})",
+      "ItemsTitle": "Magic items read ({count})",
+      "ReadByAi": "read by AI",
+      "Page": "p. {page}",
+      "WholePage": "Page",
+      "Reason": {
+        "noTitle": "No title found above the stat block: the creature was not imported.",
+        "missingStats": "The block could not be read whole (missing: {missing}): the creature was not imported.",
+        "noEntries": "No trait or action found in the block: the creature was not imported.",
+        "fontUnknown": "The fonts of the page cannot be told apart: the block could not be read.",
+        "countMismatch": "{acLines} Armor Class lines on the page but {blocks} stat blocks found: a block may be missing.",
+        "aiRejected": "The local AI gave values that are not in the text ({fields}): the creature was not imported.",
+        "aiUnreachable": "The local AI could not be reached: the block was not read.",
+        "aiTimeout": "The local AI did not answer in time: the block was not read.",
+        "itemNoTitle": "A magic item header without a title above it: the item was not imported."
+      }
     }
   }
 }

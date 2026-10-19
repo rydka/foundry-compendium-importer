@@ -4,17 +4,18 @@
     "Menu": {
       "Name": "Importeur JSON de compendium",
       "Label": "Ouvrir l'importeur",
-      "Hint": "Importe des acteurs et des objets depuis un fichier .json ou .db dans un compendium."
+      "Hint": "Importe des acteurs et des objets depuis un fichier .json, .db ou .pdf dans un compendium."
     },
     "Button": {
       "Import": "Importer",
       "Analyze": "Analyser le fichier",
       "Confirm": "Importer {count} documents",
-      "Cancel": "Annuler"
+      "Cancel": "Annuler",
+      "CancelAnalysis": "Annuler la lecture"
     },
     "Source": {
       "Label": "Fichier source",
-      "Hint": "Un fichier .json ou .db. Choisi :",
+      "Hint": "Un fichier .json, .db ou .pdf. Choisi :",
       "NoFile": "aucun fichier"
     },
     "Filter": {
@@ -64,7 +65,11 @@
     "Progress": {
       "reading": "Lecture des compendiums…",
       "analyzing": "Analyse {done}/{total}…",
-      "checking": "Vérification…"
+      "checking": "Vérification…",
+      "pdfOpen": "Ouverture du PDF…",
+      "pdfPage": "Lecture du PDF, page {done}/{total}…",
+      "pdfAi": "IA locale : bloc {done}/{total} ({name})…",
+      "cancelling": "Annulation…"
     },
     "Warning": {
       "DocType": "Le fichier déclare des documents de type {file}, mais le compendium contient des documents de type {pack}."
@@ -91,7 +96,15 @@
       "NoTarget": "Aucun compendium cible. Fournissez un compendium (pack) ou un newPackSpec dans les options.",
       "BadAnalysis": "L'analyse n'est pas valide. Fournissez le résultat de la fonction analyze.",
       "AnalysisType": "L'analyse contient des documents {analysis} mais le compendium cible contient des documents {pack}. Analysez à nouveau le fichier pour ce compendium.",
-      "DuplicateIds": "Plusieurs documents du fichier ont le même _id : {ids}. Cochez « Supprimer les _id » ou donnez un _id unique à chaque document."
+      "DuplicateIds": "Plusieurs documents du fichier ont le même _id : {ids}. Cochez « Supprimer les _id » ou donnez un _id unique à chaque document.",
+      "Pdf": {
+        "scanned": "Ce PDF ne contient pas de texte (PDF scanné ?). Rien n’a été importé.",
+        "encrypted": "Ce PDF est protégé par un mot de passe. Retirez la protection, puis importez à nouveau.",
+        "invalid": "Ce fichier n’est pas un PDF lisible : {message}",
+        "readerUnavailable": "Le lecteur PDF de Foundry n’est pas disponible (pdf.js absent ou trop ancien). Consultez la console (F12).",
+        "parserMissing": "L’import d’un PDF nécessite le module actif « dnd5e-text-parser » (version compatible).",
+        "aborted": "La lecture a été annulée."
+      }
     },
     "Reason": {
       "MissingType": "Le document n'a pas de type. Ajoutez un type, par exemple : character, npc, weapon, spell.",
@@ -189,6 +202,31 @@
       "Up": "Monter",
       "Down": "Descendre",
       "Reset": "Rétablir l'ordre par défaut"
+    },
+    "Pdf": {
+      "Title": "Lecture du PDF",
+      "Pages": "Pages lues : {count} ({seconds} s)",
+      "Blocks": "Blocs de statistiques détectés : {found}, créatures extraites : {read}",
+      "BlocksAi": "(dont lues par l’IA locale : {count})",
+      "Items": "Objets magiques trouvés : {count}",
+      "IgnoredItems": "{count} objets magiques ignorés : relancez l’import avec un compendium d’objets pour les obtenir.",
+      "IgnoredActors": "{count} créatures ignorées : relancez l’import avec un compendium d’acteurs pour les obtenir.",
+      "BlocksTitle": "Créatures lues ({count})",
+      "ItemsTitle": "Objets magiques lus ({count})",
+      "ReadByAi": "lu par IA",
+      "Page": "p. {page}",
+      "WholePage": "Page",
+      "Reason": {
+        "noTitle": "Aucun titre trouvé au-dessus du bloc de statistiques : la créature n’a pas été importée.",
+        "missingStats": "Le bloc n’a pas pu être lu en entier (manque : {missing}) : la créature n’a pas été importée.",
+        "noEntries": "Aucune capacité ni action trouvée dans le bloc : la créature n’a pas été importée.",
+        "fontUnknown": "Les polices de la page ne peuvent pas être distinguées : le bloc n’a pas pu être lu.",
+        "countMismatch": "{acLines} lignes « Classe d’armure » sur la page mais {blocks} blocs détectés : un bloc manque peut-être.",
+        "aiRejected": "L’IA locale a donné des valeurs absentes du texte ({fields}) : la créature n’a pas été importée.",
+        "aiUnreachable": "L’IA locale est injoignable : le bloc n’a pas été lu.",
+        "aiTimeout": "L’IA locale n’a pas répondu à temps : le bloc n’a pas été lu.",
+        "itemNoTitle": "Un en-tête d’objet magique sans titre au-dessus : l’objet n’a pas été importé."
+      }
     }
   }
 }

@@ -28,6 +28,15 @@ export function registerSettings() {
 }
 
 /**
+ * Local AI configuration for the PDF blocks the rules cannot read (C5). Completed by the AI task: until the
+ * settings exist, the AI is off.
+ * @returns {{enabled: boolean, url: string, model: string, timeoutMs: number}}
+ */
+export function aiConfig() {
+  return { enabled: false, url: "", model: "", timeoutMs: 0 };
+}
+
+/**
  * Read the last choices.
  * @returns {{typeFilter: string, targetPack: string, overwrite: boolean, stripIds: boolean, enrich: boolean, useCompendiums: boolean}}
  */

@@ -8,4 +8,10 @@
     <span>{{button.label}}</span>
   </button>
   {{/each}}
+  {{#unless review}}
+  <button type="button" data-action="cancelAnalysis" class="cji-cancel-analysis" hidden>
+    <i class="fa-solid fa-ban" inert></i>
+    <span>{{localize "compendium-json-importer.Button.CancelAnalysis"}}</span>
+  </button>
+  {{/unless}}
 </footer>
