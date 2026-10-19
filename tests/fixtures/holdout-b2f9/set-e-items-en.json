@@ -1,0 +1,42 @@
+{
+  "id": "set-e-items-en", "edition": "2014", "lang": "en", "cols": 2, "draw": "lines", "footer": "head", "runningHead": "THE DROWNED ROAD", "fonts": "std",
+  "flow": [
+    { "wide": "Salvage from the Drowned Road" },
+    { "lore": "Barges still surface now and then with their cargo intact. The cargo, as a rule, is not what the manifest promised." },
+    { "item": {
+      "titleLines": ["Toll-Keeper’s Ring"], "typeLine": "Ring, rare (requires attunement)",
+      "paras": [
+        "A heavy iron band stamped with a coin that no mint ever struck. While you wear it, creatures that owe you a debt, favour or coin have disadvantage on Charisma (Deception) checks made against you.",
+        "As an action, you can name a creature within 30 feet. It must succeed on a DC 15 Wisdom saving throw or be unable to move away from you until the end of your next turn. Once used, the ring cannot do this again until the next dusk."
+      ],
+      "expect": { "docType": "equipment", "typeValue": "ring", "rarity": "rare", "attunement": "required" } } },
+    { "item": {
+      "titleLines": ["Lantern of Slow Hours"], "typeLine": "Wondrous item, uncommon",
+      "paras": [
+        "This brass lantern burns with a pale green flame that gives off no heat. While it is lit, you and creatures of your choice within 10 feet of it do not need to sleep, and you suffer no penalty for lack of rest for 24 hours."
+      ],
+      "expect": { "docType": "equipment", "typeValue": "wondrous", "rarity": "uncommon", "attunement": "" } } },
+    { "page": 1 },
+    { "item": {
+      "titleLines": ["Reedcutter"], "typeLine": "Weapon (sickle), rare",
+      "paras": [
+        "You gain a +1 bonus to attack and damage rolls made with this magic weapon. It ignores the penalties for attacking while swimming or standing in shallow water."
+      ],
+      "subs": [ { "head": "Harvest of Silt", "paras": ["When you reduce a creature to 0 hit points with Reedcutter, you can create a patch of difficult terrain in a 10-foot radius around it until the next dawn."] } ],
+      "expect": { "docType": "weapon", "typeValue": null, "rarity": "rare", "attunement": "" } } },
+    { "item": {
+      "titleLines": ["Philter of Brackish Courage"], "typeLine": "Potion, uncommon",
+      "paras": [
+        "After drinking this cloudy potion, you have advantage on saving throws against being frightened for 1 hour and you gain 5 temporary hit points."
+      ],
+      "expect": { "docType": "consumable", "typeValue": "potion", "rarity": "uncommon", "attunement": "" } } },
+    { "page": 1 },
+    { "item": {
+      "titleLines": ["Ledger of the Unpaid"], "typeLine": "Wondrous item, very rare (requires attunement by a creature of lawful alignment)",
+      "paras": [
+        "The pages of this ledger rewrite themselves every dawn. Any creature whose name appears on a page and who has broken an oath in your presence is outlined in faint red ink.",
+        "As a bonus action, you can strike a name from the ledger. The creature must succeed on a DC 16 Charisma saving throw or lose the ability to speak for 1 hour."
+      ],
+      "expect": { "docType": "equipment", "typeValue": "wondrous", "rarity": "veryRare", "attunement": "required" } } }
+  ]
+}

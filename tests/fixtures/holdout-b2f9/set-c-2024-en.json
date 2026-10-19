@@ -1,0 +1,59 @@
+{
+  "id": "set-c-2024-en", "edition": "2024", "lang": "en", "cols": 2, "draw": "words", "footer": "number", "fonts": "std",
+  "flow": [
+    { "wide": "Beneath the Glass Tide" },
+    { "creature": {
+      "name": "Tideglass Warden", "size": "med", "type": "construct", "subtype": "", "alignment": "lawful neutral", "typeLine": "Medium Construct, Lawful Neutral",
+      "ac": { "value": 17 }, "hp": { "value": 78, "formula": "12d8 + 24" },
+      "speed": { "walk": 30, "swim": 40 }, "abilities": [18, 12, 15, 6, 11, 8],
+      "saves": ["str", "con"], "skills": { "prc": 1 }, "senses": { "darkvision": 60 }, "passive": 12,
+      "printed": { "dr": "Bludgeoning", "imm": "Poison, Psychic; Charmed, Exhaustion, Frightened, Poisoned", "languages": "Understands Common but can’t speak" },
+      "traits": { "dr": ["bludgeoning"], "di": ["poison", "psychic"], "dv": [], "ci": ["charmed", "exhaustion", "frightened", "poisoned"] },
+      "cr": 4, "xp": 1100, "prof": 2,
+      "entries": [
+        ["trait", "Brittle Seams", "", "When the warden takes Thunder damage, its Speed is reduced by 10 feet until the end of its next turn."],
+        ["trait", "Water Walker", "", "The warden can breathe underwater and ignores Difficult Terrain caused by water."],
+        ["action", "Multiattack", "", "The warden makes two Glass Fist attacks."],
+        ["action", "Glass Fist", "", "Melee Attack Roll: +6, reach 5 ft. Hit: 10 (2d6 + 3) Bludgeoning damage plus 3 (1d6) Slashing damage."],
+        ["action", "Shatter Pulse", "Recharge 5-6", "Dexterity Saving Throw: DC 13, each creature in a 10-foot Emanation originating from the warden. Failure: 11 (2d10) Slashing damage. Success: Half damage."],
+        ["reaction", "Refract", "", "Trigger: The warden is targeted by a ray or beam of light. Response: The warden redirects it at a creature within 30 feet."]
+      ] } },
+    { "creature": {
+      "name": "Mire Crawler", "size": "huge", "type": "monstrosity", "subtype": "", "alignment": "unaligned", "typeLine": "Huge Monstrosity, Unaligned",
+      "ac": { "value": 13 }, "hp": { "value": 138, "formula": "12d12 + 60" },
+      "speed": { "walk": 30, "swim": 40, "climb": 20 }, "abilities": [21, 8, 20, 2, 10, 5],
+      "saves": [], "skills": { "ste": 1 }, "senses": { "blindsight": 30, "darkvision": 60 }, "passive": 10,
+      "printed": { "dv": "Fire", "languages": "None" },
+      "traits": { "dr": [], "di": [], "dv": ["fire"], "ci": [] },
+      "cr": 8, "xp": 3900, "prof": 3,
+      "entries": [
+        ["trait", "Sink Deeper", "", "A creature that starts its turn Grappled by the crawler sinks 5 feet into its body and has the Restrained condition."],
+        ["action", "Multiattack", "", "The crawler makes one Slam attack and uses Engulf."],
+        ["action", "Slam", "", "Melee Attack Roll: +9, reach 10 ft. Hit: 18 (3d8 + 5) Bludgeoning damage."],
+        ["action", "Engulf", "", "Strength Saving Throw: DC 17, one Large or smaller creature within 5 feet. Failure: The target is Grappled (escape DC 17)."],
+        ["bonus", "Slick Surge", "", "The crawler moves up to its Swim Speed without provoking Opportunity Attacks."]
+      ] } },
+    { "page": 1 },
+    { "creature": {
+      "name": "Gloam Regent", "size": "lg", "type": "fiend", "subtype": "", "alignment": "lawful evil", "typeLine": "Large Fiend, Lawful Evil",
+      "ac": { "value": 19 }, "hp": { "value": 195, "formula": "26d10 + 52" },
+      "speed": { "walk": 40, "fly": 60 }, "abilities": [20, 16, 14, 18, 16, 22],
+      "saves": ["dex", "wis", "cha"], "skills": { "dec": 2, "itm": 1, "per": 1 }, "senses": { "darkvision": 120, "truesight": 30 }, "passive": 13,
+      "printed": { "dr": "Cold; Fire", "imm": "Poison; Charmed, Poisoned", "languages": "Common, Infernal; telepathy 120 feet" },
+      "traits": { "dr": ["cold", "fire"], "di": ["poison"], "dv": [], "ci": ["charmed", "poisoned"] },
+      "cr": 15, "xp": 13000, "prof": 5,
+      "legendaryIntro": "Legendary Action Uses: 3 (4 in Lair). Immediately after another creature’s turn, the regent can expend a use to take one of the following actions. The regent regains all expended uses at the start of its turn.",
+      "entries": [
+        ["trait", "Legendary Resistance", "3/Day, or 4/Day in Lair", "If the regent fails a saving throw, it can choose to succeed instead."],
+        ["trait", "Shadow Court", "", "Allies within 30 feet of the regent have Advantage on saving throws against being Frightened."],
+        ["action", "Multiattack", "", "The regent makes two Gloaming Blade attacks and uses Dim the Light."],
+        ["action", "Gloaming Blade", "", "Melee Attack Roll: +11, reach 10 ft. Hit: 15 (2d8 + 6) Slashing damage plus 13 (3d8) Necrotic damage."],
+        ["action", "Dim the Light", "Recharge 5-6", "Wisdom Saving Throw: DC 19, each creature in a 30-foot Emanation originating from the regent. Failure: The target has the Blinded condition until the end of its next turn. Success: The target has Disadvantage on attack rolls until the end of its next turn."],
+        ["bonus", "Slip Between", "", "The regent teleports up to 40 feet to an unoccupied space it can see in Dim Light or Darkness."],
+        ["reaction", "Parry in Dusk", "", "Trigger: The regent is hit by a melee attack roll. Response: The regent adds 3 to its AC against that attack, potentially causing it to miss."],
+        ["legendary", "Cast a Shadow", "", "The regent moves up to half its Speed without provoking Opportunity Attacks."],
+        ["legendary", "Rapid Slash", "", "The regent makes one Gloaming Blade attack."],
+        ["legendary", "Endless Dusk", "", "The regent uses Dim the Light if it is available."]
+      ] } }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "id": "set-b-2014-fr", "edition": "2014", "lang": "fr", "cols": 2, "draw": "lines", "footer": "head", "runningHead": "LA ROUTE NOYÉE", "fonts": "std",
+  "flow": [
+    { "wide": "Contes de la Route Noyée" },
+    { "lore": "Quand le fleuve a changé de lit, il a laissé la route sous un mètre d’eau brune et un siècle de limon. Les marchands jurent que les péagers sont toujours à leur poste. Les péagers aimeraient préciser que personne n’a jamais payé." },
+    { "creature": {
+      "name": "Rôdeur des Roselières", "size": "med", "type": "monstrosity", "subtype": "", "alignment": "chaotique mauvais", "typeLine": "Monstruosité de taille M, chaotique mauvais",
+      "ac": { "value": 12 }, "hp": { "value": 27, "formula": "5d8 + 5" },
+      "speed": { "walk": 20, "swim": 40 }, "abilities": [12, 14, 12, 7, 10, 8],
+      "saves": [], "skills": { "ste": 2 }, "senses": { "darkvision": 60 }, "passive": 10,
+      "printed": { "languages": "comprend le commun mais ne peut pas parler" },
+      "traits": { "dr": [], "di": [], "dv": [], "ci": [] },
+      "cr": 0.5, "xp": 100, "prof": 2,
+      "entries": [
+        ["trait", "Amphibie", "", "Le rôdeur peut respirer dans l’air et dans l’eau."],
+        ["trait", "Imitation des roseaux", "", "Quand il reste immobile dans des roseaux ou une eau peu profonde, le rôdeur est indiscernable des plantes environnantes jusqu’à ce qu’il bouge ou attaque."],
+        ["action", "Morsure", "", "Attaque au corps à corps avec une arme : +4 au toucher, allonge 1,50 m, une cible. Touché : 5 (1d6 + 2) dégâts perforants."],
+        ["action", "Étreinte noyante", "Recharge 5-6", "Une créature de taille M ou inférieure à 1,50 mètre ou moins du rôdeur doit réussir un jet de sauvegarde de Force DD 12 ou être entraînée sous l’eau et agrippée (évasion DD 12)."]
+      ] } },
+    { "creature": {
+      "name": "Chevalier de Suif", "size": "med", "type": "undead", "subtype": "", "alignment": "loyal mauvais", "typeLine": "Mort-vivant de taille M, loyal mauvais",
+      "ac": { "value": 18, "detail": "demi-plate" }, "hp": { "value": 90, "formula": "12d8 + 36" },
+      "speed": { "walk": 30 }, "abilities": [17, 10, 16, 8, 12, 14],
+      "saves": ["con", "wis"], "skills": { "ath": 1, "itm": 1 }, "senses": { "darkvision": 60 }, "passive": 11,
+      "printed": { "dv": "radiant", "dr": "nécrotique", "di": "poison", "ci": "épuisement, empoisonné", "languages": "commun" },
+      "traits": { "dr": ["necrotic"], "di": ["poison"], "dv": ["radiant"], "ci": ["exhaustion", "poisoned"] },
+      "cr": 6, "xp": 2300, "prof": 3,
+      "entries": [
+        ["trait", "Résistance de cire", "", "Quand le chevalier subit des dégâts de feu, il récupère 5 points de vie au début de son prochain tour."],
+        ["trait", "Serment éternel", "1/jour", "Si le chevalier tombe à 0 point de vie, il tombe à 1 point de vie à la place et obtient l’avantage aux jets d’attaque jusqu’à la fin de son prochain tour."],
+        ["action", "Attaques multiples", "", "Le chevalier effectue deux attaques de lame-chandelle."],
+        ["action", "Lame-chandelle", "", "Attaque au corps à corps avec une arme : +6 au toucher, allonge 1,50 m, une cible. Touché : 9 (1d10 + 3) dégâts tranchants plus 4 (1d8) dégâts de feu."],
+        ["bonus", "Cire ravivée", "", "Le chevalier ou un mort-vivant situé à 9 mètres ou moins de lui récupère 7 (2d6) points de vie."],
+        ["reaction", "Garde vigilante", "", "Quand une créature à 1,50 mètre ou moins du chevalier attaque une autre cible que lui, le chevalier effectue une attaque de lame-chandelle contre cette créature."]
+      ] } },
+    { "page": 1 },
+    { "col": 1 },
+    { "creature": {
+      "name": "Cartographe Blême", "size": "lg", "type": "aberration", "subtype": "", "alignment": "neutre", "typeLine": "Aberration de taille G, neutre",
+      "ac": { "value": 16, "natural": true, "detail": "armure naturelle" }, "hp": { "value": 142, "formula": "15d10 + 60" },
+      "speed": { "walk": 30, "fly": 30, "hover": true }, "abilities": [10, 14, 18, 20, 16, 12],
+      "saves": ["int", "wis"], "skills": { "arc": 2, "his": 1, "ins": 1 }, "senses": { "blindsight": 60, "darkvision": 120 }, "passive": 13,
+      "printed": { "dr": "froid, psychique", "ci": "charmé, effrayé", "languages": "profond, télépathie 36 m" },
+      "traits": { "dr": ["cold", "psychic"], "di": [], "dv": [], "ci": ["charmed", "frightened"] },
+      "cr": 10, "xp": 5900, "prof": 4,
+      "legendaryIntro": "Le cartographe peut effectuer 3 actions légendaires, à choisir parmi les options ci-dessous. Une seule option peut être utilisée à la fois et seulement à la fin du tour d’une autre créature. Le cartographe récupère les actions légendaires dépensées au début de son tour.",
+      "entries": [
+        ["trait", "Résistance légendaire", "2/jour", "Si le cartographe rate un jet de sauvegarde, il peut choisir de le réussir à la place."],
+        ["trait", "Carte vivante", "", "Le cartographe connaît toujours la direction du nord et le chemin qu’il a parcouru ces 7 derniers jours."],
+        ["action", "Attaques multiples", "", "Le cartographe effectue trois attaques de lame d’encre."],
+        ["action", "Lame d’encre", "", "Attaque au corps à corps avec une arme : +9 au toucher, allonge 3 m, une cible. Touché : 11 (2d6 + 4) dégâts tranchants plus 7 (2d6) dégâts psychiques."],
+        ["action", "Redessiner le terrain", "Recharge 5-6", "Le cartographe redessine le sol dans un carré de 12 mètres de côté à 36 mètres ou moins de lui. Chaque créature dans la zone doit réussir un jet de sauvegarde de Dextérité DD 17 ou être déplacée de 9 mètres au plus dans la direction choisie par le cartographe."],
+        ["legendary", "Pli", "", "Le cartographe se téléporte jusqu’à 9 mètres dans un espace qu’il peut voir."],
+        ["legendary", "Lame d’encre", "Coûte 2 actions", "Le cartographe effectue une attaque de lame d’encre."],
+        ["legendary", "Tache", "Coûte 3 actions", "Le cartographe choisit une créature qu’il peut voir à 18 mètres ou moins. La cible doit réussir un jet de sauvegarde de Sagesse DD 17 ou être aveuglée pendant 1 minute."]
+      ] } }
+  ]
+}
