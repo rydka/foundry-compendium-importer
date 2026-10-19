@@ -1,0 +1,471 @@
+{
+ "actors": [
+  {
+   "name": "Mage 2014",
+   "language": "en",
+   "trait": "Spellcasting",
+   "ability": "int",
+   "dc": 17,
+   "attack": 9,
+   "slots": {
+    "1": 4,
+    "2": 3,
+    "3": 3,
+    "4": 3,
+    "5": 1
+   },
+   "spells": [
+    {
+     "name": "Fire Bolt",
+     "method": "cantrip",
+     "uses": null,
+     "level": 0,
+     "expect": "dnd5e.spells24|Fire Bolt"
+    },
+    {
+     "name": "Light",
+     "method": "cantrip",
+     "uses": null,
+     "level": 0,
+     "expect": "dnd5e.spells24|Light"
+    },
+    {
+     "name": "Mage Hand",
+     "method": "cantrip",
+     "uses": null,
+     "level": 0,
+     "expect": "dnd5e.spells24|Mage Hand"
+    },
+    {
+     "name": "Prestidigitation",
+     "method": "cantrip",
+     "uses": null,
+     "level": 0,
+     "expect": "dnd5e.spells24|Prestidigitation"
+    },
+    {
+     "name": "Detect Magic",
+     "method": "slots",
+     "uses": null,
+     "level": 1,
+     "expect": "dnd5e.spells24|Detect Magic"
+    },
+    {
+     "name": "Mage Armor",
+     "method": "slots",
+     "uses": null,
+     "level": 1,
+     "expect": "dnd5e.spells24|Mage Armor"
+    },
+    {
+     "name": "Magic Missile",
+     "method": "slots",
+     "uses": null,
+     "level": 1,
+     "expect": "dnd5e.spells24|Magic Missile"
+    },
+    {
+     "name": "Shield",
+     "method": "slots",
+     "uses": null,
+     "level": 1,
+     "expect": "dnd5e.spells24|Shield"
+    },
+    {
+     "name": "Misty Step",
+     "method": "slots",
+     "uses": null,
+     "level": 2,
+     "expect": "dnd5e.spells24|Misty Step"
+    },
+    {
+     "name": "Suggestion",
+     "method": "slots",
+     "uses": null,
+     "level": 2,
+     "expect": "dnd5e.spells24|Suggestion"
+    },
+    {
+     "name": "Counterspell",
+     "method": "slots",
+     "uses": null,
+     "level": 3,
+     "expect": "dnd5e.spells24|Counterspell"
+    },
+    {
+     "name": "Fireball",
+     "method": "slots",
+     "uses": null,
+     "level": 3,
+     "expect": "dnd5e.spells24|Fireball"
+    },
+    {
+     "name": "Fly",
+     "method": "slots",
+     "uses": null,
+     "level": 3,
+     "expect": "dnd5e.spells24|Fly"
+    },
+    {
+     "name": "Greater Invisibility",
+     "method": "slots",
+     "uses": null,
+     "level": 4,
+     "expect": "dnd5e.spells24|Greater Invisibility"
+    },
+    {
+     "name": "Ice Storm",
+     "method": "slots",
+     "uses": null,
+     "level": 4,
+     "expect": "dnd5e.spells24|Ice Storm"
+    },
+    {
+     "name": "Cone of Cold",
+     "method": "slots",
+     "uses": null,
+     "level": 5,
+     "expect": "dnd5e.spells24|Cone of Cold"
+    },
+    {
+     "name": "Arcane Whisper",
+     "method": "slots",
+     "uses": null,
+     "level": 5,
+     "expect": "none"
+    }
+   ]
+  },
+  {
+   "name": "Djinni 2014",
+   "language": "en",
+   "trait": "Innate Spellcasting",
+   "ability": "cha",
+   "dc": 17,
+   "attack": 9,
+   "slots": {},
+   "spells": [
+    {
+     "name": "Detect Evil and Good",
+     "method": "atwill",
+     "uses": null,
+     "level": null,
+     "expect": "dnd5e.spells24|Detect Evil and Good"
+    },
+    {
+     "name": "Detect Magic",
+     "method": "atwill",
+     "uses": null,
+     "level": null,
+     "expect": "dnd5e.spells24|Detect Magic"
+    },
+    {
+     "name": "Thunderwave",
+     "method": "atwill",
+     "uses": null,
+     "level": null,
+     "expect": "dnd5e.spells24|Thunderwave"
+    },
+    {
+     "name": "Create Food and Water",
+     "method": "innate",
+     "uses": 3,
+     "level": null,
+     "expect": "dnd5e.spells24|Create Food and Water"
+    },
+    {
+     "name": "Tongues",
+     "method": "innate",
+     "uses": 3,
+     "level": null,
+     "expect": "dnd5e.spells24|Tongues"
+    },
+    {
+     "name": "Wind Walk",
+     "method": "innate",
+     "uses": 3,
+     "level": null,
+     "expect": "dnd5e.spells24|Wind Walk"
+    },
+    {
+     "name": "Conjure Elemental",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Conjure Elemental"
+    },
+    {
+     "name": "Creation",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Creation"
+    },
+    {
+     "name": "Gaseous Form",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Gaseous Form"
+    },
+    {
+     "name": "Invisibility",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Invisibility"
+    },
+    {
+     "name": "Major Image",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Major Image"
+    },
+    {
+     "name": "Plane Shift",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Plane Shift"
+    }
+   ]
+  },
+  {
+   "name": "Lich 2024",
+   "language": "en",
+   "trait": "Spellcasting",
+   "ability": "int",
+   "dc": 20,
+   "attack": 12,
+   "slots": {},
+   "spells": [
+    {
+     "name": "Mage Hand",
+     "method": "atwill",
+     "uses": null,
+     "level": null,
+     "expect": "dnd5e.spells24|Mage Hand"
+    },
+    {
+     "name": "Detect Magic",
+     "method": "atwill",
+     "uses": null,
+     "level": null,
+     "expect": "dnd5e.spells24|Detect Magic"
+    },
+    {
+     "name": "Prestidigitation",
+     "method": "atwill",
+     "uses": null,
+     "level": null,
+     "expect": "dnd5e.spells24|Prestidigitation"
+    },
+    {
+     "name": "Animate Dead",
+     "method": "innate",
+     "uses": 2,
+     "level": null,
+     "expect": "dnd5e.spells24|Animate Dead"
+    },
+    {
+     "name": "Dimension Door",
+     "method": "innate",
+     "uses": 2,
+     "level": null,
+     "expect": "dnd5e.spells24|Dimension Door"
+    },
+    {
+     "name": "Plane Shift",
+     "method": "innate",
+     "uses": 2,
+     "level": null,
+     "expect": "dnd5e.spells24|Plane Shift"
+    },
+    {
+     "name": "Chain Lightning",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Chain Lightning"
+    },
+    {
+     "name": "Finger of Death",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Finger of Death"
+    },
+    {
+     "name": "Power Word Kill",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Power Word Kill"
+    },
+    {
+     "name": "Soul Siphon",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "none"
+    }
+   ]
+  },
+  {
+   "name": "Sorcier FR",
+   "language": "fr",
+   "trait": "Incantation innée",
+   "ability": "cha",
+   "dc": 15,
+   "attack": 7,
+   "slots": {},
+   "spells": [
+    {
+     "name": "détection de la magie",
+     "method": "atwill",
+     "uses": null,
+     "level": null,
+     "expect": "none"
+    },
+    {
+     "name": "main de mage",
+     "method": "atwill",
+     "uses": null,
+     "level": null,
+     "expect": "none"
+    },
+    {
+     "name": "boule de feu",
+     "method": "innate",
+     "uses": 3,
+     "level": null,
+     "expect": "none"
+    },
+    {
+     "name": "vol",
+     "method": "innate",
+     "uses": 3,
+     "level": null,
+     "expect": "none"
+    },
+    {
+     "name": "image majeure",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "none"
+    }
+   ]
+  },
+  {
+   "name": "Magicien FR",
+   "language": "fr",
+   "trait": "Incantation",
+   "ability": "int",
+   "dc": 14,
+   "attack": 6,
+   "slots": {
+    "1": 4,
+    "2": 3
+   },
+   "spells": [
+    {
+     "name": "trait de feu",
+     "method": "cantrip",
+     "uses": null,
+     "level": 0,
+     "expect": "none"
+    },
+    {
+     "name": "lumière",
+     "method": "cantrip",
+     "uses": null,
+     "level": 0,
+     "expect": "none"
+    },
+    {
+     "name": "bouclier",
+     "method": "slots",
+     "uses": null,
+     "level": 1,
+     "expect": "none"
+    },
+    {
+     "name": "projectile magique",
+     "method": "slots",
+     "uses": null,
+     "level": 1,
+     "expect": "none"
+    },
+    {
+     "name": "image miroir",
+     "method": "slots",
+     "uses": null,
+     "level": 2,
+     "expect": "none"
+    }
+   ]
+  },
+  {
+   "name": "Warlock 2024",
+   "language": "en",
+   "trait": "Spellcasting",
+   "ability": "cha",
+   "dc": 15,
+   "attack": 7,
+   "slots": {},
+   "spells": [
+    {
+     "name": "Minor Illusion",
+     "method": "atwill",
+     "uses": null,
+     "level": null,
+     "expect": "dnd5e.spells24|Minor Illusion"
+    },
+    {
+     "name": "Disguise Self",
+     "method": "atwill",
+     "uses": null,
+     "level": null,
+     "expect": "dnd5e.spells24|Disguise Self"
+    },
+    {
+     "name": "Hold Person",
+     "method": "innate",
+     "uses": 2,
+     "level": null,
+     "expect": "dnd5e.spells24|Hold Person"
+    },
+    {
+     "name": "Fear",
+     "method": "innate",
+     "uses": 2,
+     "level": null,
+     "expect": "dnd5e.spells24|Fear"
+    },
+    {
+     "name": "Hex Whisper",
+     "method": "innate",
+     "uses": 2,
+     "level": null,
+     "expect": "none"
+    },
+    {
+     "name": "Haste",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Haste"
+    },
+    {
+     "name": "Dispel Magic",
+     "method": "innate",
+     "uses": 1,
+     "level": null,
+     "expect": "dnd5e.spells24|Dispel Magic"
+    }
+   ]
+  }
+ ]
+}

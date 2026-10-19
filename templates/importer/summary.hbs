@@ -8,6 +8,46 @@
     <li>{{localize "compendium-json-importer.Summary.Other" count=summary.counts.other}}</li>
     <li>{{localize "compendium-json-importer.Summary.ToReplace" count=summary.counts.toReplace}}</li>
   </ul>
+  {{#if summary.enrich}}
+  <h4>{{localize "compendium-json-importer.Enrich.Title"}}</h4>
+  <ul class="cji-counts">
+    <li>{{localize "compendium-json-importer.Enrich.Enriched" count=summary.enrich.counts.enriched}}</li>
+    <li>{{localize "compendium-json-importer.Enrich.Unchanged" count=summary.enrich.counts.unchanged}}</li>
+    <li>{{localize "compendium-json-importer.Enrich.NotEnriched" count=summary.enrich.counts.notEnriched}}</li>
+  </ul>
+  {{#each summary.enrich.skipped}}<p class="cji-warning"><i class="fa-solid fa-triangle-exclamation" inert></i> {{this}}</p>{{/each}}
+  {{#if summary.enrich.documents.length}}
+  <div class="cji-list cji-enrich">
+    {{#each summary.enrich.documents}}
+    <details class="cji-enrich-{{status}}">
+      <summary><strong>{{name}}</strong> <em>({{statusLabel}})</em></summary>
+      <ul>
+        {{#each reasons}}<li class="cji-warning">{{localize "compendium-json-importer.Enrich.Reverted" reason=this}}</li>{{/each}}
+        {{#each lines}}<li>{{this}}</li>{{/each}}
+      </ul>
+      {{#if compendium.length}}
+      <h5>{{localize "compendium-json-importer.Enrich.FromCompendium"}}</h5>
+      <ul>
+        {{#each compendium}}
+        <li>
+          <strong>{{name}}</strong> <span class="cji-existing">{{pack}}</span>
+          <ul>{{#each adjusted}}<li>{{this}}</li>{{/each}}{{#each lines}}<li>{{this}}</li>{{/each}}</ul>
+        </li>
+        {{/each}}
+      </ul>
+      {{/if}}
+      {{#if notFound.length}}<p>{{localize "compendium-json-importer.Enrich.NotFound"}} {{#each notFound}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>{{/if}}
+      {{#if ambiguous.length}}<p class="cji-warning">{{localize "compendium-json-importer.Enrich.Ambiguous"}} {{#each ambiguous}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}</p>{{/if}}
+      {{#if notAutomated.length}}
+      <h5>{{localize "compendium-json-importer.Enrich.NotAutomated"}}</h5>
+      <ul class="cji-not-automated">{{#each notAutomated}}<li>{{this}}</li>{{/each}}</ul>
+      {{/if}}
+    </details>
+    {{/each}}
+  </div>
+  {{/if}}
+  {{/if}}
+
   {{#each summary.warnings}}<p class="cji-warning"><i class="fa-solid fa-triangle-exclamation" inert></i> {{this}}</p>{{/each}}
 
   {{#if summary.rejected.length}}

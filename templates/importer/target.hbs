@@ -20,6 +20,13 @@
     <div class="form-fields"><input type="text" name="newPackName" value="{{newPackName}}"></div>
     <p class="hint">{{localize "compendium-json-importer.Target.NewNameHint"}}</p>
   </div>
+  <p class="cji-target-problem cji-warning" {{#unless targetProblem}}hidden{{/unless}}>
+    <i class="fa-solid fa-triangle-exclamation" inert></i>
+    <span class="cji-target-message">{{targetProblem.message}}</span>
+    <button type="button" data-action="useExistingPack" data-pack="{{targetProblem.pack}}" {{#unless targetProblem.pack}}hidden{{/unless}}>
+      <i class="fa-solid fa-arrow-right-to-bracket" inert></i> {{localize "compendium-json-importer.Target.UseExisting"}}
+    </button>
+  </p>
   <div class="form-group cji-new-pack" {{#unless isNew}}hidden{{/unless}}>
     <label>{{localize "compendium-json-importer.Target.NewType"}}</label>
     <div class="form-fields">

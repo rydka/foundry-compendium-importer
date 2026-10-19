@@ -1,0 +1,230 @@
+[
+ {
+  "_id": "8eSAcnBe9AtFi7vG",
+  "name": "Mage 2014",
+  "type": "npc",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+   "attributes": {
+    "hp": {
+     "value": 50,
+     "max": 50
+    },
+    "ac": {
+     "value": 12
+    }
+   },
+   "abilities": {
+    "int": {
+     "value": 16
+    },
+    "cha": {
+     "value": 16
+    }
+   }
+  },
+  "items": [
+   {
+    "_id": "0tLYWuB4uJ7BidpB",
+    "name": "Spellcasting",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><strong>Spellcasting.</strong> The mage is a 9th-level spellcaster. Its spellcasting ability is Intelligence (spell save DC 17, +9 to hit with spell attacks). The mage has the following wizard spells prepared:</p><p>Cantrips (at will): fire bolt, light, mage hand, prestidigitation</p><p>1st level (4 slots): detect magic, mage armor, magic missile, shield</p><p>2nd level (3 slots): misty step, suggestion</p><p>3rd level (3 slots): counterspell, fireball, fly</p><p>4th level (3 slots): greater invisibility, ice storm</p><p>5th level (1 slot): cone of cold, arcane whisper</p>"
+     }
+    }
+   }
+  ],
+  "flags": {}
+ },
+ {
+  "_id": "pjsuyc8bn1CiURdc",
+  "name": "Djinni 2014",
+  "type": "npc",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+   "attributes": {
+    "hp": {
+     "value": 50,
+     "max": 50
+    },
+    "ac": {
+     "value": 12
+    }
+   },
+   "abilities": {
+    "int": {
+     "value": 16
+    },
+    "cha": {
+     "value": 16
+    }
+   }
+  },
+  "items": [
+   {
+    "_id": "YbJxrUHSv6tvZ9RP",
+    "name": "Innate Spellcasting",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><strong>Innate Spellcasting.</strong> The djinni's innate spellcasting ability is Charisma (spell save DC 17, +9 to hit with spell attacks). It can innately cast the following spells, requiring no material components:</p><p>At will: detect evil and good, detect magic, thunderwave</p><p>3/day each: create food and water, tongues, wind walk</p><p>1/day each: conjure elemental, creation, gaseous form, invisibility, major image, plane shift</p>"
+     }
+    }
+   }
+  ],
+  "flags": {}
+ },
+ {
+  "_id": "5a77Aa1xajneZXAQ",
+  "name": "Lich 2024",
+  "type": "npc",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+   "attributes": {
+    "hp": {
+     "value": 50,
+     "max": 50
+    },
+    "ac": {
+     "value": 12
+    }
+   },
+   "abilities": {
+    "int": {
+     "value": 16
+    },
+    "cha": {
+     "value": 16
+    }
+   }
+  },
+  "items": [
+   {
+    "_id": "0agCxopjC7Xyyjqq",
+    "name": "Spellcasting",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><strong>Spellcasting.</strong> The lich casts one of the following spells, using Intelligence as the spellcasting ability (spell save DC 20, +12 to hit with spell attacks):</p><p><strong>At Will:</strong> <em>@UUID[Compendium.dnd5e.spells24.Item.phbsplMageHand00]{Mage Hand}</em>, <em>Detect Magic</em>, <em>Prestidigitation</em></p><p><strong>2/Day Each:</strong> <em>Animate Dead</em>, <em>Dimension Door</em>, <em>Plane Shift</em></p><p><strong>1/Day Each:</strong> <em>Chain Lightning</em>, <em>@UUID[Compendium.dnd5e.spells24.Item.phbsplFingerOfDea]{Finger of Death}</em>, <em>Power Word Kill</em>, <em>Soul Siphon</em></p>"
+     }
+    }
+   }
+  ],
+  "flags": {}
+ },
+ {
+  "_id": "F03SvjSP5Jr1xqaO",
+  "name": "Sorcier FR",
+  "type": "npc",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+   "attributes": {
+    "hp": {
+     "value": 50,
+     "max": 50
+    },
+    "ac": {
+     "value": 12
+    }
+   },
+   "abilities": {
+    "int": {
+     "value": 16
+    },
+    "cha": {
+     "value": 16
+    }
+   }
+  },
+  "items": [
+   {
+    "_id": "v4QZxPDz1KFhpimB",
+    "name": "Incantation innée",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><strong>Incantation innée.</strong> La caractéristique d'incantation innée du sorcier est le Charisme (DD du jet de sauvegarde des sorts 15, +7 au toucher avec les attaques de sort). Il peut lancer les sorts suivants, sans composante matérielle :</p><p>À volonté : détection de la magie, main de mage</p><p>3/jour chacun : boule de feu, vol</p><p>1/jour chacun : image majeure</p>"
+     }
+    }
+   }
+  ],
+  "flags": {}
+ },
+ {
+  "_id": "wW4cyYroLskp3lsG",
+  "name": "Magicien FR",
+  "type": "npc",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+   "attributes": {
+    "hp": {
+     "value": 50,
+     "max": 50
+    },
+    "ac": {
+     "value": 12
+    }
+   },
+   "abilities": {
+    "int": {
+     "value": 16
+    },
+    "cha": {
+     "value": 16
+    }
+   }
+  },
+  "items": [
+   {
+    "_id": "ghPV4g0CbfkGndkq",
+    "name": "Incantation",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><strong>Incantation.</strong> Le magicien est un lanceur de sorts de niveau 5. Sa caractéristique d'incantation est l'Intelligence (DD du jet de sauvegarde des sorts 14, +6 au toucher avec les attaques de sort). Sorts de magicien préparés :</p><p>Sorts mineurs (à volonté) : trait de feu, lumière</p><p>Niveau 1 (4 emplacements) : bouclier, projectile magique</p><p>Niveau 2 (3 emplacements) : image miroir</p>"
+     }
+    }
+   }
+  ],
+  "flags": {}
+ },
+ {
+  "_id": "2Vjk0IHHbDxw5dTz",
+  "name": "Warlock 2024",
+  "type": "npc",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+   "attributes": {
+    "hp": {
+     "value": 50,
+     "max": 50
+    },
+    "ac": {
+     "value": 12
+    }
+   },
+   "abilities": {
+    "int": {
+     "value": 16
+    },
+    "cha": {
+     "value": 16
+    }
+   }
+  },
+  "items": [
+   {
+    "_id": "FS2Lp5hkAbeLOaCv",
+    "name": "Spellcasting",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><strong>Spellcasting.</strong> The warlock uses Charisma as its spellcasting ability (spell save DC 15, +7 to hit with spell attacks):</p><p><strong>At Will:</strong> <em>Minor Illusion</em>, <em>Disguise Self</em></p><p><strong>2/Day Each:</strong> <em>Hold Person</em>, <em>Fear</em>, <em>Hex Whisper</em></p><p><strong>1/Day Each:</strong> <em>Haste</em>, <em>Dispel Magic</em></p>"
+     }
+    }
+   }
+  ],
+  "flags": {}
+ }
+]

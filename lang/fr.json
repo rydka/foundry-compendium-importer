@@ -29,13 +29,21 @@
       "NewLabel": "Libellé du nouveau compendium",
       "NewName": "Nom du nouveau compendium (id)",
       "NewNameHint": "Lettres minuscules, chiffres et tirets.",
-      "NewType": "Type de document"
+      "NewType": "Type de document",
+      "Exists": "Un compendium nommé {name} existe déjà dans ce monde ({id}). Choisissez un autre nom, ou importez dedans.",
+      "UseExisting": "Importer dans ce compendium"
     },
     "Options": {
+      "Title": "Options",
       "Overwrite": "Écraser",
       "OverwriteHint": "Supprime les documents existants de même nom (et de même type) avant l'import.",
       "StripIds": "Supprimer les _id",
-      "StripIdsHint": "Donne un nouvel identifiant à chaque document, document imbriqué et activité. Décochez pour garder les identifiants du fichier."
+      "StripIdsHint": "Donne un nouvel identifiant à chaque document, document imbriqué et activité. Décochez pour garder les identifiants du fichier.",
+      "Enrich": "Compléter les activités depuis le texte",
+      "EnrichHint": "Remplit les activités vides et les données légendaires à partir de la description. Les valeurs déjà présentes dans le fichier ne sont jamais modifiées.",
+      "EnrichMissing": "Nécessite le module actif « dnd5e-text-parser » (version compatible).",
+      "UseCompendiums": "Reprendre depuis les compendiums",
+      "UseCompendiumsHint": "Les objets, sorts et capacités des acteurs sont repris des compendiums quand ils y existent, puis ajustés au fichier. Nécessite l'option ci-dessus."
     },
     "Summary": {
       "Title": "Vérification avant l'import dans",
@@ -53,6 +61,11 @@
       "ActionNewId": "Nouvel identifiant",
       "Existing": "document existant : {name}"
     },
+    "Progress": {
+      "reading": "Lecture des compendiums…",
+      "analyzing": "Analyse {done}/{total}…",
+      "checking": "Vérification…"
+    },
     "Warning": {
       "DocType": "Le fichier déclare des documents de type {file}, mais le compendium contient des documents de type {pack}."
     },
@@ -67,6 +80,7 @@
       "Lost": "Les documents écrasés ont été supprimés et n'ont PAS pu être restaurés : {names}. Cause : {message}",
       "Skipped": "Certains documents n'ont pas été créés (refusés par un hook) ; les documents écrasés ont été remis en place : {names}",
       "SkippedLost": "Certains documents n'ont pas été créés (refusés par un hook) et les documents écrasés n'ont PAS pu être remis en place : {names}",
+      "AnalysisFailed": "L'analyse a échoué : {message}. Consultez la console (F12) pour le détail.",
       "ImportFailed": "L'import a échoué : {message}. Consultez la console (F12) pour le détail.",
       "Format": {
         "empty": "Le fichier est vide. Choisissez un fichier qui contient des documents.",
@@ -98,6 +112,83 @@
       "InvalidPackType": "« {type} » n'est pas un type de document qu'un compendium peut contenir. Choisissez Actor ou Item.",
       "MigrationFailed": "La mise à jour automatique vers dnd5e 6 a échoué : {message}. Corrigez ce document dans le fichier, puis relancez l'import.",
       "NotAnObject": "Cette entrée n'est pas un document (ce doit être un objet JSON). Retirez-la du fichier ou corrigez-la."
+    },
+    "Enrich": {
+      "Title": "Complétion depuis le texte",
+      "Enriched": "Documents enrichis : {count}",
+      "Unchanged": "Documents inchangés : {count}",
+      "NotEnriched": "Documents non enrichis : {count}",
+      "Reverted": "Importé sans enrichissement, qui a été refusé : {reason}",
+      "FromCompendium": "Repris d'un compendium",
+      "NotFound": "Introuvables dans les compendiums, construits depuis le texte :",
+      "Ambiguous": "Plusieurs correspondances dans un même compendium, non utilisées :",
+      "Adjusted": "{field} : {from} → {to}",
+      "Empty": "(vide)",
+      "Feet": "{value} ft",
+      "Field": {
+        "attack": "Bonus d'attaque",
+        "attackActivity": "Activité d'attaque ajoutée depuis le texte, bonus",
+        "damage": "Dégâts",
+        "saveAbility": "Caractéristique de sauvegarde",
+        "saveDC": "DD de sauvegarde",
+        "saveDamage": "Dégâts de la sauvegarde",
+        "range": "Portée",
+        "rangeReach": "Allonge",
+        "rangeValue": "Portée",
+        "rangeLong": "Portée longue",
+        "uses": "Utilisations",
+        "activation": "Activation",
+        "quantity": "Quantité",
+        "method": "Mode d'incantation"
+      },
+      "SourceSkipped": "Compendium {pack} ignoré : {message}",
+      "LegendaryResistanceReplaced": "Résistance légendaire : l'action légendaire est remplacée par une activation spéciale.",
+      "LegendaryCost": "Coût de l'action légendaire : {from} → {to} (le texte l'emporte).",
+      "SpellLevelUnknown": "Niveau du sort {name} inconnu : à renseigner à la main.",
+      "ActivityAdded": "Activité ajoutée : {name}",
+      "EffectAdded": "Effet ajouté : {name} ({details})",
+      "Effect": {
+        "All": "tous",
+        "ac": "CA {value}",
+        "attack": "attaque {value} {scopes}",
+        "damage": "dégâts {value} {scopes}",
+        "save": "sauvegardes {value} {scopes}",
+        "check": "tests {value} {scopes}",
+        "resistance": "résistance : {scopes}",
+        "immunity": "immunité : {scopes}",
+        "vulnerability": "vulnérabilité : {scopes}",
+        "advantage": "avantage {scopes}",
+        "disadvantage": "désavantage {scopes}",
+        "abilityScore": "valeur de {scopes} {value}",
+        "speed": "vitesse {scopes} {value} ft",
+        "speedMultiplier": "vitesse ×{value}",
+        "damageReduction": "réduction de dégâts −{value} : {scopes}",
+        "sense": "{scopes} {value} ft"
+      },
+      "NotAutomated": "Non automatisé",
+      "Legact": "Actions légendaires : {value}",
+      "Legres": "Résistances légendaires : {value}/jour",
+      "Cr": "FP renseigné : {value}",
+      "Trait": "{trait} : + {values} {bypasses} {custom}",
+      "Slots": "Emplacements de sorts de niveau {level} : {slots}",
+      "Spellcasting": "Incantation : caractéristique {ability}, DD {dc}, attaque {attack}, niveau de lanceur {level}",
+      "PdfVersion": "Version du PDF",
+      "Status": {
+        "enriched": "enrichi",
+        "notEnriched": "non enrichi",
+        "reverted": "importé sans enrichissement",
+        "unchanged": "inchangé"
+      }
+    },
+    "Sources": {
+      "Title": "Compendiums sources",
+      "MenuName": "Compendiums sources",
+      "MenuLabel": "Choisir les compendiums",
+      "MenuHint": "Compendiums consultés pour les objets des acteurs importés, et leur ordre de priorité.",
+      "Hint": "Le premier compendium de la liste qui contient un objet l'emporte. Décochez les compendiums à ignorer.",
+      "Up": "Monter",
+      "Down": "Descendre",
+      "Reset": "Rétablir l'ordre par défaut"
     }
   }
 }

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0
+
+- Complétion des activités depuis le texte, avec la bibliothèque `dnd5e-text-parser` (nouvelle dépendance, API 1.x) : activités utilitaires vides converties en attaque, sauvegarde ou dégâts, usages et recharge, actions et résistances légendaires, résistances, immunités et vulnérabilités, incantation et emplacements de sorts. Les valeurs déjà présentes dans le fichier ne sont jamais remplacées.
+- Éléments d'acteurs et sorts repris des compendiums (ordre et choix dans le menu « Sources de compendiums »), ajustés aux valeurs du fichier ; noms et description du fichier conservés (texte du PDF ajouté).
+- Résumé détaillé de l'enrichissement dans la fenêtre : ce qui est repris, construit, ambigu, non reconnu.
+- Fusion « champs vides » (`mergeMissing`) et comparaison de noms (`nameKey`) fournies par la bibliothèque ; les doubles locaux sont retirés.
+- Un document non reconnu reste strictement identique à l'entrée ; l'ajustement d'un objet repris d'un compendium n'ajoute plus de cible de consommation quand rien ne change.
+- Le lint ignore `.atelier/`.
+
 ## 0.2.0
 
 - Compatible Foundry v14 et dnd5e 6.0.0 ou plus (vérifié avec 6.0.6). Plus compatible avec v13.

@@ -29,13 +29,21 @@
       "NewLabel": "New compendium label",
       "NewName": "New compendium name (id)",
       "NewNameHint": "Lowercase letters, numbers and hyphens.",
-      "NewType": "Document type"
+      "NewType": "Document type",
+      "Exists": "A compendium named {name} already exists in this world ({id}). Choose another name, or import into it.",
+      "UseExisting": "Import into this compendium"
     },
     "Options": {
+      "Title": "Options",
       "Overwrite": "Overwrite",
       "OverwriteHint": "Delete existing documents with the same name (and type) before importing.",
       "StripIds": "Remove _id",
-      "StripIdsHint": "Give every document, embedded document and activity a new identifier. Uncheck to keep the identifiers of the file."
+      "StripIdsHint": "Give every document, embedded document and activity a new identifier. Uncheck to keep the identifiers of the file.",
+      "Enrich": "Complete activities from the text",
+      "EnrichHint": "Fill the empty activities and the legendary data from the description. Values already in the file are never changed.",
+      "EnrichMissing": "Requires the active module \"dnd5e-text-parser\" (compatible version).",
+      "UseCompendiums": "Take items from compendiums",
+      "UseCompendiumsHint": "Items, spells and features of actors are taken from the compendiums when they exist there, then adjusted to the file. Requires the option above."
     },
     "Summary": {
       "Title": "Review before importing into",
@@ -53,6 +61,11 @@
       "ActionNewId": "Use a new identifier",
       "Existing": "existing document: {name}"
     },
+    "Progress": {
+      "reading": "Reading compendiums…",
+      "analyzing": "Analyzing {done}/{total}…",
+      "checking": "Checking…"
+    },
     "Warning": {
       "DocType": "The file declares documents of type {file}, but the compendium contains {pack} documents."
     },
@@ -67,6 +80,7 @@
       "Lost": "Overwritten documents were deleted and could NOT be restored: {names}. Cause: {message}",
       "Skipped": "Some documents were not created (refused by a hook); the overwritten ones were put back: {names}",
       "SkippedLost": "Some documents were not created (refused by a hook) and the overwritten ones could NOT be put back: {names}",
+      "AnalysisFailed": "The analysis failed: {message}. Check the console (F12) for details.",
       "ImportFailed": "The import failed: {message}. Check the console (F12) for details.",
       "Format": {
         "empty": "The file is empty. Choose a file that contains documents.",
@@ -98,6 +112,83 @@
       "InvalidPackType": "\"{type}\" is not a document type a compendium can hold. Choose Actor or Item.",
       "MigrationFailed": "The automatic update to dnd5e 6 failed: {message}. Fix this document in the file, then import again.",
       "NotAnObject": "This entry is not a document (it must be a JSON object). Remove it from the file or fix it."
+    },
+    "Enrich": {
+      "Title": "Completion from the text",
+      "Enriched": "Enriched documents: {count}",
+      "Unchanged": "Unchanged documents: {count}",
+      "NotEnriched": "Not enriched documents: {count}",
+      "Reverted": "Imported without enrichment, which was refused: {reason}",
+      "FromCompendium": "Taken from a compendium",
+      "NotFound": "Not found in the compendiums, built from the text:",
+      "Ambiguous": "Several matches in the same compendium, not used:",
+      "Adjusted": "{field}: {from} → {to}",
+      "Empty": "(empty)",
+      "Feet": "{value} ft",
+      "Field": {
+        "attack": "Attack bonus",
+        "attackActivity": "Attack activity added from the text, bonus",
+        "damage": "Damage",
+        "saveAbility": "Saving throw ability",
+        "saveDC": "Save DC",
+        "saveDamage": "Save damage",
+        "range": "Range",
+        "rangeReach": "Reach",
+        "rangeValue": "Range",
+        "rangeLong": "Long range",
+        "uses": "Uses",
+        "activation": "Activation",
+        "quantity": "Quantity",
+        "method": "Spellcasting method"
+      },
+      "SourceSkipped": "Compendium {pack} ignored: {message}",
+      "LegendaryResistanceReplaced": "Legendary Resistance: the legendary action is replaced by a special activation.",
+      "LegendaryCost": "Legendary action cost: {from} → {to} (the text wins).",
+      "SpellLevelUnknown": "Level of the spell {name} unknown: to be set by hand.",
+      "ActivityAdded": "Activity added: {name}",
+      "EffectAdded": "Effect added: {name} ({details})",
+      "Effect": {
+        "All": "all",
+        "ac": "AC {value}",
+        "attack": "attack {value} {scopes}",
+        "damage": "damage {value} {scopes}",
+        "save": "saving throws {value} {scopes}",
+        "check": "checks {value} {scopes}",
+        "resistance": "resistance: {scopes}",
+        "immunity": "immunity: {scopes}",
+        "vulnerability": "vulnerability: {scopes}",
+        "advantage": "advantage {scopes}",
+        "disadvantage": "disadvantage {scopes}",
+        "abilityScore": "{scopes} score {value}",
+        "speed": "speed {scopes} {value} ft",
+        "speedMultiplier": "speed ×{value}",
+        "damageReduction": "damage reduction −{value}: {scopes}",
+        "sense": "{scopes} {value} ft"
+      },
+      "NotAutomated": "Not automated",
+      "Legact": "Legendary actions: {value}",
+      "Legres": "Legendary resistances: {value}/day",
+      "Cr": "Challenge rating filled in: {value}",
+      "Trait": "{trait}: + {values} {bypasses} {custom}",
+      "Slots": "Spell slots level {level}: {slots}",
+      "Spellcasting": "Spellcasting: ability {ability}, DC {dc}, attack {attack}, caster level {level}",
+      "PdfVersion": "PDF version",
+      "Status": {
+        "enriched": "enriched",
+        "notEnriched": "not enriched",
+        "reverted": "imported without enrichment",
+        "unchanged": "unchanged"
+      }
+    },
+    "Sources": {
+      "Title": "Compendium sources",
+      "MenuName": "Compendium sources",
+      "MenuLabel": "Choose the compendiums",
+      "MenuHint": "Compendiums searched for the items of imported actors, and their priority order.",
+      "Hint": "The first compendium of the list that contains an item decides. Uncheck the compendiums to ignore.",
+      "Up": "Move up",
+      "Down": "Move down",
+      "Reset": "Restore the default order"
     }
   }
 }

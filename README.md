@@ -41,6 +41,22 @@ Your last choices are remembered per user.
   compendium (and not removed by Overwrite), the summary lists the document: select those to import, then choose to
   replace the existing document or to import it with a new `_id`. Unselected documents are ignored.
 
+## Completion from the text (0.3.0)
+
+Requires the module **dnd5e Text Parser** (`dnd5e-text-parser`, API 1.x). With the option **Complete activities from
+the text**, the analysis reads the descriptions of the items and fills what the file leaves empty:
+
+- Empty "utility" activities become attacks, saving throws or damage; item uses and recharge, legendary actions and
+  legendary resistances (Legendary Resistance (n/Day) moves from the legendary activation to `special`), damage
+  resistances, immunities and vulnerabilities (union with the existing values), spellcasting (ability, level, slots).
+- Values already in the file are never replaced. Two exceptions are signalled in the summary: Legendary Resistance
+  and "Costs N Actions" in the text, which wins over the legendary cost of the file.
+- For actors, items and spells are looked up in the compendiums (settings menu **Compendium sources**: choose the
+  packs and their order). A match replaces the item, keeps the name and the description of the file (the PDF text is
+  appended) and adjusts attack bonus, damage, DC, range, uses and activation to the file. The summary lists what was
+  taken from a compendium, what was built from the text, and what was ambiguous.
+- A document that cannot be enriched, or whose enriched version is refused by dnd5e, is imported as it is.
+
 ## dnd5e conformity
 
 Actors and items are built in memory with the dnd5e 6 data model, without writing anything:
@@ -59,7 +75,8 @@ Actors and items are built in memory with the dnd5e 6 data model, without writin
 
 - `open()`: open the importer window.
 - `analyze(entries, documentName, options)`: check and migrate entries in memory, returns
-  `{ accepted, rejected, other }`.
+  `{ accepted, rejected, other }`; options `enrich` and `compendiums` complete the documents from the text (and
+  add `enrichment`, the summary).
 - `runImport(analysis, options)`: write an analysis, options `{ pack, newPackSpec, overwrite, stripIds,
   conflictSelection, conflictAction }`, returns `{ created, replaced, ignored, rejected }`.
 

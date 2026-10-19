@@ -1,0 +1,618 @@
+[
+ {
+  "_id": "4lpyo0av7JIAT0So",
+  "name": "Archmage Test",
+  "type": "npc",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+   "attributes": {
+    "hp": {
+     "value": 100,
+     "max": 100
+    },
+    "ac": {
+     "value": 15
+    }
+   },
+   "abilities": {
+    "str": {
+     "value": 10
+    },
+    "int": {
+     "value": 14
+    }
+   }
+  },
+  "items": [
+   {
+    "_id": "Ym6mu90J4sg2AqoI",
+    "name": "Fireball",
+    "type": "spell",
+    "system": {
+     "description": {
+      "value": "<p><strong>Fireball.</strong> Each creature in a 20-foot-radius sphere centered on that point must make a DC 23 Dexterity saving throw, taking 35 (10d6) fire damage on a failed save, or half as much damage on a successful one.</p>"
+     }
+    }
+   },
+   {
+    "_id": "AjoLBbDfONKjq8Wt",
+    "name": "Shield",
+    "type": "spell",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "uBfb6gcXq0dDEIRB",
+    "name": "Mage Hand",
+    "type": "spell",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "pHF4esnGkCFeM25F",
+    "name": "Counterspell",
+    "type": "spell",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "Ng5U1IlI0OHKkydZ",
+    "name": "Misty Step",
+    "type": "spell",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "2c7Bf9aqBJNA1p29",
+    "name": "Magic Missile",
+    "type": "spell",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "g3VLDj0cWDc1wIhV",
+    "name": "Detect Magic",
+    "type": "spell",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "LhAgmqIYVbBLF3px",
+    "name": "Darkness",
+    "type": "spell",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "Kl1rfqe8U9uTwiG9",
+    "name": "Hellish Rebuke",
+    "type": "spell",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "ZcB0lw6jjCfePi8V",
+    "name": "Boule de feu",
+    "type": "spell",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "EVoDwvd63soEdK6p",
+    "name": "Fireball",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "0Ub6IkiKmMeffJIm",
+    "name": "Shield",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><small>Reaction</small><br/><strong>Shield.</strong> The creature adds 5 to its AC against one attack that would hit it.</p>"
+     }
+    }
+   },
+   {
+    "_id": "JmJFXlCMeeZuYFpS",
+    "name": "Shield",
+    "type": "equipment",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "nYaXIKnc6LGTYX5J",
+    "name": "Dagger",
+    "type": "weapon",
+    "system": {
+     "description": {
+      "value": "<p><strong>Dagger.</strong> Melee Weapon Attack: +17 to hit, reach 10 ft., one target. Hit: 9 (1d4 + 7) piercing damage.</p>"
+     },
+     "quantity": 4
+    }
+   },
+   {
+    "_id": "x2eJjfSqZfTpN0z4",
+    "name": "Longsword",
+    "type": "weapon",
+    "system": {
+     "description": {
+      "value": ""
+     },
+     "quantity": 2
+    }
+   },
+   {
+    "_id": "zsxIScz8b28U0rgB",
+    "name": "Plate Armor",
+    "type": "equipment",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "ftyZXO3Zdmg6xjrR",
+    "name": "Chain Mail",
+    "type": "equipment",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "anjhwm69VnkYLtcj",
+    "name": "Torch",
+    "type": "consumable",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "knco5Aljfdbb12Y3",
+    "name": "Marshal Undead",
+    "type": "loot",
+    "system": {
+     "description": {
+      "value": "<p><small>Action</small><br/><strong>Marshal Undead.</strong> Allies gain advantage.</p>"
+     }
+    }
+   }
+  ],
+  "flags": {}
+ },
+ {
+  "_id": "jxoCh0OMnyEZurdf",
+  "name": "Undead Test",
+  "type": "npc",
+  "img": "icons/svg/mystery-man.svg",
+  "system": {
+   "attributes": {
+    "hp": {
+     "value": 100,
+     "max": 100
+    },
+    "ac": {
+     "value": 15
+    }
+   },
+   "abilities": {
+    "str": {
+     "value": 10
+    },
+    "int": {
+     "value": 14
+    }
+   },
+   "resources": {
+    "legact": {
+     "max": 0
+    },
+    "legres": {
+     "max": 0
+    }
+   }
+  },
+  "items": [
+   {
+    "_id": "06EkdV3npmKOd5jr",
+    "name": "Legendary Resistance (3/Day)",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><small>Legendary Resistance</small><br/><strong>Legendary Resistance (3/Day).</strong> If the creature fails a saving throw, it can choose to succeed instead.</p>"
+     }
+    }
+   },
+   {
+    "_id": "vYa9NC8n0APa6XnF",
+    "name": "Invisibility",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "7XzBd4LAa2bv9PEw",
+    "name": "Incorporeal Movement",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "ECPcGBsNwJCznPR7",
+    "name": "Magic Resistance",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "WJTmcREeJmG9LX8w",
+    "name": "Amorphous",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "aqqds5omdWLOnjLw",
+    "name": "Shadow Stealth",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "fsoL4iiu1azst65A",
+    "name": "Agile",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "6lu3j8LGaI9Mkx7m",
+    "name": "Pack Tactics",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "ICLzRUgjaobehzEu",
+    "name": "Charge",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><small>Bonus Action</small><br/><strong>Charge.</strong> The creature moves 20 feet and makes one attack as a bonus action.</p>"
+     }
+    }
+   },
+   {
+    "_id": "cggzKfWgYsyPIQlS",
+    "name": "Siege Monster",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "ZPZOOb8Cdj3EHUid",
+    "name": "Life Drain",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "MFlvVhE2Cmai7LSd",
+    "name": "Regeneration",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "Vi6QYaBSrlAfAQwb",
+    "name": "Turn Immunity",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "Jiadytu95DQkgnio",
+    "name": "Parry",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "n374MgvoYJv5WENG",
+    "name": "Spider Climb",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "hYhS1etlrHG7A9Zh",
+    "name": "Vampire Weaknesses",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "i39Jo8yCnsiNHJF5",
+    "name": "Immutable Form",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "m1qS1rbmOASh7iFb",
+    "name": "Innate Spellcasting",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "Q2iOltHoK5AkIJPb",
+    "name": "Paralyzing Touch",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "K4cL2ZDyoiAoq1SK",
+    "name": "Disrupt Life (3/Day)",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><small>Action</small><br/><strong>Disrupt Life (3/Day).</strong> Each non-undead creature within 20 feet must make a DC 21 Constitution saving throw, taking 24 (7d6) necrotic damage on a failed save, or half as much damage on a successful one.</p>"
+     }
+    }
+   },
+   {
+    "_id": "MfYVJzDHRrk8oPWO",
+    "name": "Rejuvenation",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "obrvYjVffAkUvtrX",
+    "name": "False Appearance",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "oykUBhI4ZO5irsIy",
+    "name": "Multiattack",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><small>Action</small><br/><strong>Multiattack.</strong> The creature makes two Slam attacks.</p>"
+     }
+    }
+   },
+   {
+    "_id": "ZiVxxcOmR1e98f21",
+    "name": "Indomitable",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><small>Action</small><br/><strong>Indomitable.</strong> The creature can reroll a failed saving throw.</p>"
+     }
+    }
+   },
+   {
+    "_id": "RvS823D3LB1iCa5T",
+    "name": "Sneak Attack",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "LjxbCHwRkWGYy7KB",
+    "name": "Slam",
+    "type": "weapon",
+    "system": {
+     "description": {
+      "value": "<p><small>Action</small><br/><strong>Slam.</strong> +15 to hit, reach 15 ft., one target. Hit: 22 (4d8 + 4) bludgeoning damage.</p>"
+     }
+    }
+   },
+   {
+    "_id": "orOOSlLXNwSTzaS9",
+    "name": "Bite",
+    "type": "weapon",
+    "system": {
+     "description": {
+      "value": "<p><small>Action</small><br/><strong>Bite.</strong> Melee Weapon Attack: +19 to hit, reach 5 ft., one target. Hit: 31 (5d10 + 4) piercing damage.</p>"
+     }
+    }
+   },
+   {
+    "_id": "kMhu29ctpDagujft",
+    "name": "Withering Touch",
+    "type": "weapon",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "lZQ1IEaKYQBObx0b",
+    "name": "Fire Breath (Recharge 4–6)",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><small>Action</small><br/><strong>Fire Breath (Recharge 4–6).</strong> The creature exhales fire in a 30-foot cone. Each creature in that area must make a DC 23 Dexterity saving throw, taking 99 (18d10) fire damage on a failed save, or half as much damage on a successful one.</p>"
+     }
+    }
+   },
+   {
+    "_id": "j7dD065BmSpRphD4",
+    "name": "Frightful Presence",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "2OeBCIdqFIqIt7sR",
+    "name": "Death Burst",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "nDpaaxixRNO39MOA",
+    "name": "Undead Fortitude",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "Sg0fSDYEe7t2gDo0",
+    "name": "Hold Breath",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "3lRS7NtBkL2iiZ99",
+    "name": "Horrifying Visage",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   },
+   {
+    "_id": "CrmwWO3W3VMHEAV0",
+    "name": "Everfrost Aura",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": "<p><small>Action</small><br/><strong>Everfrost Aura.</strong> Creatures that start their turn within 15 feet must succeed on a DC 19 Constitution saving throw.</p>"
+     }
+    }
+   },
+   {
+    "_id": "p5P3uvKuIkOsKbzv",
+    "name": "Spellcasting",
+    "type": "feat",
+    "system": {
+     "description": {
+      "value": ""
+     }
+    }
+   }
+  ],
+  "flags": {}
+ }
+]

@@ -1,0 +1,18 @@
+<div class="cji-sources-body">
+  <p class="hint">{{localize "compendium-json-importer.Sources.Hint"}}</p>
+  <ol class="cji-source-list">
+    {{#each rows}}
+    <li>
+      <label>
+        <input type="checkbox" name="enabled" value="{{pack}}" {{checked enabled}}>
+        <strong>{{label}}</strong> <em class="cji-existing">{{pack}}</em>
+      </label>
+      <button type="button" data-action="moveUp" data-pack="{{pack}}" {{#if first}}disabled{{/if}}
+        data-tooltip="compendium-json-importer.Sources.Up" aria-label="{{localize "compendium-json-importer.Sources.Up"}}"><i class="fa-solid fa-arrow-up" inert></i></button>
+      <button type="button" data-action="moveDown" data-pack="{{pack}}" {{#if last}}disabled{{/if}}
+        data-tooltip="compendium-json-importer.Sources.Down" aria-label="{{localize "compendium-json-importer.Sources.Down"}}"><i class="fa-solid fa-arrow-down" inert></i></button>
+    </li>
+    {{/each}}
+  </ol>
+  <button type="button" data-action="resetSources"><i class="fa-solid fa-rotate-left" inert></i> {{localize "compendium-json-importer.Sources.Reset"}}</button>
+</div>

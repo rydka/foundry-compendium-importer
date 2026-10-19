@@ -22,13 +22,13 @@ test("C1: loading the world opens no window and logs nothing from the module", a
   expect(mine, logs.join("\n")).toEqual([]);
 });
 
-test("C3: the module is active with version 0.2.0 and dnd5e is the system", async ({ foundry }) => {
+test("C3: the module is active with version 0.3.0 and dnd5e is the system", async ({ foundry }) => {
   const info = await foundry((id) => {
     const mod = game.modules.get(id);
     return { active: mod.active, version: mod.version, system: game.system.id, hasApi: typeof mod.api?.open === "function" };
   }, MODULE_ID);
   evidence("C3-module-actif.json", info);
-  expect(info).toEqual({ active: true, version: "0.2.0", system: "dnd5e", hasApi: true });
+  expect(info).toEqual({ active: true, version: "0.3.0", system: "dnd5e", hasApi: true });
 });
 
 test("C24: the api exposes open, analyze and runImport", async ({ foundry }) => {

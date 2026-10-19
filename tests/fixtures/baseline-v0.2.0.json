@@ -1,0 +1,1178 @@
+{
+ "recordedWith": "compendium-json-importer 0.2.0 (before activity-enrichment)",
+ "files": {
+  "tools-out/actors.json": {
+   "documentName": "Actor",
+   "accepted": [
+    {
+     "name": "Poltergeist",
+     "type": "npc",
+     "hash": "58055707bee350f8191ba20367abf6dfcd68c2bd38dd989f4f4b2eeb4fc6f627",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ghost of a Hero",
+     "type": "npc",
+     "hash": "e41b5d84ddb5228a2a0301ee98a400608d088ea59a573731e3b03bd2f2513782",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Hand of Shadow",
+     "type": "npc",
+     "hash": "5e21b7100f9c9986fec7540c3475945af943472378fe6658ac6040f15a868315",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Predator Ghoul",
+     "type": "npc",
+     "hash": "37cf0c6b8e94c1393854363812cb9bef5514da114bf1eeb0be13ce504c8105bd",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Skeleton Ball",
+     "type": "npc",
+     "hash": "a8c04070e0e041ce145484552d105a443a0c562f2c533f353cc771771abca4f6",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Revenant",
+     "type": "npc",
+     "hash": "143ba3c4ae75fe615f6249ec00f57ed7032c1093a6eca97f511b862d1716e94a",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Revenant",
+     "type": "npc",
+     "hash": "7d2cc9ab01513496dfa2fd4f5ba735def3a640c03d5d246d23f12c2549dc3fc0",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Striga",
+     "type": "npc",
+     "hash": "048379316b4dd6dc7d4bb96d7dd8a43f30f076b0d434177e3b54fe449c705191",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Vrykolakas",
+     "type": "npc",
+     "hash": "46a1a2486df9c77c4158f73d5ea7722d428c704af40e4ae6ff75233f7a1797de",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Death Knight",
+     "type": "npc",
+     "hash": "e0f9a575d9f381624124f228b62eadd7ac4d31b0cd98d22ffa71a104d92a6bca",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Lich",
+     "type": "npc",
+     "hash": "2a5b23e5eb900d85babd50548fdfed592786a0b48b1bd7aa510df51c0dd51fcf",
+     "activities": [],
+     "items": []
+    }
+   ],
+   "rejected": [],
+   "other": 0
+  },
+  "tools-out/items.json": {
+   "documentName": "Item",
+   "accepted": [
+    {
+     "name": "Ethereal Existence",
+     "type": "feat",
+     "hash": "134e6a262a818a33202a504c766c311d6d062edfe03160abd9d725e8432559ac",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Invisibility",
+     "type": "feat",
+     "hash": "4023407fe2ded468f816b720ca13fc44769d3909d65675aa50ecb4159d5d596c",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "False Appearance",
+     "type": "feat",
+     "hash": "50177188d8bcee2ab17536c240a828d92a74334190080745a269270d94f4a751",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Cursed",
+     "type": "feat",
+     "hash": "f5205180a704a19df1dc7d0acad9f14feeea92d81e4c8a6826b1a85d1e572390",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Possess Object",
+     "type": "feat",
+     "hash": "c76e15f1d3752511d94c5105f4e99d0f4fb9f493a307e04c30354a83cdf66b18",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Slam",
+     "type": "feat",
+     "hash": "1071fccc1b869973dbc8275be07b5e62aa69fa9adf61246e62083c76fb38d251",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Animate Objects",
+     "type": "feat",
+     "hash": "19b90b6f499a82c0d570b134391f19280204b11525ec4a87f365c4f0044476d9",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Incorporeal Movement",
+     "type": "feat",
+     "hash": "2dbee2938db83c7ade1cf6e501994022c24de7b7fd970bb30ba7feea3c2d2fe8",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ethereal Existence",
+     "type": "feat",
+     "hash": "dfb5276dc7359ae4ef59b12e09506c94afb81ee4c36db41f2bf828c3bbbc6441",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Heroic Possession (Recharge 6)",
+     "type": "feat",
+     "hash": "b8470efc9f871d4646f6cab3cbb857eff1a44aeb35c5dc02d18d78f983699b82",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Surge (1/day)",
+     "type": "feat",
+     "hash": "8ac797be3e7531cb482f84c7ab4977b3604892845518e38e621b699de018471b",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Magic Resistance",
+     "type": "feat",
+     "hash": "8b893619fac27732e63c7734dcf54bdad7b3c4ea5427c742298fabe2e299c5e0",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ethereal Blade Spirit Bolt",
+     "type": "feat",
+     "hash": "e6ae99b5a353a67777c13d1f0f786736965d8a85ad88de5500afef07c87e1f6a",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Spirit Bolt",
+     "type": "weapon",
+     "hash": "2c770caacdc11b25fd94fb25547d9e2f901a6acac0d22d652fe582124cbe977b",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Willing Possession",
+     "type": "feat",
+     "hash": "c183e7a8a1a564bf041f1f13ed7f158e02be7b8c653b308c4708d0f498cbcb18",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Indomitable",
+     "type": "feat",
+     "hash": "71fc303de145cdb4d0f391a61e2c5d461efe574f7627ed75bdefa046642ff440",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Forceful Possession",
+     "type": "feat",
+     "hash": "814bd7933d63bc4004817cd79faba37c73db4df0514b3eb18a92eb23638c2dae",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Amorphous",
+     "type": "feat",
+     "hash": "9f7f66f508b9aba3d2b400635693e9d12caf918b7f8e89abec8000405c483eba",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Shadow Stealth",
+     "type": "feat",
+     "hash": "6c53a7865996da4a6161f3f1329f994014759148aa852af4cdfe7f794f973c17",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Multiattack. Strength Drain",
+     "type": "feat",
+     "hash": "8c8950d43df70ca1fc5e1f91351932c33a5e21cec4ad46db4faca1bd846697ed",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Strength Drain",
+     "type": "weapon",
+     "hash": "f5012cafd05800c0162fe65b62da80d61e99945d71dd0f3916857aaa9d5cea12",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Abduct",
+     "type": "weapon",
+     "hash": "63d57abc8dd5c3a7e3868c7732996160ad85a500454f313d91e1a3f2a7d5a6b5",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Predator’s Instinct",
+     "type": "feat",
+     "hash": "d135d0307bb3616f6ad6250dabad095607b16bda74035a8b0e27d15dce636ab7",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Keen Smell",
+     "type": "feat",
+     "hash": "416d05f30d4b2ad560b3a69f1287cfde6da2ce06c9f142113a28b3925e429ee1",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Agile",
+     "type": "feat",
+     "hash": "508685f6fed7b18b2ba32304401a0a917237c6d8e53e620c739dbf9e4af31513",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Multiattack",
+     "type": "feat",
+     "hash": "c164315b6586e45d006b0cea799063ebd2cccfe433c41bfe74602f72eb2e7d96",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Claw",
+     "type": "feat",
+     "hash": "a8d9cd8e12083c4ec6d5e5877ecaa65beef0ab8a6c33d939ff66457b161364a2",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Bite",
+     "type": "feat",
+     "hash": "a8a5b76d77adceee4c13bc116d0f1680f0b8c557d9ab92c3ed1ae77a66edc6ca",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Pack Tactics",
+     "type": "feat",
+     "hash": "d86fc1b9c0456a7ff464526ed138cecb94c2f7998f1ce5d1c606dab002e5fe04",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Relentless Pursuit",
+     "type": "feat",
+     "hash": "1eb834c9a2ec2281c4a4564db03e27a549bb95609d0d81cfd950a5f3da2e3567",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Multiattack",
+     "type": "feat",
+     "hash": "5c4448ca0638ed73f6dab60bf0fccb9badfa63317d8dd400f2621c96979cd7aa",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Overrun",
+     "type": "feat",
+     "hash": "7de4b226410054f821103a6885c3bbf238cb7dd15ca271ecec7bee896cedd2b5",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Charge",
+     "type": "feat",
+     "hash": "0f75143056580623e3a05fdbf5bd67e570832d20699b752a778afdc58ede9bd9",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Consume Corpses",
+     "type": "feat",
+     "hash": "894f7547b33f759a7e41373db0494d949675d8aa35711675a917801f0e8d2ed7",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Unstoppable",
+     "type": "feat",
+     "hash": "c099e303cd1c44747337aa6be2f729d94e6d266965838508cc87290a306878fc",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Siege Monster",
+     "type": "feat",
+     "hash": "1b278c2dc706c90fe03898031159a66bffc16ea45bcbc7cc8fa463f9025b937e",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Slam",
+     "type": "feat",
+     "hash": "55efbf7449887de75fb3de022ec5ec68e9252d317dc06931b330d19a471d45a4",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Overrun",
+     "type": "feat",
+     "hash": "3871ccf8d9558179d6ffbf98a9ce940244de01823acb3a6297d58e7578b983fa",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Life Drain",
+     "type": "feat",
+     "hash": "8eeab28f1f56380b8e5e24b292db704395220dcb783a21b2fb1f6e5ed7e111e0",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Multiattack",
+     "type": "feat",
+     "hash": "fb1578ee37215e87a5ea5237f8d7192e9ae045882e21060276f0db6ed86d14f9",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Greatsword",
+     "type": "feat",
+     "hash": "7fbcaeda7a172c7876bd8733c2cb0debfc7d2dd1462de8fa27d6c691ca2a6167",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Life Drain",
+     "type": "feat",
+     "hash": "7697a3fa44fdd526461ba608b39559ae1490230e74e0d60625c7aa453eb2d977",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Regeneration",
+     "type": "feat",
+     "hash": "70b3e550c78faa1d3646c22029db6eecf20a0d16ff43d2e5c2570d2907d895a3",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Rejuvenation",
+     "type": "feat",
+     "hash": "24b58672eaaac4f1fe1326f74a2bb7fb5295f4d678add7631c05fb0b5896b590",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Turn Immunity",
+     "type": "feat",
+     "hash": "66db51ce5249c569a538a818e2c3631291abd12285f9763ffbf6765945923771",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Dead Nerves",
+     "type": "feat",
+     "hash": "c5ed0775bcc9c8853cc8effa0f0145d7436786886d8ecc514cc4e67717c9f37d",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Multiattack",
+     "type": "feat",
+     "hash": "9df548a35d028d7065fc7cf918340e9692963b648219fe8be45cfd15eef83e22",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Blade of the Returned",
+     "type": "feat",
+     "hash": "a7dc87f790f063c73b9579defd29f60e0999d423e93150c232280cbe5b60157d",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Spirit Bolt",
+     "type": "feat",
+     "hash": "4201d13ad273b12bf5eccb027a77178d1f7f9a9ad1c6ca2b5e5e24b81b56db37",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Touch of the Grave",
+     "type": "feat",
+     "hash": "815cfce9b9c6e17d8b7c062d2a6db025bc181b7401982dbdc5452246b10ebc98",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Parry",
+     "type": "feat",
+     "hash": "5ca8a9239c7cc4083163d4df44bb01a987e4b2fb85cdbe0b3c96883a224b5e90",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Regeneration",
+     "type": "feat",
+     "hash": "9072bc54e647479f5a39fd9301a4fa5c73577683a5144e1a64b997928513a136",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Spider Climb",
+     "type": "feat",
+     "hash": "57f1ad0b3b9275cb7942f42283f65b71739951e92a04cb19f1b7ec6cb3b1533e",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Vampire Weaknesses",
+     "type": "feat",
+     "hash": "fd8d41fa0f7d498058d5e4056d7a3491351e9a3ef327053214229fc0164384d3",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Brutal Ferocity",
+     "type": "feat",
+     "hash": "dc19a979effa66cdb1ffc8b4d11f62564b919687b2fe99f2ef094353743c2d97",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Multiattack",
+     "type": "feat",
+     "hash": "c9ab3a4ccb594d0a24856ff7c24fa3ba4d59f1052bdfc65c843d3a0ae17e2d1f",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Multiattack",
+     "type": "feat",
+     "hash": "32374b6bf5f767e7f51aeff15d30da7e338ea6c52c8ec4179941cdd9f03fa413",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Gory Feast",
+     "type": "feat",
+     "hash": "ce5a807c4273ddc316fdf953c813633b9d96906ae177a16f17496c520a17a716",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Incapacitating Screech (Recharge 6)",
+     "type": "feat",
+     "hash": "7235f4fa095c5e9983f67106d31e3688f0aba1375b06bbe6174a46952664c5fd",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Pain Tolerance",
+     "type": "feat",
+     "hash": "7d9b5dd49a4cd395286c60d55dd0864f878f050a52e15d76496a47d88419c05d",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Immutable Form",
+     "type": "feat",
+     "hash": "fcd409f916e3446bc04d4c1ad888024e8df6c256ba476f34469beae62857219f",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Regeneration",
+     "type": "feat",
+     "hash": "032777728c5a37273d3290b077c859274f49a7c22d8ba3787aef4e4d1b75d00f",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Spider Climb",
+     "type": "feat",
+     "hash": "075f7066455408ceaafb68fdcfa79948b5540c0d9918bd7e748486bb8576a09a",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Multiattack",
+     "type": "feat",
+     "hash": "05e48235a73b58e33d091d2c121b6b598ecc4f5fa9de523db15a5ce3b2eab6f9",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Claw",
+     "type": "feat",
+     "hash": "d11299d236dca4f6d23b59d4891bc20bcc1647d54bbfaf46c6356be43b2a3d05",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Bite",
+     "type": "feat",
+     "hash": "437d7f8a65a4e8d1dda245ee92027d0211af56aec8685660cf19a6cda1b233a8",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Forbiddance",
+     "type": "feat",
+     "hash": "2e2909efd0a0c1cd5db1b65bcf7a25c86568cb316607c5aa80097f4a00d138e9",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Marshal Undead",
+     "type": "feat",
+     "hash": "15c816be32eaa8bf641758a8b5afa620679ee47f712bb17b68e9b776a18fa420",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Profane Endurance",
+     "type": "feat",
+     "hash": "862c93bddb9c69addb43297f6756073d4d9b1576bd17b63d002059feba7af97a",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Heavy Armor Master",
+     "type": "feat",
+     "hash": "2e8fc3aa560f8d2b9fd1a84f8a72e63d4eb685660c95c1e2254e6512fc5b8632",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Innate Spellcasting",
+     "type": "feat",
+     "hash": "0b9a5370a4da97e0f097fca399132c695124d31a4a6094f0f20529eb0650915d",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Everfrost Aura",
+     "type": "feat",
+     "hash": "a8a447ea4ee94e9901140e16d60992936e58e97396db7614a038ee8437052716",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Magic Resistance",
+     "type": "feat",
+     "hash": "387336ac4530ecfa5e8f5712fdd2cf09035f31d5b33f0f7ffc40c1b8cab28791",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Multiattack",
+     "type": "feat",
+     "hash": "3de777c2b231e3cd08bde6884f0f64c1485f27e93617b37154fd33f30dd1ded8",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Deathblade",
+     "type": "feat",
+     "hash": "73378014aecd72742685e1c91a95ee4a1ef34abe306bd460dcbe04c96650df27",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Hellfire Orb",
+     "type": "feat",
+     "hash": "245e273adc4a4e25621981dbb5c3881752a65acf748676b221a6a6a8c19f2fb6",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Death Coil",
+     "type": "feat",
+     "hash": "bb31fff995bf599fefa955ac26ab56cad263be27530b1f9e9aa3d2fc39fc07bf",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Nullify Arcana",
+     "type": "feat",
+     "hash": "239690134236bacbea8ddffa427b7c369f7b7b4e4f7bc8b04322e7844a154f75",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Rejuvenation",
+     "type": "feat",
+     "hash": "c8d7d0d54f0ca8c258c56b41c4e49d7f2d15b29c3c1321cdddd5c4526972a3c4",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Necrotic Bolt",
+     "type": "feat",
+     "hash": "6059d017d439d2f01b0f92ccee6f517d25e130de96ce85961514ac60ac73b33c",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Paralyzing Touch",
+     "type": "feat",
+     "hash": "07c248e9d4c28b2178d39a64c1f9b6e5c401c1db36df52b8c42f12687c28026b",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Disrupt Life",
+     "type": "feat",
+     "hash": "fbab643dc363d014cbaa5737f5ee9f24aba04a1ab1c768d37e4ab82fb92082c9",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Claim Soul",
+     "type": "feat",
+     "hash": "72e4837370101ad78c81889e0366dbf7b6372ae7e32f7554624e15e575132700",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Call of the Grave",
+     "type": "feat",
+     "hash": "0be54773c28da1f4a763bc1f2c1bff68bc986213a3771fd5bad2a70983e1a781",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legendary Resistance (3/Day)",
+     "type": "feat",
+     "hash": "0b7532654ba3685c6d2fcd45309a75fa8a8c29c974391a29ffc3ef1a4a3fb9b4",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Turn Immunity",
+     "type": "feat",
+     "hash": "5123c2c3b4aff2d9602b4d3698cc4b8e6e9f586162aa58071625524121203886",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Tome of Decay",
+     "type": "equipment",
+     "hash": "d904585317e33ff03440285fc5bcc5813318c6b4572454f150b60d617ea9f95e",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Tome of Death",
+     "type": "equipment",
+     "hash": "79a1ed9b4e123961f45b5fa1297266b95dc585ed0850ed89e8a507f07bf55d57",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Challenge Gem",
+     "type": "equipment",
+     "hash": "078ecda523a4efc8ea5329ea8ffa29a5a12fca22ac6ec7a56ae4f308546bd487",
+     "activities": [],
+     "items": []
+    }
+   ],
+   "rejected": [],
+   "other": 0
+  },
+  "fixtures/conformity-actors.json": {
+   "documentName": "Actor",
+   "accepted": [
+    {
+     "name": "Ok Goblin",
+     "type": "npc",
+     "hash": "68f5fdb032dae122d27786456f1251a803f2c695734abf512774b853739db238",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Ogre",
+     "type": "npc",
+     "hash": "80e06bc06153af0dfbe40ce9586df8a90451888f8e89fc728c24e49aa521c2d8",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Skeleton With Club",
+     "type": "npc",
+     "hash": "bbb4f94cd7f8f2ae969e53954cc9d9428f4b33a91290baa9f7bb176ee81d21d1",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Wolf",
+     "type": "npc",
+     "hash": "883bf6baceb036bccdaa7383a0399782520c85bf7e20f2c8dc4f541715fcc931",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Commoner",
+     "type": "npc",
+     "hash": "a69c8be0eb08aded891377f366ad97da8af3e18bef1e7225b7517bca8037cc0c",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Wizard Hero",
+     "type": "character",
+     "hash": "390a4dcfccc9c5955505940f9a64d62d0617b51f99c2f184d9984a30929d4d83",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Fighter Hero",
+     "type": "character",
+     "hash": "bfc39e5ee63bf451eacea9680ee95f9bba0d2c121ccb7b6c36d1149ce86d2e22",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Blessed Hero",
+     "type": "character",
+     "hash": "385f2a69bd69909e5998226f8c16f1a378218a72fb82de7c41f987f2b1fc79d7",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Plain File Npc",
+     "type": "npc",
+     "hash": "b0ba38df5d3d48e86b9e3666158ed51617da7ab7eb1a0972688200a71cfd7510",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Plain File Hero",
+     "type": "character",
+     "hash": "b37293d6eef2c4e7fe286fe23097e72a19d947e3953e8234f45ef4411c10d6fc",
+     "activities": [],
+     "items": []
+    }
+   ],
+   "rejected": [
+    {
+     "name": "Bad Unknown Actor Type",
+     "type": "monster",
+     "hash": "d00ea4661d79f9da3cbf0b8f4f67042f7b250061bbbfc537173eafc83b39450b"
+    },
+    {
+     "name": "Bad Strength Text",
+     "type": "npc",
+     "hash": "d4df9347099310a52a8c11c348309efc228a2ae381ec4c32f1e16501d6d05bff"
+    },
+    {
+     "name": "Bad Hit Points Text",
+     "type": "npc",
+     "hash": "5b0cbf9dcdd4673a749466b2b80bbe4fa064d6279bd39de52f60380ce9d7118d"
+    },
+    {
+     "name": "Bad Nested Item Type",
+     "type": "npc",
+     "hash": "3e9c378ae2f05d90137f61fb8731d0604f2b4b8541d6150d57988a38b4c712ba"
+    },
+    {
+     "name": "Bad Nested Item Value",
+     "type": "npc",
+     "hash": "bc6bc6e8f82565869c57ac5369898a0c3250d8e70dadfc741d492de924ba52b7"
+    },
+    {
+     "name": "Bad Items Not Array",
+     "type": "npc",
+     "hash": "a748a0aeec4d8badef71daec348890000a96d05018b085186dfbb6d320607d50"
+    }
+   ],
+   "other": 0
+  },
+  "fixtures/conformity-items.json": {
+   "documentName": "Item",
+   "accepted": [
+    {
+     "name": "Ok Longsword",
+     "type": "weapon",
+     "hash": "df994b3eda4af39a4127952b51a87dcfb87b0b5c2785ac5bdaceaef7b4770021",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Dagger",
+     "type": "weapon",
+     "hash": "068610393301393a1238d86d28dc718b7f328d9996d2115f9fff72639f6ea1af",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Longsword Active",
+     "type": "weapon",
+     "hash": "e0136e3c78ec3146012cf56f38142a580c2202d5aac6d8f501bbf85025f6f94d",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Shortbow Array Activities",
+     "type": "weapon",
+     "hash": "0858144c0690c54aa832a4a21343b1f4ff31d314d893d337ca2bf5d9f9766f0d",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Chain Shirt",
+     "type": "equipment",
+     "hash": "d8c083656ec6d15de1c7749cee29da87ecb633589fbc0bcdb85036c891cdbf0d",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Shield",
+     "type": "equipment",
+     "hash": "3cad9c65f0e39a1683ffb087fe27b180ece35488977b34d701acb25518c81009",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Healing Potion",
+     "type": "consumable",
+     "hash": "da7f462c6511ae5ddc2847aec57eb1f1995c10b6cf99021c192b42835fb2caeb",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Arrows",
+     "type": "consumable",
+     "hash": "80fc3cd0c107925d1f9d96d920f07372636e36151a708b7c232ac39bd911faf8",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Thieves Tools",
+     "type": "tool",
+     "hash": "6a8450d2bb2d478a32a581574f837fb42c680d7b893d951d9eea4d23751493a9",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Lute",
+     "type": "tool",
+     "hash": "d7889bc299f77d121de8a20802c529046a272955ff1a61aadd6032d060f85f93",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Gemstone",
+     "type": "loot",
+     "hash": "a153477c5b3172a4465b4422f78e0ddfed04915db4d56f50fc8f839d87a69ae9",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Rope",
+     "type": "loot",
+     "hash": "5363fd12428b34b4f2a559335bc6205288b6675f68f7de2f6c2fbaf8697b035a",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Backpack",
+     "type": "container",
+     "hash": "10e9edcf2c7837889ee7383fbfb57171148b7e893a05257a522e8da78bd16404",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Legacy Backpack Alias",
+     "type": "container",
+     "hash": "4412e2ecda4cb73830175ae82367a9f37700dcf3fd554a1553c7e32b53398b50",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Fire Bolt",
+     "type": "spell",
+     "hash": "4698642a1f0a5d7ad31ec5c8bc68cbb6f29941bf5c9aba6b19fe4aa624ce2faa",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Fireball",
+     "type": "spell",
+     "hash": "8d3b8b64535c4bfb7b58daf097072f062cabbfe9e76a75d7e30dfed73e6be05b",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Second Wind",
+     "type": "feat",
+     "hash": "478bc587f5d27d21b8216dce2218609209b2d8e3f10c2a7ed92a0f6c1463d768",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Darkvision",
+     "type": "feat",
+     "hash": "622ee33bd6a6b6df7e1cd50fa725d1f5a81f328099ce024d05c2556e71a3b025",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Glowing Ring",
+     "type": "equipment",
+     "hash": "62fd1ef97ab2bf377f7c24b9e967a9d18d845a97f7072e0b0f9242873085d52e",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Plain Tool File Item",
+     "type": "tool",
+     "hash": "08282c6a76fe82032ebc46eabbfc427e371894143d1a1613acfd0a2ad4ff1bfa",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Plain Weapon File Item",
+     "type": "weapon",
+     "hash": "4844661b54020bbb5963030b5e013815f82fe1ff9be186f07f3747329f0f41d5",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Ok Plain Feat File Item",
+     "type": "feat",
+     "hash": "b602e1a9a4e7c6fc7b972c41d473d32fe8d306ca46dbaebcdba04ccd84dc68ba",
+     "activities": [],
+     "items": []
+    }
+   ],
+   "rejected": [
+    {
+     "name": "Bad Unknown Item Type",
+     "type": "weapon2",
+     "hash": "f53f265d9a805cc57af195608db7af57434641a9adf9580e5a6d4fb8170427d6"
+    },
+    {
+     "name": "Bad Quantity Text",
+     "type": "loot",
+     "hash": "088538788a7815b26010f4ffe5e88ebee64ef4f2b564458e7780b845be5c9d24"
+    },
+    {
+     "name": "Bad Weight Text",
+     "type": "loot",
+     "hash": "ffd8e35d96343653255630ef031e717be19cf8a5c02535790cd39a315511f51e"
+    },
+    {
+     "name": "Bad Spell Level",
+     "type": "spell",
+     "hash": "a29ab07e40ca0ba056fed05a442e811484c5f0b95fd71e2a9c81e667a00066f0"
+    },
+    {
+     "name": "Bad Extra Field",
+     "type": "weapon",
+     "hash": "29a675699045477808b2d50e660076b25575cbe89733283dfc0a52d298832b93"
+    },
+    {
+     "name": "Bad Activity Type",
+     "type": "weapon",
+     "hash": "acea21c4998bfc199ee58a03041e6de8b989a725825413063777fdc64c94afbb"
+    },
+    {
+     "name": "Bad System String",
+     "type": "loot",
+     "hash": "026c2a44f9aa31efbd83bac522f542c9e912af05f4f06fb4646041b5f25e44e6"
+    },
+    {
+     "name": "Bad Effect Duration",
+     "type": "equipment",
+     "hash": "75d9441fa2e53eb765af466388efe0f325fda4231193a216bab82f33b30435e9"
+    },
+    {
+     "name": "Bad Uses Spent",
+     "type": "consumable",
+     "hash": "8e8c4ed089b3d6b0741e0821512b6c73f0ca66f5e7aeb8e6a48e6be508eea37e"
+    }
+   ],
+   "other": 0
+  },
+  "fixtures/legacy-3x.json": {
+   "documentName": "Item",
+   "accepted": [
+    {
+     "name": "Legacy Longsword",
+     "type": "weapon",
+     "hash": "2ec53d9354720c5e7225f92ea87040b14873de3aa19cba85bcb1dbae911857a5",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Shortbow",
+     "type": "weapon",
+     "hash": "3ee3294ef0571b3a81a2974ed56a247d966e2451675fbae3a6bc951555d95be8",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Dagger Throw",
+     "type": "weapon",
+     "hash": "2a9787123a7d23dcf6372fee594a4543648998d6c568443e41feecc7248f1ee0",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Fireball",
+     "type": "spell",
+     "hash": "a686a9b2dced34609e9977b7e010aeb8356860bdaff303e04b9d7dda81cd36ea",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Fire Bolt",
+     "type": "spell",
+     "hash": "44fe22c3bedc46176ea6592af7dde1ee0a5c65181699ba00e78e34f0a97d2c25",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Cure Wounds",
+     "type": "spell",
+     "hash": "99d8256cd8104c3aeb67f41fea6a717df24716d318c554b939de8afdf6f814ac",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Healing Potion",
+     "type": "consumable",
+     "hash": "2187a589f287053266707aac52dab04bf10d79358ae050abd1f1c785a22eb1a2",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Wand Of Sparks",
+     "type": "consumable",
+     "hash": "35030ed116030ac0ec434f71931296ce40fb5df0d9c4866b5b6cb56091a6409e",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Smith Tools",
+     "type": "tool",
+     "hash": "6504f21e2ad17d1617840879ba8ac15187187ebaca2c7b5b7383a51bf55217eb",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Backpack",
+     "type": "container",
+     "hash": "f3810d664d26b3afbec337b615e00c9dc087ae48285c4ca99e99ce5c7452ce5f",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Gem",
+     "type": "loot",
+     "hash": "c5d8c8341c5664270954752d48ed42b7407ab3ed32a494b59785db69a3bbc53b",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Legacy Second Wind",
+     "type": "feat",
+     "hash": "4e12f7abf67f394c10eda4a6a9eda4f8650b0199431e0866a67350bbe496a817",
+     "activities": [],
+     "items": []
+    }
+   ],
+   "rejected": [
+    {
+     "name": "Legacy Goblin",
+     "type": "npc",
+     "hash": "b2bf1e77e6e5fbcbcaac3e74d3c17c63663a356f9c8b702193628bd8d1091adc"
+    },
+    {
+     "name": "Legacy Hero",
+     "type": "character",
+     "hash": "f2c9288990e20fc86fde0b38548e624fc345e32b787dfb1519c0c338f24f28a4"
+    }
+   ],
+   "other": 0
+  },
+  "fixtures/activity-link.json": {
+   "documentName": "Item",
+   "accepted": [
+    {
+     "name": "Link Ring",
+     "type": "equipment",
+     "hash": "575233201efbbccce063d5ffafa832a55faabb37212e1e1d6d0ec1aae26b2b19",
+     "activities": [],
+     "items": []
+    }
+   ],
+   "rejected": [],
+   "other": 0
+  },
+  "fixtures/id-conflicts.json": {
+   "documentName": "Item",
+   "accepted": [
+    {
+     "name": "Conflict Item 1",
+     "type": "loot",
+     "hash": "b907d4c1f517f2f997fb5e7098cd87b67d3b8bef3db12e0b3dd88a55f06cdc3f",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Conflict Item 2",
+     "type": "loot",
+     "hash": "17173319919dddb0cbd147b531bdb9f1112955c38b2633bdaa67fa27cb4f7eab",
+     "activities": [],
+     "items": []
+    },
+    {
+     "name": "Conflict Item 3",
+     "type": "loot",
+     "hash": "ed8807662dd32806439cd43615b7a4d33a29cafea74777ad1521fdaee0bb7fa9",
+     "activities": [],
+     "items": []
+    }
+   ],
+   "rejected": [],
+   "other": 0
+  }
+ }
+}

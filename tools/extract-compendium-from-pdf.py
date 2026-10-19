@@ -9,6 +9,18 @@ Optional LLM parsing (local Llama via HTTP):
   python extract-compendium-from-pdf.py --pdf "C:\\path\\file.pdf" --out-dir "C:\\out" --llm --llm-provider ollama --llm-model llama3.1:8b
   python extract-compendium-from-pdf.py --pdf "C:\\path\\file.pdf" --out-dir "C:\\out" --llm --llm-provider openai --llm-url http://localhost:8080/v1/chat/completions --llm-model llama3.1
 
+Two-column PDFs (lines of both columns interleave, e.g. "Better Undead Compendium.pdf"): the regex parser misses
+most stat blocks, use the LLM with --llm-mode prefer. The stat lines (challenge, senses, languages, saving throws,
+skills, damage and condition traits) are always read from the page text, see apply_stat_lines():
+  python extract-compendium-from-pdf.py --pdf "tools/Better Undead Compendium.pdf" --out-dir tools/out --llm --llm-model llama3.1:8b --llm-mode prefer --llm-timeout 300 --expect-creatures 12
+
+Names and number of creatures come from the page text, never from the LLM: every page with a stat block (size and
+type line followed by "Armor Class") gives one creature named after the block title, see find_stat_block_title().
+A block that neither the LLM nor the regex parser can read stops the extraction and nothing is written; so does a
+number of blocks other than --expect-creatures. The block is read from the page layout (columns, fonts), see
+read_stat_block(): stat lines, and every trait and action with its exact text. The LLM is only asked when the
+layout cannot be read (and for magic items), with a fixed seed (--llm-seed) and temperature 0.
+
 Dependencies:
   pip install pdfplumber
 """
@@ -38,6 +50,40 @@ CONDITION_TYPES = {
     "incapacitated", "invisible", "paralyzed", "petrified", "poisoned",
     "prone", "restrained", "stunned", "unconscious"
 }
+
+# Labels of the stat block lines. In some PDFs the label is alone on its line and the value follows on the next
+# line(s) ("Challenge Proficiency Bonus" / "18 (20,000 XP) +6"), see labelled_value().
+STAT_LABELS = [
+    "Armor Class", "Hit Points", "Speed", "Saving Throws", "Skills",
+    "Damage Vulnerabilities", "Damage Resistances", "Damage Immunities", "Condition Immunities",
+    "Senses", "Languages", "Challenge", "Proficiency Bonus",
+]
+STAT_LABEL_RE = re.compile(r"^(" + "|".join(re.escape(label) for label in STAT_LABELS) + r")\b", re.I)
+ABILITY_ROW_RE = re.compile(r"\bSTR\b.*\bDEX\b.*\bCON\b.*\bINT\b.*\bWIS\b.*\bCHA\b", re.I)
+
+# dnd5e 6.0.6 keys (CONFIG.DND5E.senses, CONFIG.DND5E.skills, CONFIG.DND5E.languages).
+SENSE_TYPES = ("blindsight", "darkvision", "tremorsense", "truesight")
+SKILL_KEYS = {
+    "acrobatics": "acr", "animal handling": "ani", "arcana": "arc", "athletics": "ath", "deception": "dec",
+    "history": "his", "insight": "ins", "intimidation": "itm", "investigation": "inv", "medicine": "med",
+    "nature": "nat", "perception": "prc", "performance": "prf", "persuasion": "per", "religion": "rel",
+    "sleight of hand": "slt", "stealth": "ste", "survival": "sur",
+}
+SKILL_ABILITIES = {
+    "acr": "dex", "ani": "wis", "arc": "int", "ath": "str", "dec": "cha", "his": "int", "ins": "wis",
+    "itm": "cha", "inv": "int", "med": "wis", "nat": "int", "prc": "wis", "prf": "cha", "per": "cha",
+    "rel": "int", "slt": "dex", "ste": "dex", "sur": "wis",
+}
+LANGUAGE_KEYS = {
+    "common sign language": "sign", "thieves' cant": "cant", "thieves cant": "cant", "deep speech": "deep",
+    "common": "common", "draconic": "draconic", "dwarvish": "dwarvish", "elvish": "elvish", "giant": "giant",
+    "gnomish": "gnomish", "goblin": "goblin", "halfling": "halfling", "orc": "orc", "aarakocra": "aarakocra",
+    "abyssal": "abyssal", "celestial": "celestial", "druidic": "druidic", "gith": "gith", "gnoll": "gnoll",
+    "infernal": "infernal", "primordial": "primordial", "aquan": "aquan", "auran": "auran", "ignan": "ignan",
+    "terran": "terran", "sylvan": "sylvan", "undercommon": "undercommon",
+}
+CR_FRACTIONS = {"1/8": 0.125, "1/4": 0.25, "1/2": 0.5, "⅛": 0.125, "¼": 0.25, "½": 0.5}
+CR_VALUE_RE = r"(\d+\s*/\s*\d+|[⅛¼½]|\d+(?:\.\d+)?)"
 
 
 def random_id(length=16):
@@ -105,6 +151,12 @@ def build_llm_prompt(lines):
         '  "damage_immunities": "string",',
         '  "damage_vulnerabilities": "string",',
         '  "condition_immunities": "string",',
+        '  "saving_throws": "string",',
+        '  "skills": "string",',
+        '  "senses": "string",',
+        '  "languages": "string",',
+        '  "challenge": "string",',
+        '  "proficiency_bonus": "string",',
         '  "features": [{"name": "string", "meta": "string", "text": "string"}],',
         '  "actions": [{"name": "string", "meta": "string", "text": "string"}],',
         '  "reactions": [{"name": "string", "meta": "string", "text": "string"}],',
@@ -120,6 +172,8 @@ def build_llm_prompt(lines):
         "- Use null for unknown structured fields.",
         "- For action or feature blocks, split at the first period after the name.",
         "- Put parenthetical tags like (Recharge 5-6) into meta.",
+        "- Copy the Saving Throws, Skills, Senses, Languages, Challenge and Proficiency Bonus lines verbatim into",
+        "  saving_throws, skills, senses, languages, challenge and proficiency_bonus; null when the line is absent.",
         "",
         "Text lines:",
         lines_text,
@@ -137,11 +191,18 @@ def call_llm(messages, config):
     headers = {"Content-Type": "application/json"}
 
     if provider == "ollama":
+        options = {}
         if config.get("temperature") is not None:
-            payload["options"] = {"temperature": config["temperature"]}
+            options["temperature"] = config["temperature"]
+        if config.get("seed") is not None:
+            options["seed"] = config["seed"]
+        if options:
+            payload["options"] = options
     else:
         if config.get("temperature") is not None:
             payload["temperature"] = config["temperature"]
+        if config.get("seed") is not None:
+            payload["seed"] = config["seed"]
         api_key = config.get("api_key")
         if api_key:
             headers["Authorization"] = f"Bearer {api_key}"
@@ -354,6 +415,36 @@ def normalize_block_entry(entry):
     }
 
 
+def split_merged_block(block):
+    """Splits a block whose name holds several blocks ("Multiattack. Strength Drain", text "The Hand of Shadow makes
+    two attacks. Strength Drain. Melee Weapon Attack: ..."): each name takes the text up to the next one. A name the
+    text does not repeat is merged into its neighbour: the attack keeps the text that holds the attack line."""
+    names = [norm_name(n) for n in re.split(r"\.\s+", block["name"]) if norm_name(n)]
+    if len(names) < 2 or not all(re.match(r"^[A-Z]", n) and len(n.split()) <= 5 for n in names):
+        return [block]
+    out = []
+    current = {"name": names[0], "meta": "", "text": ""}
+    text = block["text"]
+    for name in names[1:]:
+        m = re.search(rf"(?:^|(?<=[.!?:]\s)){re.escape(name)}(?:\s*\(([^)]+)\))?\.\s*", text)
+        if not m:
+            if re.search(r"\b(Weapon|Spell)\s+Attack:", text, re.I):
+                current["name"] = name  # the text is the attack: it is named after the attack, not "Multiattack"
+            continue
+        current["text"] = norm_name(text[:m.start()])
+        out.append(current)
+        current = {"name": name, "meta": norm_name(m.group(1) or ""), "text": ""}
+        text = text[m.end():]
+    current["text"] = norm_name(text)
+    current["meta"] = current["meta"] or block.get("meta") or ""
+    out.append(current)
+    return out
+
+
+def split_merged_blocks(blocks):
+    return [part for block in blocks for part in split_merged_block(block)]
+
+
 def normalize_block_list(raw):
     if not raw:
         return []
@@ -371,18 +462,20 @@ def normalize_block_list(raw):
         block = normalize_block_entry(raw)
         if block:
             blocks.append(block)
-    return blocks
+    return split_merged_blocks(blocks)
 
 
-def build_creature_from_llm(data, page_number):
+def build_creature_from_llm(data, page_number, lines=None):
     name = norm_name(data.get("name") or "")
     if not name:
         return None
 
-    ac = coerce_ac(data.get("ac") or data.get("armor_class"))
-    hp = coerce_hp(data.get("hp") or data.get("hit_points"))
-    speed = coerce_speed(data.get("speed"))
-    abilities = coerce_abilities(data.get("abilities"))
+    # The values read from the page text win over the LLM (same result from one run to the next).
+    lines = lines or []
+    ac = parse_ac(lines) or coerce_ac(data.get("ac") or data.get("armor_class"))
+    hp = parse_hp(lines) or coerce_hp(data.get("hp") or data.get("hit_points"))
+    speed = parse_speed(lines) or coerce_speed(data.get("speed"))
+    abilities = parse_abilities(lines) or coerce_abilities(data.get("abilities"))
 
     if not has_required_creature_stats(ac, hp, speed, abilities):
         return None
@@ -397,7 +490,7 @@ def build_creature_from_llm(data, page_number):
     reactions = normalize_block_list(data.get("reactions"))
     legendary = normalize_block_list(data.get("legendary"))
 
-    return {
+    creature = {
         "kind": "creature",
         "page": page_number,
         "name": name,
@@ -416,6 +509,18 @@ def build_creature_from_llm(data, page_number):
         "reactions": reactions,
         "legendary": legendary,
     }
+    challenge = parse_challenge_text(coerce_trait_raw(data.get("challenge") or data.get("cr")))
+    prof = parse_proficiency_bonus_text(coerce_trait_raw(data.get("proficiency_bonus")))
+    if challenge:
+        creature["cr"] = challenge["cr"]
+        creature["xp"] = challenge["xp"]
+        prof = prof if prof is not None else challenge["prof"]
+    creature["prof"] = prof
+    creature["senses"] = parse_senses_text(coerce_trait_raw(data.get("senses")))
+    creature["languages"] = parse_languages_text(coerce_trait_raw(data.get("languages")))
+    creature["saves"] = parse_saving_throws_text(coerce_trait_raw(data.get("saving_throws")))
+    creature["skills"] = parse_skills_text(coerce_trait_raw(data.get("skills")), abilities, prof, creature.get("cr"))
+    return creature
 
 
 def build_magic_item_from_llm(data, page_number):
@@ -439,7 +544,7 @@ def parse_page_with_llm(lines, page_number, llm_config):
     started = time.time()
     try:
         response = call_llm(messages, llm_config)
-    except (urllib.error.URLError, json.JSONDecodeError) as exc:
+    except (OSError, json.JSONDecodeError) as exc:  # URLError and socket timeouts are OSErrors
         logging.warning("LLM request failed on page %s: %s", page_number, exc)
         return None
     elapsed = time.time() - started
@@ -458,7 +563,7 @@ def parse_page_with_llm(lines, page_number, llm_config):
         return None
     if kind_key in {"creature", "monster", "npc"}:
         logging.info("LLM page %s: kind=creature", page_number)
-        creature = build_creature_from_llm(data, page_number)
+        creature = build_creature_from_llm(data, page_number, lines)
         if not creature:
             logging.info("LLM page %s: ignored (missing stat block)", page_number)
         return creature
@@ -468,31 +573,60 @@ def parse_page_with_llm(lines, page_number, llm_config):
     return None
 
 
-def parse_hp(lines):
-    line = next((l for l in lines if re.match(r"^Hit Points\b", l, re.I)), None)
-    if not line:
+def labelled_value(lines, label, max_lines=3):
+    """Value of a stat block line: the rest of the line after the label or, when the label is alone on its line
+    (two-column layouts), the following lines until the next label (at most max_lines). None if the label is absent."""
+    idx = next((i for i, l in enumerate(lines) if re.match(rf"^{re.escape(label)}\b", l, re.I)), -1)
+    if idx < 0:
         return None
-    m = re.search(r"Hit Points\s+(\d+)\s*(?:\(([^)]+)\))?", line, re.I)
+    rest = re.sub(rf"^{re.escape(label)}\s*", "", lines[idx], flags=re.I)
+    rest = re.sub(r"^Proficiency Bonus\s*", "", rest, flags=re.I)  # "Challenge Proficiency Bonus" header
+    if rest.strip() and not STAT_LABEL_RE.match(rest):
+        return rest.strip()
+    parts = []
+    for line in lines[idx + 1:idx + 1 + max_lines]:
+        if STAT_LABEL_RE.match(line) or ABILITY_ROW_RE.search(line):
+            break
+        parts.append(line)
+    return norm_name(" ".join(parts)) or None
+
+
+def labelled_match(lines, label, pattern):
+    """Value of a stat line that must match `pattern`: the rest of the label's line, or the first of the three
+    following lines that matches (two-column layouts put a line of the other column in between: "Hit Points Marshal
+    Undead." / "136 (16d8 + 64) Unless the Phantom...")."""
+    idx = next((i for i, l in enumerate(lines) if re.match(rf"^{re.escape(label)}\b", l, re.I)), -1)
+    if idx < 0:
+        return None
+    rest = re.sub(rf"^{re.escape(label)}\s*", "", lines[idx], flags=re.I).strip()
+    for candidate in [rest] + lines[idx + 1:idx + 4]:
+        if candidate is not rest and (STAT_LABEL_RE.match(candidate) or ABILITY_ROW_RE.search(candidate)):
+            break
+        if re.match(pattern, candidate, re.I):
+            return candidate
+    return None
+
+
+def parse_hp(lines):
+    raw = labelled_match(lines, "Hit Points", r"\d+\b")
+    m = re.match(r"(\d+)\s*(?:\(([^)]+)\))?", raw or "")
     if not m:
         return None
     return {"value": int(m.group(1)), "formula": norm_name(m.group(2) or "")}
 
 
 def parse_ac(lines):
-    line = next((l for l in lines if re.match(r"^Armor Class\b", l, re.I)), None)
-    if not line:
-        return None
-    m = re.search(r"Armor Class\s+(\d+)(?:\s*\(([^)]+)\))?", line, re.I)
+    raw = labelled_match(lines, "Armor Class", r"\d+\b")
+    m = re.match(r"(\d+)(?:\s*\(([^)]+)\))?", raw or "")
     if not m:
         return None
     return {"value": int(m.group(1)), "detail": norm_name(m.group(2) or "")}
 
 
 def parse_speed(lines):
-    line = next((l for l in lines if re.match(r"^Speed\b", l, re.I)), None)
-    if not line:
+    s = labelled_match(lines, "Speed", r"((walk|fly|swim|climb|burrow)\s+)?\d+\s*ft")
+    if not s:
         return None
-    s = re.sub(r"^Speed\s+", "", line, flags=re.I)
     parts = [p.strip() for p in s.split(",")]
     move = {}
     for p in parts:
@@ -508,19 +642,17 @@ def parse_abilities(lines):
                 if re.search(r"\bSTR\b.*\bDEX\b.*\bCON\b.*\bINT\b.*\bWIS\b.*\bCHA\b", l, re.I)), -1)
     if idx < 0:
         return None
-    v_line = lines[idx + 1] if idx + 1 < len(lines) else ""
-    nums = [int(m.group(1)) for m in re.finditer(r"\b(\d{1,2})\b", v_line)]
-    nums = nums[:6]
-    if len(nums) < 6:
-        return None
-    return {"str": nums[0], "dex": nums[1], "con": nums[2], "int": nums[3], "wis": nums[4], "cha": nums[5]}
+    # The scores are on the next line, or a little further when lines of the other column interleave.
+    for v_line in lines[idx + 1:idx + 4]:
+        v_line = re.sub(r"\([^)]*\)", " ", v_line)  # "20 (+5) 15 (+2)": scores only, not the modifiers
+        nums = [int(m.group(1)) for m in re.finditer(r"\b(\d{1,2})\b", v_line)]
+        if len(nums) >= 6:
+            return {"str": nums[0], "dex": nums[1], "con": nums[2], "int": nums[3], "wis": nums[4], "cha": nums[5]}
+    return None
 
 
 def parse_trait_csv_line(lines, label):
-    line = next((l for l in lines if l.lower().startswith(label.lower())), None)
-    if not line:
-        return None
-    return re.sub(rf"^{re.escape(label)}\s*", "", line, flags=re.I).strip()
+    return labelled_value(lines, label)
 
 
 def split_csvish(value):
@@ -529,30 +661,244 @@ def split_csvish(value):
     return [x.strip() for x in value.replace(";", ",").split(",") if x.strip()]
 
 
-def map_damage_list(raw):
+def parse_cr_value(raw):
+    """'18', '1/2', '½', '0.25' -> number (dnd5e system.details.cr), None otherwise."""
+    s = norm_name(raw).replace(" ", "")
+    if s in CR_FRACTIONS:
+        return CR_FRACTIONS[s]
+    m = re.match(r"^(\d+)/(\d+)$", s)
+    if m and int(m.group(2)):
+        return int(m.group(1)) / int(m.group(2))
+    try:
+        value = float(s)
+    except ValueError:
+        return None
+    return int(value) if value.is_integer() else value
+
+
+def parse_challenge_text(raw):
+    """'18 (20,000 XP) +6' -> {"cr": 18, "xp": 20000, "prof": 6}. XP and the proficiency bonus are optional."""
+    if not raw:
+        return None
+    m = re.match(rf"^(?:Challenge\s*(?:Rating)?\s*:?\s*)?{CR_VALUE_RE}(?:\s*\(\s*([\d,.\s]+?)\s*XP\s*\))?(?:\s*\+\s*(\d+))?",
+                 norm_name(raw), re.I)
+    if not m:
+        return None
+    cr = parse_cr_value(m.group(1))
+    if cr is None:
+        return None
+    xp = to_int(re.sub(r"[^\d]", "", m.group(2) or "")) if m.group(2) else None
+    prof = int(m.group(3)) if m.group(3) else None
+    return {"cr": cr, "xp": xp, "prof": prof}
+
+
+def parse_proficiency_bonus_text(raw):
+    m = re.search(r"\+\s*(\d+)", raw or "")
+    return int(m.group(1)) if m else None
+
+
+def proficiency_from_cr(cr):
+    """dnd5e: Proficiency.calculateMod(max(cr, 1))."""
+    if cr is None:
+        return None
+    return int((max(float(cr), 1) + 7) // 4)
+
+
+def parse_senses_text(raw):
+    """'darkvision 120 ft., passive Perception 13' -> system.attributes.senses (dnd5e 6: ranges, units, special)."""
+    if raw is None:
+        return None
+    ranges = {}
+    special = []
+    for part in split_csvish(raw):
+        m = re.match(rf"^({'|'.join(SENSE_TYPES)})\s+(\d+)\s*(?:ft\.?|feet|m\.?)?\s*(.*)$", part, re.I)
+        if m:
+            ranges[m.group(1).lower()] = int(m.group(2))
+            if m.group(3).strip() and is_plausible_custom(m.group(3)):
+                special.append(f"{m.group(1).lower()} {m.group(3).strip()}")
+        elif not re.match(r"^passive\s+perception\b", part, re.I) and is_plausible_custom(part):
+            special.append(part)
+    if not ranges and not special:
+        return None
+    return {"ranges": ranges, "units": "ft", "special": "; ".join(special)}
+
+
+def parse_languages_text(raw):
+    """'Common, Abyssal, telepathy 60 ft.' -> system.traits.languages (value keys, custom text, communication)."""
+    if raw is None:
+        return None
+    value, custom, communication = [], [], {}
+    for part in split_csvish(raw):
+        part = re.split(r"\d", part)[0].strip() if not re.match(r"^telepathy\b", part, re.I) else part
+        low = part.lower().strip(" .")
+        if low == "none" or not re.search(r"[a-z]", low):  # "—", or the glyph of a private-use font
+            continue
+        if low == "all":
+            value.append("ALL")
+            continue
+        m = re.match(r"^telepathy\s+(\d+)\s*(?:ft\.?|feet|m\.?)?", low)
+        if m:
+            communication["telepathy"] = {"value": int(m.group(1)), "units": "ft"}
+            continue
+        key = next((k for name, k in LANGUAGE_KEYS.items() if low == name), None)
+        if key:
+            value.append(key)
+        else:
+            custom.append(part.strip(" ."))
+    if not value and not custom and not communication:
+        return None
+    return {"value": sorted(set(value)), "custom": "; ".join(custom), "communication": communication}
+
+
+def parse_saving_throws_text(raw):
+    """'Str +11, Wis +9' -> {"str": 11, "wis": 9}."""
+    if not raw:
+        return None
+    out = {}
+    for m in re.finditer(r"\b([A-Za-z]+)\s*([+-]\s*\d+)", raw):
+        key = normalize_ability_key(m.group(1))
+        if key:
+            out[key] = int(m.group(2).replace(" ", ""))
+    return out or None
+
+
+def parse_skills_text(raw, abilities=None, prof=None, cr=None):
+    """'Athletics +11, Perception +4' -> {"ath": 2, "prc": 1}: proficiency level (2 = expertise when the bonus
+    equals the ability modifier plus twice the proficiency bonus)."""
+    if not raw:
+        return None
+    prof = prof if prof is not None else proficiency_from_cr(cr)
+    out = {}
+    for m in re.finditer(r"([A-Za-z][A-Za-z ]*?)\s*([+-]\s*\d+)", raw):
+        key = SKILL_KEYS.get(m.group(1).strip().lower())
+        if not key:
+            continue
+        level = 1
+        bonus = int(m.group(2).replace(" ", ""))
+        score = (abilities or {}).get(SKILL_ABILITIES[key])
+        if prof and score is not None and bonus >= ability_mod_from_score(score) + 2 * prof:
+            level = 2
+        out[key] = level
+    return out or None
+
+
+def challenge_line(lines):
+    """'Challenge 5 (1,800 XP)' on one line, or the first '5 (1,800 XP) +3' line among the three after the label
+    (two-column layouts interleave lines of the other column)."""
+    idx = next((i for i, l in enumerate(lines) if re.match(r"^Challenge\b", l, re.I)), -1)
+    if idx < 0:
+        return None
+    rest = re.sub(r"^Challenge\s*(Rating)?\s*:?\s*(Proficiency Bonus)?\s*", "", lines[idx], flags=re.I)
+    if re.match(rf"^{CR_VALUE_RE}\s*(\(|\+|$)", rest):
+        return rest
+    return next((l for l in lines[idx + 1:idx + 4] if re.match(rf"^{CR_VALUE_RE}\s*(\(|\+|$)", l)), None)
+
+
+def stat_line(lines, label, looks_like):
+    """The value line of a label: the rest of its line, or the first of the three following lines that looks like the
+    value (two-column layouts interleave lines of the other column before or after it)."""
+    idx = next((i for i, l in enumerate(lines) if re.match(rf"^{re.escape(label)}\b", l, re.I)), -1)
+    if idx < 0:
+        return None
+    rest = re.sub(rf"^{re.escape(label)}\s*", "", lines[idx], flags=re.I).strip()
+    candidates = [rest] if rest and not STAT_LABEL_RE.match(rest) else []
+    for line in lines[idx + 1:idx + 4]:
+        if STAT_LABEL_RE.match(line) or ABILITY_ROW_RE.search(line):
+            break
+        candidates.append(line)
+    return next((c for c in candidates if looks_like(c)), None)
+
+
+def looks_like_senses(line):
+    return bool(re.search(rf"\b({'|'.join(SENSE_TYPES)})\s+\d+|\bpassive\s+perception\b", line, re.I))
+
+
+def looks_like_languages(line):
+    low = line.lower()
+    if not re.search(r"[a-z]", low):
+        return True  # "—" or the glyph of a private-use font: no language
+    return bool(re.search(r"\b(languages?|speak|understand|telepathy|all|any|none)\b", low)
+                or any(re.search(rf"\b{re.escape(name)}\b", low) for name in LANGUAGE_KEYS))
+
+
+def parse_stat_lines(lines):
+    """Deterministic read of the stat lines of a page (challenge, senses, languages, saves, skills, traits)."""
+    challenge = parse_challenge_text(challenge_line(lines))
+    prof = parse_proficiency_bonus_text(labelled_value(lines, "Proficiency Bonus", max_lines=1))
+    if prof is None and challenge:
+        prof = challenge["prof"]
+    stats = {
+        "cr": challenge["cr"] if challenge else None,
+        "xp": challenge["xp"] if challenge else None,
+        "prof": prof,
+        "senses": parse_senses_text(stat_line(lines, "Senses", looks_like_senses)),
+        "languages": parse_languages_text(stat_line(lines, "Languages", looks_like_languages)),
+        "saves": parse_saving_throws_text(labelled_value(lines, "Saving Throws")),
+        "skills_raw": labelled_value(lines, "Skills"),
+        "traits": {},
+    }
+    for key, label, mapper in [("dr", "Damage Resistances", map_damage_list), ("di", "Damage Immunities", map_damage_list),
+                               ("dv", "Damage Vulnerabilities", map_damage_list), ("ci", "Condition Immunities", map_condition_list)]:
+        raw = labelled_value(lines, label)
+        if raw is not None:
+            stats["traits"][key] = mapper(raw)
+    return stats
+
+
+def apply_stat_lines(creature, lines):
+    """Completes a creature (regex or LLM) with the stat lines read from the page. The lines win over the LLM
+    for what they state (the LLM shifts the trait lists); what they do not state is left as it is."""
+    stats = parse_stat_lines(lines)
+    # A recognised stat block (Challenge line) is authoritative, absent lines included: the LLM copies the examples
+    # of the prompt ("Str +11, Wis +9") when the block has no such line.
+    authoritative = stats["cr"] is not None
+    if authoritative:
+        creature["cr"] = stats["cr"]
+        creature["xp"] = stats["xp"]
+    if stats["prof"] is not None:
+        creature["prof"] = stats["prof"]
+    for key in ("senses", "languages", "saves"):
+        if stats[key] or authoritative:
+            creature[key] = stats[key]
+    skills = parse_skills_text(stats["skills_raw"], creature.get("abilities"), creature.get("prof"), creature.get("cr"))
+    if skills or authoritative:
+        creature["skills"] = skills
+    if stats["traits"]:
+        traits = creature.setdefault("traits", {})
+        for key in ("dr", "di", "dv", "ci"):
+            traits[key] = stats["traits"].get(key) or {"value": [], "custom": ""}
+    return creature
+
+
+def is_plausible_custom(part):
+    """A custom trait entry is short prose without numbers; interleaved lines of the other column are not."""
+    return bool(re.search(r"[A-Za-z]", part)) and not re.search(r"[\d:.]", part) and len(part) <= 60
+
+
+def map_known_list(raw, known, allow_custom=True):
     out = {"value": [], "custom": ""}
     for p in split_csvish(raw):
         low = p.lower()
-        hit = next((dt for dt in DAMAGE_TYPES if dt in low), None)
+        hit = next((k for k in known if k in low), None)
         if hit:
             out["value"].append(hit)
-        else:
+        elif allow_custom and is_plausible_custom(p):
             out["custom"] += ("; " if out["custom"] else "") + p
     out["value"] = sorted(set(out["value"]))
+    return out
+
+
+def map_damage_list(raw):
+    out = map_known_list(raw, DAMAGE_TYPES)
+    # A custom damage entry qualifies attacks or sources ("from nonmagical attacks"); a bare spell list does not.
+    out["custom"] = "; ".join(c for c in out["custom"].split("; ")
+                              if re.search(r"\b(non)?magical\b|\bsilver|\badamantine\b|\bspells?\b|\battacks?\b|\bweapons?\b|\bfrom\b", c, re.I))
     return out
 
 
 def map_condition_list(raw):
-    out = {"value": [], "custom": ""}
-    for p in split_csvish(raw):
-        low = p.lower()
-        hit = next((ct for ct in CONDITION_TYPES if ct in low), None)
-        if hit:
-            out["value"].append(hit)
-        else:
-            out["custom"] += ("; " if out["custom"] else "") + p
-    out["value"] = sorted(set(out["value"]))
-    return out
+    # Condition lists only name conditions: anything else is a line of the other column.
+    return map_known_list(raw, CONDITION_TYPES, allow_custom=False)
 
 
 def clean_block_name(name):
@@ -602,7 +948,7 @@ def parse_named_blocks(section_lines):
             cur["text"] = norm_name((cur["text"] + " " if cur["text"] else "") + line)
     if cur:
         blocks.append(cur)
-    return blocks
+    return split_merged_blocks(blocks)
 
 def parse_damage_parts_from_text(text):
     parts = []
@@ -738,6 +1084,20 @@ def parse_save_from_text(text):
     return {"dc": dc, "ability": ability, "parts": parts, "onSave": on_save, "range": range_info, "area": area, "target": target}
 
 
+FIRST_DAMAGE_RE = re.compile(r"\(\s*\d+d\d+[^)]*\)\s*[a-z]+\s+damage|\b\d+d\d+(?:\s*[+\-]\s*\d+)?\s*[a-z]+\s+damage", re.I)
+
+
+def hit_damage_clause(text):
+    """The damage of the hit: the sentence of the first damage, with its "plus ..." parts. Damage taken later stays in
+    the description only (Abduct: "... is transported to a demiplane ... and takes 10 (3d6) necrotic damage at the
+    start of each of its turns" is not a part of the attack)."""
+    m = FIRST_DAMAGE_RE.search(text or "")
+    if not m:
+        return text
+    end = re.search(r"\.(?=\s+[A-Z]|\s*$)", text[m.end():])
+    return text[m.start():m.end() + (end.start() if end else len(text))]
+
+
 def parse_attack_from_text(text):
     cleaned = norm_name(text)
     cleaned = cleaned.replace("\u2212", "-").replace("\u2013", "-").replace("\u2014", "-").replace("\uFF0B", "+")
@@ -754,7 +1114,7 @@ def parse_attack_from_text(text):
     to_hit = int(re.sub(r"\s+", "", m.group(3)))
     range_text = re.sub(r"[.\s]+$", "", norm_name(m.group(4)))
     hit_text = norm_name(m.group(5) or "")
-    damage_text = hit_text or range_text
+    damage_text = hit_damage_clause(hit_text or range_text)
     range_info = parse_attack_range_info(range_text)
     target = parse_target_from_text(range_text)
     parsed_parts = parse_damage_parts_from_text(damage_text)
@@ -813,6 +1173,36 @@ def ability_mod_from_score(score):
 
 def is_numeric_bonus(value):
     return isinstance(value, str) and re.match(r"^-?\d+(\.\d+)?$", value.strip())
+
+
+# Abilities a weapon attack of an NPC can use, the default first (dnd5e: melee STR, ranged DEX; natural weapons
+# and finesse accept both).
+WEAPON_ATTACK_ABILITIES = {"melee": ("str", "dex"), "ranged": ("dex", "str")}
+
+
+def pick_weapon_attack_ability(mode_value, abilities, written_bonus):
+    """Chooses the ability of a weapon attack from the bonus written in the stat block ("1d4 + 4").
+
+    dnd5e adds the modifier of `attack.ability` to the base damage of a weapon, so the base keeps the dice only
+    and the ability must be the one whose modifier is the written bonus, as the system's own NPCs do (Air
+    Elemental, Thunderous Slam: 2d8, ability dex). Returns (ability, extra): `extra` is the part of the written
+    bonus the modifier does not explain (goes to `damage.base.bonus`), or None when the scores are unknown."""
+    candidates = WEAPON_ATTACK_ABILITIES.get(mode_value) or WEAPON_ATTACK_ABILITIES["melee"]
+    mods = {a: ability_mod_from_score((abilities or {}).get(a)) for a in candidates}
+    default = candidates[0]
+    if written_bonus is None or mods[default] is None:
+        return default, None
+    for ability in candidates:
+        if mods[ability] == written_bonus:
+            return ability, 0
+    return default, written_bonus - mods[default]
+
+
+def written_bonus_of(damage_part):
+    """Numeric bonus of a built damage part ("" counts as 0), None for a custom formula."""
+    if damage_part["custom"]["enabled"]:
+        return None
+    return int(damage_part["bonus"]) if is_numeric_bonus(damage_part["bonus"]) else 0
 
 
 def build_damage_part(formula, dtype):
@@ -888,24 +1278,25 @@ def apply_parsed_attack_to_weapon_item(item_data, creature, parsed_attack, secti
 
     item_data.setdefault("system", {})
     item_data["system"].setdefault("damage", {})
+    abilities = creature.get("abilities") or {}
+    # Weapon: the base keeps the dice only, the ability of the attack supplies the written bonus and the
+    # remainder, if any, goes to `damage.base.bonus` (dnd5e adds the modifier of the ability itself).
     if base_part:
         base_damage = build_damage_part(base_part["formula"], base_part["dtype"])
-        if mode["classification"] == "weapon" and not base_damage["custom"]["enabled"]:
-            abilities = creature.get("abilities") or {}
-            mod = ability_mod_from_score(abilities.get(ability))
-            if mod is not None and is_numeric_bonus(base_damage["bonus"]):
-                extra = int(base_damage["bonus"]) - mod
+        if mode["classification"] == "weapon":
+            ability, extra = pick_weapon_attack_ability(mode["value"], abilities, written_bonus_of(base_damage))
+            if extra is not None:
                 base_damage["bonus"] = str(extra) if extra else ""
         item_data["system"]["damage"]["base"] = base_damage
 
     if parsed_attack.get("versatile"):
         vers = parsed_attack["versatile"]
         versatile_damage = build_damage_part(vers["formula"], vers["dtype"])
-        if mode["classification"] == "weapon" and not versatile_damage["custom"]["enabled"]:
-            abilities = creature.get("abilities") or {}
+        if mode["classification"] == "weapon":
+            written = written_bonus_of(versatile_damage)
             mod = ability_mod_from_score(abilities.get(ability))
-            if mod is not None and is_numeric_bonus(versatile_damage["bonus"]):
-                extra = int(versatile_damage["bonus"]) - mod
+            if written is not None and mod is not None:
+                extra = written - mod
                 versatile_damage["bonus"] = str(extra) if extra else ""
         item_data["system"]["damage"]["versatile"] = versatile_damage
         props = set(item_data["system"].get("properties") or [])
@@ -977,6 +1368,19 @@ def apply_save_activity_to_feat(item_data, save_data, section_label, name):
     item_data["system"]["activities"] = {activity_id: activity}
 
 
+def add_save_after_attack(item_data, text, section_label, name):
+    """An attack whose hit calls for a saving throw ("Hit: 24 (4d8 + 6) necrotic damage. The target must succeed on
+    a DC 16 Constitution saving throw or ...") gets a save activity after its attack activity. The damage of the hit
+    belongs to the attack: the save has none."""
+    save = parse_save_from_text(text or "")
+    if not save:
+        return
+    save = dict(save, parts=[], onSave="none")
+    holder = {}
+    apply_save_activity_to_feat(holder, save, section_label, f"{name} (save)" if name else "Save")
+    item_data.setdefault("system", {}).setdefault("activities", {}).update(holder["system"]["activities"])
+
+
 def apply_utility_activity_to_feat(item_data, section_label, name):
     activity_id = random_id()
     activation_type = get_activation_type_from_section(section_label)
@@ -1000,6 +1404,270 @@ def make_actor_data(name, atype="npc"):
     return {"_id": random_id(), "name": name, "type": atype, "system": {}, "items": []}
 
 
+CREATURE_TYPES = ("aberration", "beast", "celestial", "construct", "dragon", "elemental", "fey", "fiend", "giant",
+                  "humanoid", "monstrosity", "ooze", "plant", "undead")
+# Size and type line of a stat block: "Medium undead (ghost), any alignment", "Medium undead/fiend (wraith)".
+SIZE_TYPE_RE = re.compile(r"^(Tiny|Small|Medium|Large|Huge|Gargantuan)\b[A-Za-z/ ]*?\b(" + "|".join(CREATURE_TYPES)
+                          + r")s?\b", re.I)
+SECTION_TITLES = {"action", "actions", "bonus action", "bonus actions", "reaction", "reactions", "legendary actions",
+                  "lair actions", "mythic actions", "traits"}
+TITLE_SMALL_WORDS = {"of", "the", "a", "an", "and", "in", "on"}
+
+
+def is_title_line(line):
+    """A stat block title: a short Title Case line, not a feature ("Shadow Meld."), a section or a stat label."""
+    s = norm_name(line)
+    words = s.split()
+    if not words or len(words) > 4 or len(s) > 40 or s[-1] in ".,:;" or s.lower() in SECTION_TITLES:
+        return False
+    if SIZE_TYPE_RE.match(s) or STAT_LABEL_RE.match(s) or not words[0][0].isupper():
+        return False
+    return all(w[0].isupper() or w.lower() in TITLE_SMALL_WORDS for w in words)
+
+
+def find_stat_block_title(lines):
+    """Name of the stat block of a page, read from the text (never from the LLM): the nearest title line above the
+    size and type line that an "Armor Class" line follows. On two-column pages, lines of the other column sit in
+    between ("Phantom" / "Shadow Meld." / "While in dim light..." / "Medium undead/fiend (wraith), neutral evil").
+    None when the page has no stat block."""
+    for i, line in enumerate(lines):
+        if not SIZE_TYPE_RE.match(line):
+            continue
+        if not any(re.match(r"^Armor Class\b", l, re.I) for l in lines[i + 1:i + 6]):
+            continue
+        for candidate in reversed(lines[max(0, i - 12):i]):
+            if is_title_line(candidate):
+                return norm_name(candidate)
+    return None
+
+
+# ---------------------------------------------------------------- stat block read from the page layout
+# The stat block is read column by column with the fonts of its words: the title is set large, the section headers
+# ("Actions") in a medium font, and each trait or action starts with its name in bold italic ("Soul Drain."). A
+# medium heading that is not a section ("Threadnotes: ...") starts a sidebar, which ends the block.
+
+SECTION_KEYS = {"actions": "actions", "action": "actions", "bonus actions": "bonus", "bonus action": "bonus",
+                "reactions": "reactions", "reaction": "reactions", "legendary actions": "legendary",
+                "lair actions": "legendary", "mythic actions": "legendary"}
+# Section headers that are a trait of their own (the Lich's "Spellcasting" header and its text)
+HEADER_TRAITS = {"spellcasting", "innate spellcasting"}
+TITLE_MIN_SIZE = 15
+HEADER_MIN_SIZE = 10
+
+
+def font_family(fontname):
+    """'GAAAAA+ScalySansRemakeBoldItal' -> 'scalysansremake'."""
+    name = str(fontname or "").split("+")[-1].lower()
+    return re.sub(r"[-_,]?(regular|regul|bold|ital|italic|oblique|medium|semibold|light|mt|psmt)+$", "", name)
+
+
+def is_bold_italic(word):
+    name = str(word.get("fontname") or "").lower()
+    return "bold" in name and "ital" in name
+
+
+def is_footer_line(text):
+    """Running header/footer of the page: letters doubled many times ("TTTTTTTTHHHHHHHH...", "1111111111555...")."""
+    compact = re.sub(r"\s+", "", text)
+    return bool(compact) and bool(re.fullmatch(r"(?:(.)\1{3,})+[’']?(?:(.)\2{3,})*", compact))
+
+
+def column_split(words, width):
+    """x of the gap between the two columns (the fewest words crossing it near the middle), None for one column."""
+    best = None
+    for x in range(int(width * 0.4), int(width * 0.6) + 1):
+        crossing = sum(1 for w in words if w["x0"] < x < w["x1"])
+        key = (crossing, abs(x - width / 2))
+        if best is None or key < best[0]:
+            best = (key, x)
+    if best is None or best[0][0] > 3:
+        return None
+    return best[1]
+
+
+def join_words(words):
+    """Words of a line with a space only where the layout has one (a word set in another font is a word of its own:
+    "invisible" in italic then "." stays "invisible.")."""
+    out = ""
+    prev = None
+    for w in words:
+        if prev is not None:
+            out += "" if w["x0"] - prev["x1"] < 1.0 else " "
+        out += w["text"]
+        prev = w
+    return norm_name(out)
+
+
+def group_lines(words):
+    lines = []
+    for w in sorted(words, key=lambda w: (round(w["top"], 1), w["x0"])):
+        if lines and abs(w["top"] - lines[-1]["top"]) <= 2.5:
+            lines[-1]["words"].append(w)
+        else:
+            lines.append({"top": w["top"], "words": [w]})
+    for line in lines:
+        line["words"].sort(key=lambda w: w["x0"])
+        line["text"] = join_words(line["words"])
+        line["size"] = max(float(w.get("size") or 0) for w in line["words"])
+    return lines
+
+
+def page_columns(page):
+    """Lines of the page, column after column (left then right)."""
+    words = page.extract_words(x_tolerance=1.5, y_tolerance=3, keep_blank_chars=False, extra_attrs=["fontname", "size"])
+    split = column_split(words, float(page.width))
+    if split is None:
+        return [group_lines(words)]
+    return [group_lines([w for w in words if (w["x0"] + w["x1"]) / 2 < split]),
+            group_lines([w for w in words if (w["x0"] + w["x1"]) / 2 >= split])]
+
+
+def entry_start(line, body_family):
+    """(name, meta, rest of the line) when the line starts a trait or an action: a name in bold italic, with or
+    without its final period ("Gory Feast The Striga feasts..."). None otherwise."""
+    words = line["words"]
+    if not words or not is_bold_italic(words[0]) or font_family(words[0].get("fontname")) != body_family:
+        return None
+    n = 0
+    while n < len(words) and is_bold_italic(words[n]):
+        n += 1
+    head = join_words(words[:n])
+    rest = join_words(words[n:])
+    m = re.match(r"^(.+?)(?:\s*\(([^)]*)\))?\s*[.:]?$", head)
+    name, meta = (norm_name(m.group(1)), norm_name(m.group(2) or "")) if m else (head.rstrip(".:"), "")
+    if meta and rest.startswith(")"):
+        rest = rest[1:].lstrip(". ")
+    # A meta in regular font after the name: "Name (Recharge 5-6)." is sometimes split over two fonts
+    mm = re.match(r"^\(([^)]*)\)\.?\s*(.*)$", rest)
+    if not meta and mm:
+        meta, rest = norm_name(mm.group(1)), mm.group(2)
+    return name, meta, rest
+
+
+def read_stat_block(page, title):
+    """Reads the stat block `title` of a page from its layout. Returns {"stat_lines", "features", "actions", "bonus",
+    "reactions", "legendary"} with the exact text of each trait and action, or None when the title is not found."""
+    columns = page_columns(page)
+    start = None
+    for c, lines in enumerate(columns):
+        for i, line in enumerate(lines):
+            if line["size"] >= TITLE_MIN_SIZE and line["text"] == title:
+                start = (c, i)
+                break
+        if start:
+            break
+    if not start:
+        return None
+    body_lines = [l for lines in columns for l in lines
+                  if l["size"] < HEADER_MIN_SIZE and re.match(r"^Armor Class\b", l["text"])]
+    if not body_lines:
+        return None
+    body_family = font_family(body_lines[0]["words"][0].get("fontname"))
+
+    block = {"stat_lines": [], "features": [], "actions": [], "bonus": [], "reactions": [], "legendary": []}
+    section = "features"
+    current = None
+    in_entries = False
+
+    def close():
+        nonlocal current
+        if current:
+            current["text"] = norm_name(current["text"])
+            block[current.pop("section")].append(current)
+        current = None
+
+    c0, i0 = start
+    for c in range(c0, len(columns)):
+        lines = columns[c][i0 + 1:] if c == c0 else columns[c]
+        continuation = c != c0
+        for line in lines:
+            text = line["text"]
+            if is_footer_line(text):
+                continue
+            if line["size"] >= TITLE_MIN_SIZE:
+                break  # another title: the block is over
+            body = any(font_family(w.get("fontname")) == body_family for w in line["words"])
+            low = text.lower()
+            if line["size"] >= HEADER_MIN_SIZE:
+                if low in SECTION_KEYS:
+                    close()
+                    section, in_entries, continuation = SECTION_KEYS[low], True, False
+                    continue
+                if low in HEADER_TRAITS and in_entries:
+                    close()
+                    current = {"section": "features", "name": text, "meta": "", "text": ""}
+                    continuation = False
+                    continue
+                if not body:
+                    if continuation:
+                        continue  # lore above the rest of the block in the other column
+                    break  # a sidebar ("Threadnotes: ...") or a heading: the block is over
+            if not body:
+                if continuation:
+                    continue  # quote in another font at the top of the other column
+                if in_entries:
+                    break
+                continue
+            start_entry = entry_start(line, body_family)
+            first_font = str(line["words"][0].get("fontname") or "").lower()
+            if continuation and not start_entry and not ("ital" in first_font and current):
+                # The other column continues the block with a trait, an action, or an italic sub-entry of the last
+                # trait ("Harmed by Running Water." among the Vampire Weaknesses); otherwise it is lore.
+                break
+            continuation = False
+            if start_entry:
+                close()
+                name, meta, rest = start_entry
+                current = {"section": section, "name": name, "meta": meta, "text": rest}
+                in_entries = True
+            elif not in_entries:
+                block["stat_lines"].append(text)
+            elif current:
+                current["text"] += " " + text
+            elif section == "legendary":
+                current = {"section": "features", "name": "Legendary Actions", "meta": "", "text": text}
+            else:
+                break
+        else:
+            continue
+        break
+    close()
+    return block
+
+
+def parse_creature_from_layout(page, title, page_number):
+    """Creature of the stat block `title`, read from the page layout (stat lines, traits and actions with their exact
+    text). None when the block cannot be read whole (the LLM then decides)."""
+    block = read_stat_block(page, title)
+    if not block:
+        return None
+    lines = block["stat_lines"]
+    ac, hp, speed, abilities = parse_ac(lines), parse_hp(lines), parse_speed(lines), parse_abilities(lines)
+    if not has_required_creature_stats(ac, hp, speed, abilities):
+        return None
+    creature = {
+        "kind": "creature",
+        "page": page_number,
+        "name": title,
+        "ac": ac,
+        "hp": hp,
+        "speed": speed,
+        "abilities": abilities,
+        "traits": {
+            "dr": map_damage_list(parse_trait_csv_line(lines, "Damage Resistances")),
+            "di": map_damage_list(parse_trait_csv_line(lines, "Damage Immunities")),
+            "dv": map_damage_list(parse_trait_csv_line(lines, "Damage Vulnerabilities")),
+            "ci": map_condition_list(parse_trait_csv_line(lines, "Condition Immunities")),
+        },
+        "features": block["features"],
+        "actions": block["actions"],
+        "bonus": block["bonus"],
+        "reactions": block["reactions"],
+        "legendary": block["legendary"],
+    }
+    return apply_stat_lines(creature, lines)
+
+
 def parse_creature_from_lines(lines, page_number):
     idx_ac = next((i for i, l in enumerate(lines) if re.match(r"^Armor Class\b", l, re.I)), -1)
     idx_hp = next((i for i, l in enumerate(lines) if re.match(r"^Hit Points\b", l, re.I)), -1)
@@ -1010,7 +1678,12 @@ def parse_creature_from_lines(lines, page_number):
     idx_size = next((i for i, l in enumerate(lines)
                      if re.match(r"^(Tiny|Small|Medium|Large|Huge|Gargantuan)\b", l, re.I) and "," in l), -1)
     if idx_size > 0:
+        # The name is the line above the size line; on two-column pages, lines of the other column may sit between.
         name = norm_name(lines[idx_size - 1])
+        for candidate in reversed(lines[max(0, idx_size - 6):idx_size]):
+            if re.match(r"^[A-Z][^.:]{0,40}$", candidate) and len(candidate.split()) <= 4:
+                name = norm_name(candidate)
+                break
     else:
         before = [l for l in lines[:idx_ac] if l and not re.match(r"^Proficiency Bonus\b", l, re.I)]
         name = norm_name(before[-1] if before else "Unknown Creature")
@@ -1040,6 +1713,9 @@ def parse_creature_from_lines(lines, page_number):
         next((i for i, l in enumerate(lines) if re.match(r"^Senses\b", l, re.I)), -1)
     )
     traits_start = end_stats_idx + 1 if end_stats_idx >= 0 else idx_speed + 1
+    # Label alone on its line (two-column layouts): the value "18 (20,000 XP) +6" is on the next line.
+    if end_stats_idx >= 0 and traits_start < len(lines) and re.match(rf"^{CR_VALUE_RE}\s*(\(|\+|$)", lines[traits_start]):
+        traits_start += 1
     traits_end = actions_idx if actions_idx >= 0 else len(lines)
     trait_lines = [l for l in lines[traits_start:traits_end] if l and not re.match(r"^\d{3,}$", l)]
     traits = parse_named_blocks(trait_lines)
@@ -1055,7 +1731,7 @@ def parse_creature_from_lines(lines, page_number):
     legendary_lines = [l for l in lines[legendary_idx + 1:] if l and not re.match(r"^\d{3,}$", l)] if legendary_idx >= 0 else []
     legendary = parse_named_blocks(legendary_lines)
 
-    return {
+    creature = {
         "kind": "creature",
         "page": page_number,
         "name": name,
@@ -1074,6 +1750,7 @@ def parse_creature_from_lines(lines, page_number):
         "reactions": reactions,
         "legendary": legendary
     }
+    return apply_stat_lines(creature, lines)
 
 
 def parse_magic_item_from_lines(lines, page_number):
@@ -1134,6 +1811,7 @@ def build_items_for_creature(creature):
             meta = f"<em>{block['meta']}</em><br/>" if block.get("meta") else ""
             wpn["system"]["description"]["value"] = f"<p>{meta}{block['text']}</p>"
             apply_parsed_attack_to_weapon_item(wpn, creature, parsed_attack, section_label, block["name"])
+            add_save_after_attack(wpn, block["text"], section_label, block["name"])
             created.append(wpn)
 
             emb = deepcopy(wpn)
@@ -1159,6 +1837,8 @@ def build_items_for_creature(creature):
 
     for a in creature.get("actions", []):
         handle_action_block(a, "Action")
+    for b in creature.get("bonus", []):
+        handle_action_block(b, "Bonus Action")
     for r in creature.get("reactions", []):
         handle_action_block(r, "Reaction")
     for l in creature.get("legendary", []):
@@ -1219,6 +1899,26 @@ def build_actor(creature, embedded_items, pdf_name):
                 actor["system"]["traits"].setdefault(target, {})
                 actor["system"]["traits"][target]["value"] = creature["traits"][key]["value"]
                 actor["system"]["traits"][target]["custom"] = creature["traits"][key]["custom"]
+    # dnd5e 6.0.6: details.cr (number), attributes.senses.ranges, traits.languages, abilities.<x>.proficient,
+    # skills.<x>.value. The proficiency bonus of an NPC is derived from the CR by the system (attributes.prof is not
+    # stored), so the printed value only goes to the flag.
+    if creature.get("cr") is not None:
+        actor["system"].setdefault("details", {})["cr"] = creature["cr"]
+    if creature.get("xp") is not None:
+        actor["flags"]["pdf-importer"]["xp"] = creature["xp"]
+    if creature.get("prof") is not None:
+        actor["flags"]["pdf-importer"]["proficiencyBonus"] = creature["prof"]
+    if creature.get("senses"):
+        actor["system"].setdefault("attributes", {})["senses"] = deepcopy(creature["senses"])
+    if creature.get("languages"):
+        languages = deepcopy(creature["languages"])
+        if not languages.get("communication"):
+            languages.pop("communication", None)
+        actor["system"].setdefault("traits", {})["languages"] = languages
+    for ab in creature.get("saves") or {}:
+        actor["system"].setdefault("abilities", {}).setdefault(ab, {})["proficient"] = 1
+    for skill, level in (creature.get("skills") or {}).items():
+        actor["system"].setdefault("skills", {})[skill] = {"value": level, "ability": SKILL_ABILITIES[skill]}
     return actor
 
 
@@ -1249,7 +1949,10 @@ def main():
                         help="LLM usage: fallback, prefer, or only.")
     parser.add_argument("--llm-timeout", type=int, default=60, help="LLM request timeout in seconds.")
     parser.add_argument("--llm-temperature", type=float, default=0.0, help="LLM sampling temperature.")
+    parser.add_argument("--llm-seed", type=int, default=0, help="LLM sampling seed (same answers from run to run).")
     parser.add_argument("--llm-api-key", default="", help="API key for openai-compatible endpoints.")
+    parser.add_argument("--expect-creatures", type=int, default=0,
+                        help="Number of stat blocks the PDF must contain (0 = no check). Stops the extraction otherwise.")
     parser.add_argument("--log-level", default="INFO", help="Logging level (DEBUG, INFO, WARNING, ERROR).")
     args = parser.parse_args()
 
@@ -1274,6 +1977,7 @@ def main():
             "mode": args.llm_mode,
             "timeout": args.llm_timeout,
             "temperature": args.llm_temperature,
+            "seed": args.llm_seed,
             "api_key": api_key,
         }
         logging.info(
@@ -1287,6 +1991,17 @@ def main():
 
     found_creatures = []
     found_magic_items = []
+    blocks = []  # stat blocks read from the page text: {"page", "name"}
+
+    def accept_creature(creature, lines, title, page_num):
+        """A creature takes the name of its stat block in the text, never the LLM's; one found on a page whose text
+        has no stat block is dropped (the number of creatures is the number of blocks of the text)."""
+        if not title:
+            logging.warning("Page %s: creature %r ignored, no stat block in the page text", page_num, creature.get("name"))
+            return False
+        creature["name"] = title
+        found_creatures.append(apply_stat_lines(creature, lines))
+        return True
 
     with pdfplumber.open(pdf_path) as pdf:
         total_pages = len(pdf.pages)
@@ -1299,41 +2014,59 @@ def main():
             if not joined or len(joined) < args.min_text:
                 logging.debug("Page %s: skipped (min text)", page_num)
                 continue
+            title = find_stat_block_title(lines)
+            if title:
+                logging.info("Page %s: stat block %r", page_num, title)
+                blocks.append({"page": page_num, "name": title})
+                # The stat block read from the page layout gives the exact texts: the LLM is not asked
+                creature = parse_creature_from_layout(page, title, page_num)
+                if creature and accept_creature(creature, lines, title, page_num):
+                    logging.info("Page %s: stat block read from the layout", page_num)
+                    continue
 
             if llm_config and llm_config["mode"] in {"prefer", "only"}:
                 logging.info("Page %s: LLM parse (prefer/only)", page_num)
                 parsed = parse_page_with_llm(lines, page_num, llm_config)
-                if parsed:
-                    if parsed.get("kind") == "creature":
-                        found_creatures.append(parsed)
-                    elif parsed.get("kind") == "magicItem":
-                        found_magic_items.append(parsed)
+                if parsed and parsed.get("kind") == "creature" and accept_creature(parsed, lines, title, page_num):
                     continue
-                if llm_config["mode"] == "only":
+                if parsed and parsed.get("kind") == "magicItem" and not title:
+                    found_magic_items.append(parsed)
+                    continue
+                if llm_config["mode"] == "only" and not title:
                     logging.info("Page %s: LLM only mode, skipping fallback", page_num)
                     continue
 
             creature = parse_creature_from_lines(lines, page_num)
-            if creature:
+            if creature and accept_creature(creature, lines, title, page_num):
                 logging.info("Page %s: regex creature detected", page_num)
-                found_creatures.append(creature)
                 continue
 
-            magic_item = parse_magic_item_from_lines(lines, page_num)
-            if magic_item:
-                logging.info("Page %s: regex magic item detected", page_num)
-                found_magic_items.append(magic_item)
-                continue
-
-            if llm_config and llm_config["mode"] == "fallback":
-                logging.info("Page %s: LLM parse (fallback)", page_num)
-                parsed = parse_page_with_llm(lines, page_num, llm_config)
-                if parsed:
-                    if parsed.get("kind") == "creature":
-                        found_creatures.append(parsed)
-                    elif parsed.get("kind") == "magicItem":
-                        found_magic_items.append(parsed)
+            if not title:
+                magic_item = parse_magic_item_from_lines(lines, page_num)
+                if magic_item:
+                    logging.info("Page %s: regex magic item detected", page_num)
+                    found_magic_items.append(magic_item)
                     continue
+
+            if llm_config and (llm_config["mode"] == "fallback" or title):
+                # Fallback mode, or a stat block of the text that the first LLM answer and the regex both missed.
+                logging.info("Page %s: LLM parse (%s)", page_num, "fallback" if llm_config["mode"] == "fallback" else "retry")
+                parsed = parse_page_with_llm(lines, page_num, llm_config)
+                if parsed and parsed.get("kind") == "creature":
+                    accept_creature(parsed, lines, title, page_num)
+                elif parsed and parsed.get("kind") == "magicItem" and not title:
+                    found_magic_items.append(parsed)
+
+    # Every stat block of the text gives a creature: a missing one stops the extraction, no incomplete file.
+    found_pages = {c["page"] for c in found_creatures}
+    missing = [b for b in blocks if b["page"] not in found_pages]
+    for b in missing:
+        logging.error("Stat block %r (page %s) could not be extracted", b["name"], b["page"])
+    if missing:
+        raise SystemExit(f"Extraction stopped: {len(missing)} of {len(blocks)} stat blocks missing, nothing written.")
+    if args.expect_creatures and len(blocks) != args.expect_creatures:
+        raise SystemExit(f"Extraction stopped: {len(blocks)} stat blocks in the text "
+                         f"({', '.join(b['name'] for b in blocks)}), {args.expect_creatures} expected, nothing written.")
 
     items = []
     actors = []
