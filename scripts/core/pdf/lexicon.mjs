@@ -192,6 +192,9 @@ export const LEXICON = freeze({
     ["rareté variable", "rare"], ["rarity varies", "rare"],
     ["harmonisation requise avec", "nécessite un lien avec"], ["harmonisation requise", "nécessite un lien"]
   ],
+  /** Words of an item header, EN and FR: a page without any of them holds no magic item (cheap page filter). */
+  itemKindWords: ["wondrous item", "objet merveilleux", "weapon", "arme", "armor", "armure", "potion", "scroll", "parchemin",
+    "wand", "baguette", "rod", "sceptre", "staff", "bâton", "ring", "anneau", "ammunition", "munition"],
   /**
    * Item kind of the text parser (`parseItem().itemKind`) to the dnd5e 6 document: `type`, `system.type.value`,
    * `baseItem` and the properties the official compendiums use (`reports/rules/pdf-import-lexicon.md`, § 3).
@@ -240,6 +243,11 @@ export function labelRegex(kind) {
     regexCache.set(kind, new RegExp(`^(?:${alternation(words)})(?![\\p{L}'’])`, "iu"));
   }
   return regexCache.get(kind);
+}
+
+/** True when a page text holds a stat label of the AC with a digit (cheap page filter, before the fonts are resolved). */
+export function mayHoldStatBlock(text) {
+  return new RegExp(`(?:^|\\n)(?:${alternation(LEXICON.labels.ac)})(?![\\p{L}'’])[^\\n]*\\d`, "iu").test(String(text ?? ""));
 }
 
 /** Key of `LEXICON.labels` whose label starts the line, else null. Longest label wins. */

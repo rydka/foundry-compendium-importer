@@ -20,13 +20,13 @@ export const normalizeSpace = value => String(value ?? "").replace(/\s+/g, " ").
 
 /**
  * Running header or footer: letters doubled many times ("TTTTTTTTHHHHHHHH...", "1111111111555...", a page number
- * "1313131313", "IGIGIGIGIGIG").
+ * "1313131313", "IGIGIGIGIGIG", "H’SH’SH’SH’S").
  * @param {string} text
  * @returns {boolean}
  */
 export function isFooterLine(text) {
   const compact = String(text ?? "").replace(/\s+/g, "");
-  return !!compact && /^(?:(.{1,2})\1{3,})+[’']?(?:(.{1,2})\2{3,})*.?$/.test(compact);
+  return !!compact && /^(?:(.{1,3}?)\1{3,})+.?$/.test(compact);
 }
 
 /**
