@@ -1,0 +1,42 @@
+{
+  "id": "ref-2014-fr", "edition": "2014", "lang": "fr", "cols": 2, "draw": "words", "footer": "number", "fonts": "std",
+  "flow": [
+    { "wide": "Les Marais de Cendre" },
+    { "lore": "Personne ne se souvient du nom de la ville qui dormait ici avant l’incendie. Les marais ont tout avalé, les toits comme les cloches, et ce qui en remonte la nuit n’a plus de visage." },
+    { "gap": 360 },
+    { "creature": {
+      "name": "Spectre de Braise", "size": "med", "type": "undead", "subtype": "", "alignment": "neutre mauvais", "typeLine": "Mort-vivant de taille M, neutre mauvais",
+      "ac": { "value": 15, "natural": true, "detail": "armure naturelle" }, "hp": { "value": 67, "formula": "9d8 + 27" },
+      "speed": { "walk": 0, "fly": 40, "hover": true }, "abilities": [6, 16, 16, 12, 14, 15],
+      "saves": ["dex", "wis"], "skills": { "prc": 1, "ste": 1 }, "senses": { "darkvision": 60 }, "passive": 15,
+      "printed": { "dr": "acide, froid, foudre, tonnerre", "di": "nécrotique, poison", "ci": "charmé, épuisement, empoisonné, à terre", "languages": "les langues qu’il connaissait de son vivant" },
+      "traits": { "dr": ["acid", "cold", "lightning", "thunder"], "di": ["necrotic", "poison"], "dv": [], "ci": ["charmed", "exhaustion", "poisoned", "prone"] },
+      "cr": 5, "xp": 1800, "prof": 3,
+      "entries": [
+        ["trait", "Déplacement intangible", "", "Le spectre peut traverser les créatures et les objets comme s’ils étaient un terrain difficile. Il subit 5 (1d10) dégâts de force s’il termine son tour à l’intérieur d’un objet."],
+        ["trait", "Lueur de braise", "", "Le spectre diffuse une lumière faible sur un rayon de 3 mètres. Une créature qui le touche pour la première fois pendant un tour subit 3 (1d6) dégâts de feu."],
+        ["action", "Attaques multiples", "", "Le spectre effectue deux attaques de toucher brûlant."],
+        ["action", "Toucher brûlant", "", "Attaque au corps à corps avec un sort : +6 au toucher, allonge 1,50 m, une créature. Touché : 14 (3d8 + 1) dégâts de feu."],
+        ["action", "Voile de fumée", "Recharge 5-6", "Le spectre souffle un nuage de fumée dans un cône de 4,50 mètres. Chaque créature dans la zone doit réussir un jet de sauvegarde de Constitution DD 14 ou être aveuglée jusqu’à la fin de son prochain tour."],
+        ["bonus", "Vacillement", "", "Le spectre se téléporte jusqu’à 9 mètres dans un espace libre qu’il peut voir."],
+        ["reaction", "Riposte brûlante", "", "Quand le spectre est touché par une attaque au corps à corps, l’attaquant subit 5 (1d10) dégâts de feu."]
+      ] } },
+    { "page": 1 },
+    { "creature": {
+      "name": "Molosse Funéraire", "size": "lg", "type": "undead", "subtype": "", "alignment": "non aligné", "typeLine": "Mort-vivant de taille G, non aligné",
+      "ac": { "value": 13, "natural": true, "detail": "armure naturelle" }, "hp": { "value": 59, "formula": "7d10 + 21" },
+      "speed": { "walk": 50 }, "abilities": [18, 15, 16, 3, 12, 6],
+      "saves": [], "skills": { "prc": 1, "ste": 1 }, "senses": { "darkvision": 60 }, "passive": 13,
+      "printed": { "di": "poison", "ci": "épuisement, empoisonné", "languages": "—" },
+      "traits": { "dr": [], "di": ["poison"], "dv": [], "ci": ["exhaustion", "poisoned"] },
+      "cr": 3, "xp": 700, "prof": 2,
+      "entries": [
+        ["trait", "Odorat aiguisé", "", "Le molosse a l’avantage aux tests de Sagesse (Perception) qui reposent sur l’odorat."],
+        ["trait", "Tactique de meute", "", "Le molosse a l’avantage aux jets d’attaque contre une créature si au moins un de ses alliés se trouve à 1,50 mètre ou moins d’elle et n’est pas neutralisé."],
+        ["action", "Attaques multiples", "", "Le molosse effectue une attaque de morsure et une attaque de griffes."],
+        ["action", "Morsure", "", "Attaque au corps à corps avec une arme : +6 au toucher, allonge 1,50 m, une cible. Touché : 9 (2d6 + 4) dégâts perforants."],
+        ["action", "Griffes", "", "Attaque au corps à corps avec une arme : +6 au toucher, allonge 1,50 m, une cible. Touché : 7 (1d8 + 4) dégâts tranchants."],
+        ["action", "Hurlement funèbre", "Recharge 6", "Chaque créature à 9 mètres ou moins du molosse qui peut l’entendre doit réussir un jet de sauvegarde de Sagesse DD 12 ou être effrayée pendant 1 minute."]
+      ] } }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "ref-items-fr", "edition": "2014", "lang": "fr", "cols": 2, "draw": "words", "footer": "number", "fonts": "std",
+  "flow": [
+    { "wide": "Reliques de l’Archive" },
+    { "lore": "Ce que le feu a laissé, les pillards l’ont trié en trois tas : ce qui brûlait, ce qui maudissait, et ce qui ne faisait ni l’un ni l’autre et se révélait donc bien plus dangereux." },
+    { "item": {
+      "titleLines": ["Anneau des Échos Murmurés"], "typeLine": "Anneau, peu courant (nécessite un lien d’harmonisation avec un magicien)",
+      "paras": [
+        "Ce cercle d’argent noirci vibre doucement quand on l’approche de l’oreille. Tant que vous le portez, vous entendez la dernière phrase prononcée dans toute pièce où vous entrez, répétée une fois à voix basse.",
+        "Par une action, vous pouvez poser à l’anneau une seule question sur la pièce. Il répond dans un murmure que vous seul entendez. Une fois utilisée, cette propriété ne peut plus l’être avant l’aube suivante."
+      ],
+      "expect": { "docType": "equipment", "typeValue": "ring", "rarity": "uncommon", "attunement": "required" } } },
+    { "item": {
+      "titleLines": ["Cape de la Route Cendrée"], "typeLine": "Objet merveilleux, rare (nécessite un lien d’harmonisation)",
+      "paras": [
+        "Une cape de voyageur de la couleur de la vieille suie. Tant que vous la portez, vous ne laissez aucune trace sur la cendre, la poussière ou la neige, et vous avez l’avantage aux tests de Dextérité (Discrétion) pour vous cacher dans la fumée ou la brume."
+      ],
+      "expect": { "docType": "equipment", "typeValue": "wondrous", "rarity": "rare", "attunement": "required" } } },
+    { "page": 1 },
+    { "item": {
+      "titleLines": ["Lame de Braise"], "typeLine": "Arme (épée longue), très rare (nécessite un lien d’harmonisation)",
+      "paras": [
+        "Vous bénéficiez d’un bonus de +2 aux jets d’attaque et de dégâts effectués avec cette arme magique. Quand vous touchez une créature, elle subit 1d6 dégâts de feu supplémentaires."
+      ],
+      "expect": { "docType": "weapon", "typeValue": null, "rarity": "veryRare", "attunement": "required" } } },
+    { "item": {
+      "titleLines": ["Philtre des Pas Silencieux"], "typeLine": "Potion, commun",
+      "paras": [
+        "Quand vous buvez ce liquide gris-vert, vos pas ne font aucun bruit pendant 1 heure. Vous avez l’avantage aux tests de Dextérité (Discrétion) qui reposent sur un déplacement silencieux."
+      ],
+      "expect": { "docType": "consumable", "typeValue": "potion", "rarity": "common", "attunement": "" } } }
+  ]
+}

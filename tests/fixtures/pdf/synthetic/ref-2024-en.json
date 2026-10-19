@@ -1,0 +1,38 @@
+{
+  "id": "ref-2024-en", "edition": "2024", "lang": "en", "cols": 2, "draw": "lines", "footer": "head", "runningHead": "THE HOLLOW CHOIR", "fonts": "std",
+  "flow": [
+    { "wide": "The Hollow Choir" },
+    { "lore": "Every temple that ever sang to the dead keeps a few voices that never stopped. The choir does not need a congregation any more; it needs only a floor to stand on and a reason to sing." },
+    { "creature": {
+      "name": "Hollow Cantor", "size": "med", "type": "undead", "subtype": "", "alignment": "neutral evil", "typeLine": "Medium Undead, Neutral Evil",
+      "ac": { "value": 15 }, "hp": { "value": 67, "formula": "9d8 + 27" },
+      "speed": { "walk": 30, "fly": 40, "hover": true }, "abilities": [8, 16, 16, 12, 14, 18],
+      "saves": ["wis", "cha"], "skills": { "prf": 1, "prc": 1 }, "senses": { "darkvision": 60 }, "passive": 15,
+      "printed": { "dr": "Cold; Necrotic", "imm": "Poison; Charmed, Exhaustion, Poisoned", "languages": "Common plus one other language" },
+      "traits": { "dr": ["cold", "necrotic"], "di": ["poison"], "dv": [], "ci": ["charmed", "exhaustion", "poisoned"] },
+      "cr": 5, "xp": 1800, "prof": 3,
+      "entries": [
+        ["trait", "Echoing Dirge", "", "Creatures within 10 feet of the cantor have Disadvantage on Constitution saving throws made to maintain Concentration."],
+        ["trait", "Incorporeal Drift", "", "The cantor can move through creatures and objects as if they were Difficult Terrain. It takes 5 (1d10) Force damage if it ends its turn inside an object."],
+        ["action", "Multiattack", "", "The cantor makes two Mournful Touch attacks."],
+        ["action", "Mournful Touch", "", "Melee Attack Roll: +6, reach 5 ft. Hit: 9 (2d6 + 2) Necrotic damage."],
+        ["action", "Dissonant Chord", "Recharge 5-6", "Constitution Saving Throw: DC 14, each creature in a 15-foot Cone. Failure: 14 (4d6) Thunder damage and the target has the Deafened condition until the end of its next turn. Success: Half damage only."],
+        ["bonus", "Fade Out", "", "The cantor has the Invisible condition until the start of its next turn or until it makes an attack roll or casts a spell."],
+        ["reaction", "Sour Note", "", "Trigger: A creature within 30 feet casts a spell with a verbal component. Response: The cantor forces the creature to make a DC 14 Charisma saving throw; on a failed save the spell fails and the slot is wasted."]
+      ] } },
+    { "creature": {
+      "name": "Barrow Stalker", "size": "lg", "type": "monstrosity", "subtype": "", "alignment": "unaligned", "typeLine": "Large Monstrosity, Unaligned",
+      "ac": { "value": 14 }, "hp": { "value": 105, "formula": "10d10 + 50" },
+      "speed": { "walk": 40, "burrow": 20 }, "abilities": [19, 14, 20, 4, 12, 6],
+      "saves": ["con"], "skills": { "ste": 2, "prc": 1 }, "senses": { "tremorsense": 60 }, "passive": 14,
+      "printed": { "imm": "Poison; Poisoned", "languages": "None" },
+      "traits": { "dr": [], "di": ["poison"], "dv": [], "ci": ["poisoned"] },
+      "cr": 6, "xp": 2300, "prof": 3,
+      "entries": [
+        ["trait", "Earthen Ambush", "", "If the stalker burrows at least 20 feet straight toward a creature and then hits it with a Rend attack on the same turn, the target has the Prone condition."],
+        ["action", "Multiattack", "", "The stalker makes two Rend attacks."],
+        ["action", "Rend", "", "Melee Attack Roll: +7, reach 10 ft. Hit: 13 (2d8 + 4) Slashing damage."],
+        ["action", "Swallow Whole", "Recharge 6", "Strength Saving Throw: DC 15, one Medium or smaller creature grappled by the stalker. Failure: The target is swallowed and has the Blinded and Restrained conditions."]
+      ] } }
+  ]
+}

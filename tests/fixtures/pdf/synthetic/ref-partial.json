@@ -1,0 +1,37 @@
+{
+  "id": "ref-partial", "edition": "2014", "lang": "en", "cols": 2, "draw": "lines", "footer": "number", "fonts": "std",
+  "flow": [
+    { "creature": {
+      "name": "Bone Piper", "size": "sm", "type": "undead", "subtype": "", "alignment": "chaotic neutral", "typeLine": "Small undead, chaotic neutral",
+      "ac": { "value": 12, "natural": false }, "hp": { "value": 33, "formula": "6d6 + 12" },
+      "speed": { "walk": 30 }, "abilities": [8, 14, 14, 10, 11, 16],
+      "saves": [], "skills": { "prf": 1 }, "senses": { "darkvision": 60 }, "passive": 10,
+      "printed": { "di": "poison", "ci": "exhaustion, poisoned", "languages": "Common" },
+      "traits": { "dr": [], "di": ["poison"], "dv": [], "ci": ["exhaustion", "poisoned"] },
+      "cr": 1, "xp": 200, "prof": 2,
+      "entries": [
+        ["trait", "Hollow Reed", "", "The piper has advantage on saving throws against being charmed."],
+        ["action", "Bone Flute", "", "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) bludgeoning damage."],
+        ["action", "Dirge", "Recharge 6", "Each creature within 20 feet that can hear the piper must succeed on a DC 13 Wisdom saving throw or be frightened for 1 minute."]
+      ] } },
+    { "page": 1 },
+    { "fonts": "single", "creature": {
+      "name": "Smudged Reeve", "size": "med", "type": "humanoid", "subtype": "human", "alignment": "lawful neutral", "typeLine": "Medium humanoid (human), lawful neutral",
+      "ac": { "value": 16, "natural": false, "detail": "chain shirt" }, "hp": { "value": 45, "formula": "6d8 + 18" },
+      "speed": { "walk": 30 }, "abilities": [14, 12, 16, 10, 13, 11],
+      "saves": [], "skills": { "prc": 1 }, "senses": {}, "passive": 13,
+      "printed": { "languages": "Common" },
+      "traits": { "dr": [], "di": [], "dv": [], "ci": [] },
+      "cr": 2, "xp": 450, "prof": 2,
+      "entries": [
+        ["trait", "Stern Watch", "", "The reeve cannot be surprised while it is conscious."],
+        ["action", "Multiattack", "", "The reeve makes two Cudgel attacks."],
+        ["action", "Cudgel", "", "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 6 (1d8 + 2) bludgeoning damage."]
+      ] } },
+    { "page": 1 },
+    { "item": {
+      "titleLines": ["Whistle of the Marsh Warden"], "typeLine": "Wondrous item, uncommon",
+      "paras": [ "A short whistle carved from heron bone. When blown, every marsh bird within a mile falls silent for 1 minute." ],
+      "expect": { "docType": "equipment", "typeValue": "wondrous", "rarity": "uncommon", "attunement": "" } } }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "cji-test-support",
+  "private": true,
+  "type": "module",
+  "description": "Dev dependencies of the PDF test fixtures (synthetic PDFs). Install with: npm --prefix tests/support ci. Can be folded into the module package.json devDependencies.",
+  "devDependencies": {
+    "pdf-lib": "1.17.1"
+  }
+}

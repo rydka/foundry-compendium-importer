@@ -1,0 +1,1377 @@
+{
+ "source": {
+  "file": "Better Undead Compendium.pdf",
+  "pages": 35
+ },
+ "creatures": [
+  {
+   "id": "poltergeist",
+   "name": "Poltergeist",
+   "page": 5,
+   "size": "tiny",
+   "type": "undead",
+   "subtype": "ghost",
+   "alignment": "any chaotic alignment",
+   "ac": {
+    "value": 14,
+    "natural": true
+   },
+   "hp": {
+    "value": 25,
+    "formula": "10d4"
+   },
+   "speed": {
+    "walk": 0,
+    "fly": 50,
+    "hover": true
+   },
+   "abilities": {
+    "str": 1,
+    "dex": 18,
+    "con": 10,
+    "int": 10,
+    "wis": 12,
+    "cha": 12
+   },
+   "saves": {},
+   "skills": {},
+   "senses": {
+    "blindsight": 60
+   },
+   "passivePerception": 11,
+   "cr": 3,
+   "xp": 700,
+   "prof": 2,
+   "entries": [
+    {
+     "name": "Ethereal Existence",
+     "section": "trait",
+     "sha1": "a496b83edd3958a2164c4cdc40b4eaf4dc0c473c",
+     "length": 186
+    },
+    {
+     "name": "Invisibility",
+     "section": "trait",
+     "sha1": "e97a077238c6037f7bb112dd54b72d5b4b8732b1",
+     "length": 81
+    },
+    {
+     "name": "False Appearance",
+     "section": "trait",
+     "sha1": "01159db63e9eb083e213e0ac525c0a50fe7a3b6f",
+     "length": 232
+    },
+    {
+     "name": "Cursed",
+     "section": "trait",
+     "sha1": "16cba165fe192c7232839baf5b948fbed09ff2c5",
+     "length": 283
+    },
+    {
+     "name": "Possess Object",
+     "section": "action",
+     "sha1": "ea2518f5e1b9ab870aedaf7b361cc046fcf8b4f2",
+     "length": 454
+    },
+    {
+     "name": "Slam",
+     "section": "action",
+     "sha1": "a29ed82c9c49871582532db3f58620ed4dbc5cc8",
+     "length": 346
+    },
+    {
+     "name": "Animate Objects",
+     "section": "action",
+     "sha1": "556d7046dbd350aa98e6b76928503382d64cb232",
+     "length": 160
+    }
+   ],
+   "counts": {
+    "trait": 4,
+    "action": 3,
+    "bonus": 0,
+    "reaction": 0,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "ghost-of-a-hero",
+   "name": "Ghost of a Hero",
+   "page": 6,
+   "size": "medium",
+   "type": "undead",
+   "subtype": "ghost",
+   "alignment": "any alignment",
+   "ac": {
+    "value": 14,
+    "natural": true
+   },
+   "hp": {
+    "value": 120,
+    "formula": "16d8 + 48"
+   },
+   "speed": {
+    "walk": 30,
+    "fly": 60
+   },
+   "abilities": {
+    "str": 16,
+    "dex": 18,
+    "con": 16,
+    "int": 13,
+    "wis": 11,
+    "cha": 18
+   },
+   "saves": {
+    "dex": 8,
+    "wis": 4,
+    "cha": 8
+   },
+   "skills": {
+    "athletics": 11,
+    "insight": 8,
+    "perception": 4
+   },
+   "senses": {
+    "darkvision": 60
+   },
+   "passivePerception": 14,
+   "cr": 10,
+   "xp": 5900,
+   "prof": 4,
+   "notes": [
+    "The skills line prints 'Insight +8. Perception +4' with a period instead of a comma.",
+    "Heroic Possession has no section heading of its own: it continues the Bonus Actions list in the second column."
+   ],
+   "entries": [
+    {
+     "name": "Magic Resistance",
+     "section": "trait",
+     "sha1": "812c33641fd0047234ba6347fa73e85fc29f1390",
+     "length": 84
+    },
+    {
+     "name": "Incorporeal Movement",
+     "section": "trait",
+     "sha1": "de256bf533db33aef849edaf2b53d1cab85c0ce8",
+     "length": 145
+    },
+    {
+     "name": "Ethereal Existence",
+     "section": "trait",
+     "sha1": "f8aff74f4edca1e908a0fb8ab7e2fe82bc4a52a6",
+     "length": 193
+    },
+    {
+     "name": "Marshal Undead",
+     "section": "trait",
+     "sha1": "b3e565dca316be732ba2dcfc73440b0521217f03",
+     "length": 144
+    },
+    {
+     "name": "Indomitable",
+     "section": "trait",
+     "sha1": "a96c2b71c2b198602e61676b400e0469fc26d0df",
+     "length": 119
+    },
+    {
+     "name": "Action Surge",
+     "section": "trait",
+     "sha1": "c293c5f8c1dedfdff6edda3e0cc9ead9c6917258",
+     "length": 57
+    },
+    {
+     "name": "Multiattack",
+     "section": "action",
+     "sha1": "98aaf22d43f9fd3bef7b1fb22e66bd8f292024c3",
+     "length": 54
+    },
+    {
+     "name": "Ethereal Blade",
+     "section": "action",
+     "sha1": "dc1a1da712b0fca052540fcd0caa8bab75abd86e",
+     "length": 151
+    },
+    {
+     "name": "Spirit Bolt",
+     "section": "bonus",
+     "sha1": "38fee0c675d30eb47960c186c1544c99e1c4e514",
+     "length": 134
+    },
+    {
+     "name": "Etherealness",
+     "section": "bonus",
+     "sha1": "5af3d2d6257d6f4a732d453b0485b06469085b8b",
+     "length": 188
+    },
+    {
+     "name": "Ethereal Jump",
+     "section": "bonus",
+     "sha1": "be1d74166e246858be2227d9d7a7e3c0159cf86b",
+     "length": 82
+    },
+    {
+     "name": "Heroic Possession",
+     "section": "bonus",
+     "sha1": "5fdbc11e04cab19a151f4b9b554752b730b4e8f6",
+     "length": 1390
+    }
+   ],
+   "counts": {
+    "trait": 6,
+    "action": 2,
+    "bonus": 4,
+    "reaction": 0,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "phantom",
+   "name": "Phantom",
+   "page": 9,
+   "size": "medium",
+   "type": "undead",
+   "subtype": "wraith",
+   "alignment": "neutral evil",
+   "ac": {
+    "value": 16,
+    "natural": false
+   },
+   "hp": {
+    "value": 136,
+    "formula": "16d8 + 64"
+   },
+   "speed": {
+    "walk": 0,
+    "fly": 60,
+    "hover": true
+   },
+   "abilities": {
+    "str": 12,
+    "dex": 22,
+    "con": 18,
+    "int": 14,
+    "wis": 14,
+    "cha": 18
+   },
+   "saves": {
+    "dex": 10,
+    "con": 8,
+    "cha": 8
+   },
+   "skills": {},
+   "senses": {
+    "darkvision": 120
+   },
+   "passivePerception": 12,
+   "cr": 12,
+   "xp": 8400,
+   "prof": 4,
+   "notes": [
+    "Type line reads 'undead/fiend (wraith)'."
+   ],
+   "entries": [
+    {
+     "name": "Magic Resistance",
+     "section": "trait",
+     "sha1": "511a5fd8803ce65062a4f0d31327277b7e7e5679",
+     "length": 86
+    },
+    {
+     "name": "Hybrid",
+     "section": "trait",
+     "sha1": "b2cf5545a7c3f6aced44432728112e66d0c5e33f",
+     "length": 121
+    },
+    {
+     "name": "Devil’s Sight",
+     "section": "trait",
+     "sha1": "e29dcade4ae4b5e421133facd7aa49076df887c7",
+     "length": 60
+    },
+    {
+     "name": "Incorporeal Movement",
+     "section": "trait",
+     "sha1": "e72b132475b674b8371cadc36f51e8f41080bf03",
+     "length": 147
+    },
+    {
+     "name": "Sunlight Hypersensitivity",
+     "section": "trait",
+     "sha1": "d15f27796876eb1d404b419e51e04071b2786992",
+     "length": 144
+    },
+    {
+     "name": "Shadow Meld",
+     "section": "trait",
+     "sha1": "18d41d935e755f4391774c78ad00367660c7bbb6",
+     "length": 175
+    },
+    {
+     "name": "Marshal Undead",
+     "section": "trait",
+     "sha1": "5563c02b7608b4b2b14d580e16c1cc1d6d27303e",
+     "length": 147
+    },
+    {
+     "name": "Innate Spellcasting",
+     "section": "trait",
+     "sha1": "cca7982922587c656ed164a09becaade9a657150",
+     "length": 235
+    },
+    {
+     "name": "Soul Drain",
+     "section": "action",
+     "sha1": "8ca236c424126e3b2840567ae323d3af162aa1f3",
+     "length": 414
+    },
+    {
+     "name": "Raise Specters",
+     "section": "action",
+     "sha1": "df06c4808a3728b40dc388d567ed8a068a73b778",
+     "length": 320
+    },
+    {
+     "name": "Consume",
+     "section": "action",
+     "sha1": "f8e60f469ff6802eaa3129339c55249b081497c5",
+     "length": 218
+    }
+   ],
+   "counts": {
+    "trait": 8,
+    "action": 3,
+    "bonus": 0,
+    "reaction": 0,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "hand-of-shadow",
+   "name": "Hand of Shadow",
+   "page": 10,
+   "size": "huge",
+   "type": "undead",
+   "subtype": "shadow",
+   "alignment": "chaotic evil",
+   "ac": {
+    "value": 15,
+    "natural": false
+   },
+   "hp": {
+    "value": 128,
+    "formula": "15d12 + 30"
+   },
+   "speed": {
+    "walk": 40,
+    "fly": 60
+   },
+   "abilities": {
+    "str": 20,
+    "dex": 18,
+    "con": 14,
+    "int": 5,
+    "wis": 12,
+    "cha": 7
+   },
+   "saves": {},
+   "skills": {
+    "stealth": 7
+   },
+   "senses": {
+    "darkvision": 120
+   },
+   "passivePerception": 11,
+   "cr": 7,
+   "xp": 2900,
+   "prof": 3,
+   "notes": [
+    "The size table inside Amorphous is part of that trait's text."
+   ],
+   "entries": [
+    {
+     "name": "Amorphous",
+     "section": "trait",
+     "sha1": "a238381473e26ec925e5c7420feb36bbdfd309e1",
+     "length": 331
+    },
+    {
+     "name": "Shadow Stealth",
+     "section": "trait",
+     "sha1": "eb4068de2ef473df1c6b72b65dcc97a4076777f1",
+     "length": 87
+    },
+    {
+     "name": "Sunlight Weakness",
+     "section": "trait",
+     "sha1": "3cd42b094b3ad6a4155e661b21f78b4cfa13a689",
+     "length": 102
+    },
+    {
+     "name": "Multiattack",
+     "section": "action",
+     "sha1": "09618096b27127d21506bed2224fb8c64b9fc9ab",
+     "length": 54
+    },
+    {
+     "name": "Strength Drain",
+     "section": "action",
+     "sha1": "76950be67b0b486adb45f81a5cc9d44aaf9d2bea",
+     "length": 372
+    },
+    {
+     "name": "Abduct",
+     "section": "action",
+     "sha1": "d87797f2492b358e4ef718356579839a7c3a6633",
+     "length": 446
+    }
+   ],
+   "counts": {
+    "trait": 3,
+    "action": 3,
+    "bonus": 0,
+    "reaction": 0,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "predator-ghoul",
+   "name": "Predator Ghoul",
+   "page": 12,
+   "size": "medium",
+   "type": "undead",
+   "subtype": "ghoul",
+   "alignment": "chaotic evil",
+   "ac": {
+    "value": 14,
+    "natural": true
+   },
+   "hp": {
+    "value": 66,
+    "formula": "12d8 + 12"
+   },
+   "speed": {
+    "walk": 50,
+    "climb": 30
+   },
+   "abilities": {
+    "str": 16,
+    "dex": 17,
+    "con": 12,
+    "int": 3,
+    "wis": 10,
+    "cha": 6
+   },
+   "saves": {},
+   "skills": {
+    "acrobatics": 7,
+    "stealth": 7,
+    "perception": 2
+   },
+   "senses": {
+    "darkvision": 60
+   },
+   "passivePerception": 12,
+   "cr": 4,
+   "xp": 1100,
+   "prof": 2,
+   "entries": [
+    {
+     "name": "Keen Smell",
+     "section": "trait",
+     "sha1": "48180f924c38e34b4b483614d3e58c5925c9fb28",
+     "length": 76
+    },
+    {
+     "name": "Pack Tactics",
+     "section": "trait",
+     "sha1": "1800b70db3e35d9ef86414d7f3736b16ddda3a0d",
+     "length": 151
+    },
+    {
+     "name": "Agile",
+     "section": "trait",
+     "sha1": "28210956ca7b8a06b453d6e287d3a1d64b76ce3e",
+     "length": 163
+    },
+    {
+     "name": "Pounce",
+     "section": "trait",
+     "sha1": "f5f1eb7f60d330d776037847b0bfb8408d59b7dc",
+     "length": 169
+    },
+    {
+     "name": "Predator’s Instinct",
+     "section": "trait",
+     "sha1": "bdc74d739870b2284216d3c229fee44b21d4f830",
+     "length": 154
+    },
+    {
+     "name": "Multiattack",
+     "section": "action",
+     "sha1": "5d001e07224d6eb243abd2144764a3a1b0e2ed7e",
+     "length": 62
+    },
+    {
+     "name": "Claw",
+     "section": "action",
+     "sha1": "4e3ab2305486f6629dd4507c6d5803a96fa9849d",
+     "length": 250
+    },
+    {
+     "name": "Bite",
+     "section": "action",
+     "sha1": "14866138ff0b48516438ab459063452920f7d2c7",
+     "length": 67
+    },
+    {
+     "name": "Relentless Pursuit",
+     "section": "reaction",
+     "sha1": "3b0166cf7f1528ee304ec7a7b82ffe09f04c8c82",
+     "length": 195
+    }
+   ],
+   "counts": {
+    "trait": 5,
+    "action": 3,
+    "bonus": 0,
+    "reaction": 1,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "skeleton-ball",
+   "name": "Skeleton Ball",
+   "page": 13,
+   "size": "huge",
+   "type": "undead",
+   "subtype": "abomination",
+   "alignment": "neutral evil",
+   "ac": {
+    "value": 14,
+    "natural": true
+   },
+   "hp": {
+    "value": 136,
+    "formula": "13d12 + 52"
+   },
+   "speed": {
+    "walk": 35
+   },
+   "abilities": {
+    "str": 21,
+    "dex": 12,
+    "con": 18,
+    "int": 1,
+    "wis": 7,
+    "cha": 5
+   },
+   "saves": {},
+   "skills": {},
+   "senses": {
+    "darkvision": 60
+   },
+   "passivePerception": 8,
+   "cr": 7,
+   "xp": 2900,
+   "prof": 3,
+   "notes": [
+    "A page number is printed in the middle of the first column's flow (after Siege Monster); Skeletal Demise starts the second column."
+   ],
+   "entries": [
+    {
+     "name": "Charge",
+     "section": "trait",
+     "sha1": "0420e7cb677293ee198fc82a724d90a4810ae51e",
+     "length": 247
+    },
+    {
+     "name": "Amalgam of Decay",
+     "section": "trait",
+     "sha1": "331ac91902bb36e86b0b8f9b1e6e177772ffee6c",
+     "length": 249
+    },
+    {
+     "name": "Unstoppable",
+     "section": "trait",
+     "sha1": "2f94aceafdb37def9489525ab872ca0c2f4d1a55",
+     "length": 132
+    },
+    {
+     "name": "Siege Monster",
+     "section": "trait",
+     "sha1": "ceb1c6165d1f38896b3aec529971ec8286b71a3a",
+     "length": 66
+    },
+    {
+     "name": "Skeletal Demise",
+     "section": "trait",
+     "sha1": "7bd50488b5df9d7d49be55fbd3b57f459e36c6fa",
+     "length": 285
+    },
+    {
+     "name": "Multiattack",
+     "section": "action",
+     "sha1": "1a9cee809ed9cac9be32be88d3065d2e8374f0ac",
+     "length": 85
+    },
+    {
+     "name": "Slam",
+     "section": "action",
+     "sha1": "ed0921f3b9c4114d690d97db6fb2ebd4e2bd26c9",
+     "length": 73
+    },
+    {
+     "name": "Overrun",
+     "section": "action",
+     "sha1": "496c30bdcd7db443e1128cc7c93b370508ef1efd",
+     "length": 903
+    },
+    {
+     "name": "Consume Corpses",
+     "section": "action",
+     "sha1": "9c7a541e4ea4fd04d0a7c203ef368d1eba8e54dd",
+     "length": 363
+    }
+   ],
+   "counts": {
+    "trait": 5,
+    "action": 4,
+    "bonus": 0,
+    "reaction": 0,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "greater-wight",
+   "name": "Greater Wight",
+   "page": 14,
+   "size": "medium",
+   "type": "undead",
+   "subtype": "wight",
+   "alignment": "neutral evil",
+   "ac": {
+    "value": 18,
+    "natural": false
+   },
+   "hp": {
+    "value": 114,
+    "formula": "12d8 + 60"
+   },
+   "speed": {
+    "walk": 30
+   },
+   "abilities": {
+    "str": 20,
+    "dex": 13,
+    "con": 20,
+    "int": 10,
+    "wis": 14,
+    "cha": 15
+   },
+   "saves": {},
+   "skills": {
+    "athletics": 8,
+    "perception": 5
+   },
+   "senses": {
+    "darkvision": 60
+   },
+   "passivePerception": 15,
+   "cr": 5,
+   "xp": 1800,
+   "prof": 3,
+   "notes": [
+    "The block is the second column of a page whose first column is lore text with two large headings."
+   ],
+   "entries": [
+    {
+     "name": "Heavy Armor Master",
+     "section": "trait",
+     "sha1": "ca10a84967d3746f82efe7c7d3aa6cd84295d93b",
+     "length": 81
+    },
+    {
+     "name": "Multiattack",
+     "section": "action",
+     "sha1": "9c5de5ca8419beff0998a207638352a115f8ed2d",
+     "length": 99
+    },
+    {
+     "name": "Life Drain",
+     "section": "action",
+     "sha1": "610cdf326d37c84a1e46057855bb4687ae930036",
+     "length": 487
+    },
+    {
+     "name": "Greatsword",
+     "section": "action",
+     "sha1": "bdcb427201761ccd88674c8a1cf66617840f3c91",
+     "length": 73
+    }
+   ],
+   "counts": {
+    "trait": 1,
+    "action": 3,
+    "bonus": 0,
+    "reaction": 0,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "revenant",
+   "name": "Revenant",
+   "page": 15,
+   "size": "medium",
+   "type": "undead",
+   "subtype": "",
+   "alignment": "any alignment",
+   "ac": {
+    "value": 14,
+    "natural": false
+   },
+   "hp": {
+    "value": 119,
+    "formula": "14d8 + 56"
+   },
+   "speed": {
+    "walk": 30
+   },
+   "abilities": {
+    "str": 18,
+    "dex": 14,
+    "con": 18,
+    "int": 13,
+    "wis": 14,
+    "cha": 16
+   },
+   "saves": {
+    "str": 7,
+    "con": 7,
+    "wis": 5
+   },
+   "skills": {},
+   "senses": {
+    "darkvision": 60
+   },
+   "passivePerception": 12,
+   "cr": 6,
+   "xp": 2300,
+   "prof": 3,
+   "notes": [
+    "The saves line prints 'Str + 7' with a space."
+   ],
+   "entries": [
+    {
+     "name": "Regeneration",
+     "section": "trait",
+     "sha1": "190933198af8d52b31a772c6199799fc311869a6",
+     "length": 227
+    },
+    {
+     "name": "Rejuvenation",
+     "section": "trait",
+     "sha1": "7ca93ac19cd07eb7e7caa3b3c857680caf6ba3f9",
+     "length": 288
+    },
+    {
+     "name": "Turn Immunity",
+     "section": "trait",
+     "sha1": "76bb84fdeb66e27a37ac2d66e1aadd867f43a88d",
+     "length": 54
+    },
+    {
+     "name": "Dead Nerves",
+     "section": "trait",
+     "sha1": "c34530c8c432ddb97da75ac0e0fa5afefec71e13",
+     "length": 178
+    },
+    {
+     "name": "Multiattack",
+     "section": "action",
+     "sha1": "81430811aa4bc9997e3c3837f647b5a0b83676da",
+     "length": 62
+    },
+    {
+     "name": "Blade of the Returned",
+     "section": "action",
+     "sha1": "7eebbff2bc8566fbc88f3d6890ee345cfd228430",
+     "length": 227
+    },
+    {
+     "name": "Spirit Bolt",
+     "section": "action",
+     "sha1": "974c01de2868c598c39d255b261eed50ea9ec7bb",
+     "length": 134
+    },
+    {
+     "name": "Touch of the Grave",
+     "section": "action",
+     "sha1": "d5bdfea4f9c8512b9293a10d59ce3385cca6a68b",
+     "length": 135
+    },
+    {
+     "name": "Parry",
+     "section": "reaction",
+     "sha1": "2e424e9298a49d8077b86ecaf5b390b4b8338a27",
+     "length": 149
+    }
+   ],
+   "counts": {
+    "trait": 4,
+    "action": 4,
+    "bonus": 0,
+    "reaction": 1,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "striga",
+   "name": "Striga",
+   "page": 24,
+   "size": "medium",
+   "type": "undead",
+   "subtype": "vampire",
+   "alignment": "neutral evil",
+   "ac": {
+    "value": 17,
+    "natural": true
+   },
+   "hp": {
+    "value": 120,
+    "formula": "16d8 + 48"
+   },
+   "speed": {
+    "walk": 50
+   },
+   "abilities": {
+    "str": 16,
+    "dex": 20,
+    "con": 16,
+    "int": 7,
+    "wis": 12,
+    "cha": 14
+   },
+   "saves": {
+    "dex": 8,
+    "con": 6
+   },
+   "skills": {
+    "stealth": 8
+   },
+   "senses": {
+    "darkvision": 120
+   },
+   "passivePerception": 11,
+   "cr": 7,
+   "xp": 2900,
+   "prof": 3,
+   "notes": [
+    "The three flaws under Vampire Weaknesses are in plain italic, not bold italic: they belong to that trait's text, not separate traits.",
+    "'Gory Feast' and 'Incapacitating Screech (Recharge 6)' have no period after the name."
+   ],
+   "entries": [
+    {
+     "name": "Regeneration",
+     "section": "trait",
+     "sha1": "9032c89706eab601aad9625e329d2db65f073201",
+     "length": 204
+    },
+    {
+     "name": "Spider Climb",
+     "section": "trait",
+     "sha1": "55a3430f71fb54060a93b15958a0ddde37f3cd1d",
+     "length": 109
+    },
+    {
+     "name": "Vampire Weaknesses",
+     "section": "trait",
+     "sha1": "c9fdde28016e32558a46ee8062805e2eec869581",
+     "length": 539
+    },
+    {
+     "name": "Brutal Ferocity",
+     "section": "trait",
+     "sha1": "584e53116e375bc7274093dd187b761d515d7485",
+     "length": 255
+    },
+    {
+     "name": "Multiattack",
+     "section": "action",
+     "sha1": "c5caaa9a5b7974b6dd7557829561568104b5a4eb",
+     "length": 41
+    },
+    {
+     "name": "Claw",
+     "section": "action",
+     "sha1": "ee789cb7d26e89a9fa41f5b49164848c6f906369",
+     "length": 67
+    },
+    {
+     "name": "Gory Feast",
+     "section": "action",
+     "sha1": "e8d511a00b3f737958b6aa63a576f9c94afdfa01",
+     "length": 359
+    },
+    {
+     "name": "Incapacitating Screech",
+     "section": "action",
+     "sha1": "22df441118b6e914c5e340330431563c15c88928",
+     "length": 278
+    }
+   ],
+   "counts": {
+    "trait": 4,
+    "action": 4,
+    "bonus": 0,
+    "reaction": 0,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "vrykolakas",
+   "name": "Vrykolakas",
+   "page": 25,
+   "size": "large",
+   "type": "undead",
+   "subtype": "vampire",
+   "alignment": "neutral evil",
+   "ac": {
+    "value": 14,
+    "natural": true
+   },
+   "hp": {
+    "value": 147,
+    "formula": "14d10 + 70"
+   },
+   "speed": {
+    "walk": 40
+   },
+   "abilities": {
+    "str": 20,
+    "dex": 16,
+    "con": 20,
+    "int": 7,
+    "wis": 12,
+    "cha": 7
+   },
+   "saves": {
+    "con": 9
+   },
+   "skills": {
+    "athletics": 9,
+    "stealth": 7
+   },
+   "senses": {
+    "darkvision": 120
+   },
+   "passivePerception": 11,
+   "cr": 9,
+   "xp": 5000,
+   "prof": 4,
+   "notes": [
+    "A pull quote sits in the middle of the second column.",
+    "Under Vampire Weaknesses the flaws (Sunlight Hypersensitivity, Forbiddance, Harmed by Running Water, Stake to the Heart) are in plain italic, not bold italic: they belong to that trait's text."
+   ],
+   "entries": [
+    {
+     "name": "Regeneration",
+     "section": "trait",
+     "sha1": "6d2bcbf7c97e97ebac48c283a00826c483706823",
+     "length": 210
+    },
+    {
+     "name": "Spider Climb",
+     "section": "trait",
+     "sha1": "6120c7dc8a23b8f7e27dab68a1c4000e2573e254",
+     "length": 112
+    },
+    {
+     "name": "Vampire Weaknesses",
+     "section": "trait",
+     "sha1": "90ad86dc7f511d13e889639f0aeaf74792f56b85",
+     "length": 486
+    },
+    {
+     "name": "Pain Tolerance",
+     "section": "trait",
+     "sha1": "b3c67fb6b9469c708bc5982608f7133963c7baf7",
+     "length": 179
+    },
+    {
+     "name": "Berserk",
+     "section": "trait",
+     "sha1": "90d313186de82b40f48efb796efb6cfd10d5b138",
+     "length": 372
+    },
+    {
+     "name": "Immutable Form",
+     "section": "trait",
+     "sha1": "766bc596926edded81952409e6f369cf9799bee3",
+     "length": 73
+    },
+    {
+     "name": "Multiattack",
+     "section": "action",
+     "sha1": "0e6b2cf319ea3409529b4d2f38d8c93a236ee428",
+     "length": 59
+    },
+    {
+     "name": "Claw",
+     "section": "action",
+     "sha1": "7a2d927f5c657f39a2b0b0e64fc01997ca94cbb8",
+     "length": 158
+    },
+    {
+     "name": "Bite",
+     "section": "action",
+     "sha1": "dc121a97b6b420057c6c44a51abdb5111ade7287",
+     "length": 160
+    }
+   ],
+   "counts": {
+    "trait": 6,
+    "action": 3,
+    "bonus": 0,
+    "reaction": 0,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "death-knight",
+   "name": "Death Knight",
+   "page": 28,
+   "size": "medium",
+   "type": "undead",
+   "subtype": "higher",
+   "alignment": "typically lawful evil",
+   "ac": {
+    "value": 20,
+    "natural": false
+   },
+   "hp": {
+    "value": 210,
+    "formula": "20d8 + 120"
+   },
+   "speed": {
+    "walk": 30
+   },
+   "abilities": {
+    "str": 20,
+    "dex": 15,
+    "con": 22,
+    "int": 14,
+    "wis": 16,
+    "cha": 18
+   },
+   "saves": {
+    "str": 11,
+    "wis": 9,
+    "cha": 10
+   },
+   "skills": {},
+   "senses": {
+    "darkvision": 120
+   },
+   "passivePerception": 13,
+   "cr": 18,
+   "xp": 20000,
+   "prof": 6,
+   "notes": [
+    "The first column of the page holds variant features (Everfrost Shard, Hellfire Orb) that are not part of the block."
+   ],
+   "entries": [
+    {
+     "name": "Magic Resistance",
+     "section": "trait",
+     "sha1": "fd339dc30ccde9d043661c8d10cdee41465b3ad4",
+     "length": 90
+    },
+    {
+     "name": "Marshal Undead",
+     "section": "trait",
+     "sha1": "7d80b59700a61e1b7fbb5dddc017c92fcc99086e",
+     "length": 151
+    },
+    {
+     "name": "Profane Endurance",
+     "section": "trait",
+     "sha1": "12f933dabbc7cd8c71e64a019ce80a8b9a918b3c",
+     "length": 289
+    },
+    {
+     "name": "Heavy Armor Master",
+     "section": "trait",
+     "sha1": "4156bf5fb7e2cb9b68192c3983118e9a24024ddd",
+     "length": 87
+    },
+    {
+     "name": "Action Surge",
+     "section": "trait",
+     "sha1": "950506bc83cdbe13444d0835b5bbf3be57d95cda",
+     "length": 109
+    },
+    {
+     "name": "Sentinel",
+     "section": "trait",
+     "sha1": "841ac7adb858b4da241cb03d2dbf39d0522ce2f2",
+     "length": 106
+    },
+    {
+     "name": "Innate Spellcasting",
+     "section": "trait",
+     "sha1": "bcd911cfe092d5e1d6c333b7afc98830c3508f2c",
+     "length": 262
+    },
+    {
+     "name": "Multiattack",
+     "section": "action",
+     "sha1": "55a42d69230c44b386d9940b908d0112ea00a6db",
+     "length": 68
+    },
+    {
+     "name": "Deathblade",
+     "section": "action",
+     "sha1": "4ad018f6fac40792c4303e6bf19142b0bbaf5ee5",
+     "length": 196
+    },
+    {
+     "name": "Death Coil",
+     "section": "action",
+     "sha1": "d56be807e15e2d0bbdf0993c8613448f46cd1933",
+     "length": 127
+    }
+   ],
+   "counts": {
+    "trait": 7,
+    "action": 3,
+    "bonus": 0,
+    "reaction": 0,
+    "legendary": 0
+   }
+  },
+  {
+   "id": "lich",
+   "name": "Lich",
+   "page": 30,
+   "size": "medium",
+   "type": "undead",
+   "subtype": "higher",
+   "alignment": "typically any evil alignment",
+   "ac": {
+    "value": 17,
+    "natural": true
+   },
+   "hp": {
+    "value": 153,
+    "formula": "18d8 + 72"
+   },
+   "speed": {
+    "walk": 30,
+    "fly": 50
+   },
+   "abilities": {
+    "str": 11,
+    "dex": 16,
+    "con": 18,
+    "int": 20,
+    "wis": 20,
+    "cha": 18
+   },
+   "saves": {
+    "con": 11,
+    "int": 12,
+    "wis": 12
+   },
+   "skills": {
+    "arcana": 19,
+    "history": 12,
+    "insight": 12,
+    "perception": 12
+   },
+   "senses": {
+    "truesight": 120
+   },
+   "passivePerception": 22,
+   "cr": 22,
+   "xp": 41000,
+   "prof": 7,
+   "notes": [
+    "'Spellcasting' is a heading-sized title followed by a paragraph, not a bold-italic entry: counted apart (trait count 6, or 7 if a reader counts it).",
+    "Legendary Actions: a heading, an introduction paragraph, then six options."
+   ],
+   "entries": [
+    {
+     "name": "Magic Resistance",
+     "section": "trait",
+     "sha1": "a21defc08d86f8ede06ff40d4e029d6dfe2db603",
+     "length": 83
+    },
+    {
+     "name": "Legendary Resistance",
+     "section": "trait",
+     "sha1": "5be30a4dfd7f3972f0edc16546f4b2ead0529c14",
+     "length": 76
+    },
+    {
+     "name": "Rejuvenation",
+     "section": "trait",
+     "sha1": "b3263dc314b00ca9a9dc43d9a44eef843859fb65",
+     "length": 156
+    },
+    {
+     "name": "Turn Immunity",
+     "section": "trait",
+     "sha1": "57178cba08fc95ec82592a8334eda685763f0c0e",
+     "length": 82
+    },
+    {
+     "name": "Necromantic Master",
+     "section": "trait",
+     "sha1": "db9a2da0e8ad193307e5c99b4b8b69d84fb24352",
+     "length": 297
+    },
+    {
+     "name": "Call of the Grave",
+     "section": "trait",
+     "sha1": "f306ef384a4ebfb639658e558ac9b58e55f2d29d",
+     "length": 79
+    },
+    {
+     "name": "Paralyzing Touch",
+     "section": "action",
+     "sha1": "2ab85a462df901725e95250b5a491ac125679da9",
+     "length": 237
+    },
+    {
+     "name": "Disrupt Life",
+     "section": "action",
+     "sha1": "2a5d8db554aaf7b24267d51a4dbdacc05687c2fb",
+     "length": 175
+    },
+    {
+     "name": "Create Death Knight",
+     "section": "action",
+     "sha1": "a2d63979f227b978cee84a20a1f19be81e58cf1d",
+     "length": 311
+    },
+    {
+     "name": "Necrotic Bolt",
+     "section": "bonus",
+     "sha1": "7fd9591a25c0f3d5fd6598cedd49a7ffbfb5b6ec",
+     "length": 136
+    },
+    {
+     "name": "Nullify Arcana",
+     "section": "reaction",
+     "sha1": "f3393d714e392d36c8a958de8266256bdd193f38",
+     "length": 185
+    },
+    {
+     "name": "Claim Soul",
+     "section": "reaction",
+     "sha1": "3f24062525901b129886c86908ef9cd4370dcad3",
+     "length": 102
+    },
+    {
+     "name": "Necrotic Bolt",
+     "section": "legendary",
+     "sha1": "3750bddf1b4d8bd0f45084f8ea8eb5f8500839fa",
+     "length": 49
+    },
+    {
+     "name": "Frightening Gaze",
+     "section": "legendary",
+     "sha1": "3e54c55a3bb3df349317927176f2aa815497978d",
+     "length": 359
+    },
+    {
+     "name": "Move",
+     "section": "legendary",
+     "sha1": "b45b86611ce68818d9773868eafaf4d966240c21",
+     "length": 39
+    },
+    {
+     "name": "Paralyzing Touch",
+     "section": "legendary",
+     "sha1": "c5562f27c566dba945cacb134c738c86337d099d",
+     "length": 57
+    },
+    {
+     "name": "Disrupt Life",
+     "section": "legendary",
+     "sha1": "f3500a2c955991dc86900ee3509e2cb24dff4ca0",
+     "length": 55
+    },
+    {
+     "name": "Spellcasting",
+     "section": "legendary",
+     "sha1": "0a61522c3934f70c9cc57d9652f64430e0c8f472",
+     "length": 43
+    }
+   ],
+   "alsoCountedAs": {
+    "trait": [
+     6,
+     7
+    ]
+   },
+   "counts": {
+    "trait": 6,
+    "action": 3,
+    "bonus": 1,
+    "reaction": 2,
+    "legendary": 6
+   },
+   "extras": [
+    {
+     "name": "Spellcasting",
+     "section": "spellcasting-block",
+     "sha1": "4c30b148ced22378e0dbd464b0d0c29f22193de5",
+     "length": 606
+    }
+   ]
+  }
+ ],
+ "items": [
+  {
+   "name": "Censored Translation of the Tome of Decay",
+   "page": 31,
+   "kind": "wondrous",
+   "subtype": "spellbook",
+   "rarity": "legendary",
+   "attunement": "",
+   "headerLine": "Wondrous Item (Spellbook), Legendary",
+   "intro": {
+    "sha1": "5bd766bc0bc16df7c4abad81e373534caadbbf04",
+    "length": 442
+   }
+  },
+  {
+   "name": "Censored Translation of the Tome of Death",
+   "page": 32,
+   "kind": "wondrous",
+   "subtype": "spellbook",
+   "rarity": "legendary",
+   "attunement": "",
+   "headerLine": "Wondrous Item (Spellbook), Legendary",
+   "intro": {
+    "sha1": "ad97e468fe7907fdea6d9cd2fa274e6d2941d991",
+    "length": 385
+   }
+  },
+  {
+   "name": "Censored Translation of the Tome of Animancy",
+   "page": 33,
+   "kind": "wondrous",
+   "subtype": "spellbook",
+   "rarity": "legendary",
+   "attunement": "",
+   "headerLine": "Wondrous Item (Spellbook), Legendary",
+   "intro": {
+    "sha1": "0a3138b1cce740122dadeedc5fe501c4b5289af3",
+    "length": 479
+   }
+  }
+ ]
+}
