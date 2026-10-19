@@ -65,12 +65,31 @@ export function joinWords(words) {
     if ( prev ) {
       const gap = w.x0 - prev.x1;
       const size = Math.max(prev.size, w.size, 1);
-      if ( gap > GAP_RATIO * size ) out += " ";
+      // A font change between two words ("Saving Throws" in bold, "Dex +6" in regular) is a word boundary unless
+      // the next word is punctuation ("invisible" in italic then "."): the widths of a line set as one item are
+      // estimated per character, so the gap alone is not reliable there.
+      const fontChange = (w.font !== prev.font) && /^[\p{L}\d(+-]/u.test(w.str) && !/[(\-–]$/.test(prev.str);
+      if ( gap > GAP_RATIO * size || (fontChange && gap > -0.3 * size) ) out += " ";
     }
     out += w.str;
     prev = w;
   }
   return normalizeSpace(out);
+}
+
+/**
+ * A running header or footer in the top or bottom margin of the page: a bare page number ("12"), letter-spaced
+ * words ("T H E H O L L O W C H O I R 1") or doubled letters (`isFooterLine`). Body text is never tested by its
+ * position alone: some books print their last line very low.
+ * @param {PdfLine} line
+ * @param {number} height  Page height.
+ * @returns {boolean}
+ */
+export function isMarginLine(line, height) {
+  const inMargin = (line.y < 0.07 * height) || (line.y > 0.93 * height);
+  if ( !inMargin ) return false;
+  const text = line.text;
+  return /^\d{1,4}$/.test(text) || /^(?:\S\s){3,}\S?$/.test(text) || isFooterLine(text);
 }
 
 /**
@@ -109,8 +128,8 @@ export function pageColumns(page) {
   const columns = split === null
     ? [groupLines(words)]
     : [groupLines(words.filter(w => (w.x0 + w.x1) / 2 < split)), groupLines(words.filter(w => (w.x0 + w.x1) / 2 >= split))];
-  columns.forEach((lines, col) => lines.forEach(line => { line.col = col; }));
-  return columns;
+  return columns.map((lines, col) => lines.filter(line => !isMarginLine(line, page.height ?? 0))
+    .map(line => Object.assign(line, { col })));
 }
 
 /**
