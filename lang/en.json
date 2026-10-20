@@ -103,7 +103,9 @@
         "invalid": "This file is not a readable PDF: {message}",
         "readerUnavailable": "The PDF reader of Foundry is not available (pdf.js missing or too old). Check the console (F12).",
         "parserMissing": "Importing a PDF requires the active module \"dnd5e-text-parser\" (compatible version).",
-        "aborted": "The reading was cancelled."
+        "aborted": "The reading was cancelled.",
+        "tooLarge": "This PDF is {size} MB, above the limit of {limit} MB (setting \"PDF: maximum file size\"). Nothing was imported.",
+        "tooManyPages": "This PDF has {pages} pages, above the limit of {limit} (setting \"PDF: maximum number of pages\"). Nothing was imported."
       }
     },
     "Reason": {
@@ -245,6 +247,14 @@
       "aiTimeout": {
         "Name": "PDF: AI timeout per block (seconds)",
         "Hint": "Time allowed to the local model for one stat block (10 to 600 seconds). Two unanswered blocks in a row stop the AI for the rest of the file."
+      },
+      "pdfMaxSizeMb": {
+        "Name": "PDF: maximum file size (MB)",
+        "Hint": "A larger PDF is refused before being read. 0 for no limit."
+      },
+      "pdfMaxPages": {
+        "Name": "PDF: maximum number of pages",
+        "Hint": "A PDF with more pages is refused once opened. 0 for no limit."
       }
     }
   }

@@ -21,7 +21,7 @@ let pdfjsPromise = null;
 /** Workers alive right now (tests check that a cancelled or finished read leaves none). */
 let liveWorkers = 0;
 
-/** Error of the PDF reader: `code` is one of readerUnavailable, encrypted, invalid, aborted. */
+/** Error of the PDF reader: `code` is one of readerUnavailable, encrypted, invalid, tooManyPages, aborted. */
 export class PdfReadError extends Error {
   constructor(code, detail = "") {
     super(`${code}${detail ? `: ${detail}` : ""}`);
@@ -105,7 +105,7 @@ const abortError = () => new PdfReadError("aborted");
  * @yields {import("../core/pdf/page-model.mjs").PdfPage}
  * @throws {PdfReadError} `readerUnavailable`, `encrypted`, `invalid`, `aborted`
  */
-export async function* readPdfPages(bytes, { signal, onPage, timings = {} } = {}) {
+export async function* readPdfPages(bytes, { signal, onPage, timings = {}, maxPages = 0 } = {}) {
   const pdfjs = await loadPdfJs();
   if ( signal?.aborted ) throw abortError();
   const t0 = performance.now();
@@ -143,6 +143,9 @@ export async function* readPdfPages(bytes, { signal, onPage, timings = {} } = {}
       if ( err?.name === "PasswordException" ) throw new PdfReadError("encrypted", err.message);
       if ( err?.name === "InvalidPDFException" ) throw new PdfReadError("invalid", err.message);
       throw new PdfReadError("invalid", String(err?.message ?? err));
+    }
+    if ( maxPages && (doc.numPages > maxPages) ) {
+      throw Object.assign(new PdfReadError("tooManyPages", `${doc.numPages} > ${maxPages}`), { data: { pages: doc.numPages, limit: maxPages } });
     }
     timings.open = performance.now() - t0;
     timings.pages = 0;

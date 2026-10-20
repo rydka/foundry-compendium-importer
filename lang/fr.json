@@ -103,7 +103,9 @@
         "invalid": "Ce fichier n’est pas un PDF lisible : {message}",
         "readerUnavailable": "Le lecteur PDF de Foundry n’est pas disponible (pdf.js absent ou trop ancien). Consultez la console (F12).",
         "parserMissing": "L’import d’un PDF nécessite le module actif « dnd5e-text-parser » (version compatible).",
-        "aborted": "La lecture a été annulée."
+        "aborted": "La lecture a été annulée.",
+        "tooLarge": "Ce PDF fait {size} Mo, au-delà de la limite de {limit} Mo (réglage « PDF : taille maximale du fichier »). Rien n’a été importé.",
+        "tooManyPages": "Ce PDF compte {pages} pages, au-delà de la limite de {limit} (réglage « PDF : nombre maximal de pages »). Rien n’a été importé."
       }
     },
     "Reason": {
@@ -245,6 +247,14 @@
       "aiTimeout": {
         "Name": "PDF : délai de l’IA par bloc (secondes)",
         "Hint": "Temps accordé au modèle local pour un bloc de statistiques (10 à 600 secondes). Deux blocs sans réponse d’affilée arrêtent l’IA pour le reste du fichier."
+      },
+      "pdfMaxSizeMb": {
+        "Name": "PDF : taille maximale du fichier (Mo)",
+        "Hint": "Un PDF plus gros est refusé avant d’être lu. 0 pour ne pas limiter."
+      },
+      "pdfMaxPages": {
+        "Name": "PDF : nombre maximal de pages",
+        "Hint": "Un PDF qui compte plus de pages est refusé une fois ouvert. 0 pour ne pas limiter."
       }
     }
   }

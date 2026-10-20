@@ -464,7 +464,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       } catch(err) {
         if ( err instanceof PdfImportError ) {
           if ( err.code === "aborted" ) return this.#status(null);
-          return this.#fail(`Error.Pdf.${err.code}`, { message: err.message });
+          return this.#fail(`Error.Pdf.${err.code}`, { message: err.message, ...(err.data ?? {}) });
         }
         throw err;
       }
