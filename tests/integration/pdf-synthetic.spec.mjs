@@ -16,26 +16,39 @@ test.afterEach(async ({ foundry }) => {
 
 const doc = (name) => loadDoc(path.join(SYNTHETIC, `${name}.json`));
 
-async function importInto(page, foundry, { file, filter, name }) {
+/** Full UI import into a new compendium. `enrich: false` keeps the descriptions exactly as read (the enrichment turns "DC 14 Constitution saving throw" into enrichers). */
+async function importInto(page, foundry, { file, filter, name, enrich = false }) {
   const pack = uniqueName(name);
   created.push(pack);
+  await foundry(async (id) => { await foundry.applications.instances.get(id)?.close(); }, "compendium-json-importer");
   await openWindow(page);
   await page.selectOption(`${WIN} select[name=typeFilter]`, filter);
   await chooseFile(page, await syntheticFile(file));
   await fillNewPack(page, `PDF ${pack}`, pack);
+  const enrichBox = page.locator(`${WIN} input[name=enrich]`);
+  if (await enrichBox.count()) await enrichBox.setChecked(enrich);
   await analyze(page);
   await expect(page.locator(`${WIN} .cji-summary`)).toBeVisible({ timeout: 60_000 });
+  const reviewText = await page.locator(`${WIN} .cji-summary`).innerText();
   await confirm(page);
-  const count = filter === "actors" ? expectedOfDoc(doc(file)).creatures.length : expectedOfDoc(doc(file)).items.length;
-  await expect.poll(async () => (await foundry(clientReadPack, `world.${pack}`))?.length ?? 0, { timeout: 60_000 }).toBe(count);
-  return { pack, docs: await foundry(clientReadPack, `world.${pack}`) };
+  const want = filter === "actors" ? expectedOfDoc(doc(file)).creatures.length : expectedOfDoc(doc(file)).items.length;
+  const deadline = Date.now() + 30_000;
+  let docs = [];
+  while (Date.now() < deadline) {
+    docs = (await foundry(clientReadPack, `world.${pack}`)) ?? [];
+    if (docs.length >= want) break;
+    await page.waitForTimeout(500);
+  }
+  return { pack, docs, reviewText };
 }
 
 for (const file of ["ref-2014-en", "ref-2014-fr", "ref-2024-en", "ref-2024-fr"]) {
   test(`C2: ${file} imports its creatures as NPC actors with the exact text of their abilities`, async ({ gamePage, foundry }, testInfo) => {
     const con = watchConsole(gamePage);
-    const { docs } = await importInto(gamePage, foundry, { file, filter: "actors", name: file });
+    const { docs, reviewText } = await importInto(gamePage, foundry, { file, filter: "actors", name: file });
     const want = expectedOfDoc(doc(file));
+    evidence(`C2-${file}-revue.txt`, reviewText);
+    expect(docs.map((d) => d.name).sort(), "imported documents").toEqual(want.creatures.map((c) => c.name).sort());
     const report = [];
     for (const exp of want.creatures) {
       const actor = docs.find((d) => nameKey(d.name) === nameKey(exp.name));
@@ -62,8 +75,10 @@ for (const file of ["ref-2014-en", "ref-2014-fr", "ref-2024-en", "ref-2024-fr"])
 
 for (const file of ["ref-items-en", "ref-items-fr"]) {
   test(`C3: ${file} imports its magic items with type, rarity and attunement`, async ({ gamePage, foundry }, testInfo) => {
-    const { docs } = await importInto(gamePage, foundry, { file, filter: "items", name: file });
+    const { docs, reviewText } = await importInto(gamePage, foundry, { file, filter: "items", name: file });
     const want = expectedOfDoc(doc(file)).items;
+    evidence(`C3-${file}-revue.txt`, reviewText);
+    expect(docs.map((d) => d.name).sort(), "imported documents").toEqual(want.map((i) => i.name).sort());
     const report = [];
     for (const exp of want) {
       const item = docs.find((d) => nameKey(d.name) === nameKey(exp.name));
@@ -94,8 +109,8 @@ test("target type: an item PDF into an actor compendium imports nothing and says
 });
 
 test("C6: importing the same PDF twice, into two compendiums, gives the same documents (names, CR, texts, formulas)", async ({ gamePage, foundry }) => {
-  const a = await importInto(gamePage, foundry, { file: "ref-2014-en", filter: "actors", name: "c6-a" });
-  const b = await importInto(gamePage, foundry, { file: "ref-2014-en", filter: "actors", name: "c6-b" });
+  const a = await importInto(gamePage, foundry, { file: "ref-2014-en", filter: "actors", name: "c6-a", enrich: true });
+  const b = await importInto(gamePage, foundry, { file: "ref-2014-en", filter: "actors", name: "c6-b", enrich: true });
   const ca = a.docs.map(canonical).sort((x, y) => x.name.localeCompare(y.name));
   const cb = b.docs.map(canonical).sort((x, y) => x.name.localeCompare(y.name));
   evidence("C6-comparaison.json", { names: ca.map((d) => d.name), identical: JSON.stringify(ca) === JSON.stringify(cb), itemsPerActor: ca.map((d) => d.items.length) });
