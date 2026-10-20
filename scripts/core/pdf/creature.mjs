@@ -5,13 +5,13 @@
  */
 import { LEXICON, fold } from "./lexicon.mjs";
 import { stableId } from "./stable-id.mjs";
+import { escapeHtml } from "./html.mjs";
 
 const MODULE_ID = "compendium-json-importer";
 const ACTOR_IMG = "icons/svg/mystery-man.svg";
 const TRAIT_KINDS = ["dr", "di", "dv", "ci"];
 const SECTIONS = ["actions", "bonus", "reactions", "legendary"];
 
-const escapeHtml = text => String(text ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /** "Name" or "Name (meta)". */
 const entryTitle = entry => (entry.meta ? `${entry.name} (${entry.meta})` : entry.name);

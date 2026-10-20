@@ -7,13 +7,13 @@ import { pageLines } from "./layout.mjs";
 import { LEXICON, fold } from "./lexicon.mjs";
 import { findStatBlocks } from "./stat-block.mjs";
 import { stableId } from "./stable-id.mjs";
+import { escapeHtml } from "./html.mjs";
 
 const MODULE_ID = "compendium-json-importer";
 const HEADER_MAX_LENGTH = 120;
 const HEADING_RATIO = 1.1;
 const PARAGRAPH_GAP = 1.4;
 
-const escapeHtml = text => String(text ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /**
  * Header line rewritten with the words the text parser knows (French variants of the rarities and of the
