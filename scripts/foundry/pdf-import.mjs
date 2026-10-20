@@ -1,5 +1,5 @@
 import { MODULE_ID } from "../constants.mjs";
-import { extractDocument } from "../core/pdf/extract.mjs";
+import { extractDocumentAsync } from "../core/pdf/extract.mjs";
 import { loadParser } from "./enrichment.mjs";
 import { pdfLimits } from "./settings.mjs";
 import { PdfReadError, readPdf } from "./pdf-reader.mjs";
@@ -64,7 +64,14 @@ export async function extractFromPdf(fileOrBytes, { fileName = "", documentName,
     throw err;
   }
   const t0 = performance.now();
-  const extraction = extractDocument(pages, { parser, fileName: name });
+  let extraction;
+  try {
+    // One page per turn of the event loop: the window repaints and the Cancel button works during the extraction
+    extraction = await extractDocumentAsync(pages, { parser, fileName: name }, { signal, yieldTo: () => new Promise(resolve => setTimeout(resolve, 0)) });
+  } catch(err) {
+    if ( err?.name === "AbortError" ) throw new PdfImportError("aborted");
+    throw err;
+  }
   timings.extract = performance.now() - t0;
   if ( extraction.scanned ) throw new PdfImportError("scanned");
 

@@ -251,17 +251,19 @@ export function mayHoldStatBlock(text) {
   return new RegExp(`(?:^|\\n)(?:${alternation(LEXICON.labels.ac)})(?![\\p{L}'’])[^\\n]*\\d`, "iu").test(String(text ?? ""));
 }
 
+let labelPatterns = null;
+
 /** Key of `LEXICON.labels` whose label starts the line, else null. Longest label wins. */
 export function labelOf(line) {
   const text = String(line ?? "");
-  let best = null;
-  for ( const [kind, words] of Object.entries(LEXICON.labels) ) {
-    for ( const word of words ) {
-      const re = new RegExp(`^${escape(word)}(?![\\p{L}'’])`, "iu");
-      if ( re.test(text) && (!best || word.length > best.length) ) best = { kind, length: word.length, word };
-    }
+  // One expression per label, compiled once (this runs on every line of every page)
+  labelPatterns ??= Object.entries(LEXICON.labels).flatMap(([kind, words]) => words.map(word => ({
+    kind, word, length: word.length, re: new RegExp(`^${escape(word)}(?![\\p{L}'’])`, "iu")
+  }))).sort((a, b) => b.length - a.length);
+  for ( const { kind, word, length, re } of labelPatterns ) {
+    if ( re.test(text) ) return { kind, length, word };
   }
-  return best;
+  return null;
 }
 
 /** Strip the diacritics and lowercase: lookups in the tables are accent-insensitive. */
