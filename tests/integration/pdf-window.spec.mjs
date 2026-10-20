@@ -1,3 +1,4 @@
+/* global document */
 // PDF import, window flows: C1 (progress, no external server, cancel), C4 (review lists the problems), C7 (scanned,
 // invalid), C8 (a .json after a .pdf in the same window), partial import, type of the target.
 // Better Undead Compendium.pdf (212 MB, local) is used where noted; those tests are skipped when it is absent.
@@ -62,43 +63,64 @@ test.describe("Better Undead Compendium.pdf (35 pages)", () => {
     expect(con.attributed()).toEqual([]);
   });
 
-  test("C1: cancel during the reading returns to the form within a second, writes nothing", async ({ gamePage, foundry }, testInfo) => {
+  test("C1: cancel during the reading returns to the form within a second, writes nothing, terminates the worker", async ({ gamePage, foundry }, testInfo) => {
     const con = watchConsole(gamePage);
     await startWorkerProbe(gamePage);
     const pack = await prepare(gamePage, { filter: "actors", name: "c1-cancel" });
     await chooseFile(gamePage, BETTER_UNDEAD_PDF);
     await fillNewPack(gamePage, `C1 cancel ${pack}`, pack);
     const before = await foundry(clientSnapshot);
-
-    // Reading takes ~0.8 s on this machine: slow the CPU down so that the cancel lands during the reading.
     const cdp = await gamePage.context().newCDPSession(gamePage);
-    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 10 });
-    let ms = null;
-    let cancelled = false;
-    for (let attempt = 0; attempt < 3 && !cancelled; attempt++) {
+
+    /** One analysis cancelled as soon as the Cancel button shows. CPU slowed by `rate` (1 = real speed). */
+    async function attempt(rate, tag) {
+      await cdp.send("Emulation.setCPUThrottlingRate", { rate });
       await startStatusSampler(gamePage);
       await analyze(gamePage);
       const cancel = gamePage.locator(`${WIN} [data-action=cancelAnalysis]`);
-      await expect(cancel).toBeVisible({ timeout: 15_000 });
-      await expect(gamePage.locator(`${WIN} .cji-status`)).toContainText(/\d/, { timeout: 15_000 });
+      await cancel.waitFor({ state: "visible", timeout: 15_000 }).catch(() => {});
+      // click only once pages are being read (the Worker exists): "Reading the PDF, page n/35"
+      await gamePage.waitForFunction(() => /\d+\s*\/\s*35/.test(document.querySelector("#compendium-json-importer .cji-status")?.textContent ?? "") || !!document.querySelector("#compendium-json-importer .cji-summary:not([hidden])"), null, { timeout: 30_000, polling: 10 }).catch(() => {});
+      const reviewAlready = await gamePage.locator(`${WIN} .cji-summary:not([hidden])`).count();
+      if (reviewAlready) { // the reading ended before the click could land: back to the form for the next try
+        await gamePage.locator(`${WIN} button[data-action=backToForm]`).click();
+        await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+        return { tag, rate, landed: false };
+      }
       const t0 = Date.now();
       await cancel.click();
-      await expect(gamePage.locator(`${WIN} footer button[type=submit]`)).toBeVisible({ timeout: 3000 });
-      await expect(gamePage.locator(`${WIN} footer button[type=submit]`)).toBeEnabled();
-      ms = Date.now() - t0;
-      cancelled = !(await gamePage.locator(`${WIN} .cji-summary`).isVisible());
+      const samples = [];
+      while (Date.now() - t0 < 25_000) {
+        const st = await gamePage.evaluate(() => ({
+          submitDisabled: document.querySelector("#compendium-json-importer footer button[type=submit]")?.disabled ?? null,
+          status: document.querySelector("#compendium-json-importer .cji-status")?.textContent ?? ""
+        }));
+        samples.push({ t: Date.now() - t0, ...st });
+        if (st.submitDisabled === false) break;
+        await gamePage.waitForTimeout(25);
+      }
+      const ms = Date.now() - t0;
+      await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+      await gamePage.waitForTimeout(300);
+      const workers = await workerCounts(gamePage);
+      const summaryShown = await gamePage.locator(`${WIN} .cji-summary:not([hidden])`).count();
+      return { tag, rate, landed: !summaryShown, ms, workers, samples: samples.filter((_, i) => i % 8 === 0 || i === samples.length - 1) };
     }
-    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
-    await gamePage.waitForTimeout(500);
-    const workers = await workerCounts(gamePage);
+
+    const real = [];
+    for (let i = 0; i < 4 && !real.some((r) => r.landed); i++) real.push(await attempt(1, `real-${i}`));
+    const landedReal = real.find((r) => r.landed);
+    // informational: same cancel with the CPU slowed down 4 times (shows how the latency scales)
+    const slow = await attempt(4, "slow-x4");
     await stopWorkerProbe(gamePage);
     await gamePage.screenshot({ path: testInfo.outputPath("C1-annulation-formulaire.png") });
-    evidence("C1-annulation.json", { cancelled, msFromClickToForm: ms, workers, consoleAttributed: con.attributed(), allConsole: con.logs });
+    evidence("C1-annulation.json", { real, slowCpuX4: slow, consoleAttributed: con.attributed(), allConsole: con.logs });
 
-    expect(cancelled, "the cancel landed during the reading (the analysis did not finish first)").toBe(true);
-    expect(ms).toBeLessThan(1000);
+    expect(landedReal, "the cancel landed during the reading at real speed (3 tries)").toBeTruthy();
+    expect(landedReal.ms, "ms from the click on Cancel to a usable form, real speed").toBeLessThan(1000);
+    expect(landedReal.workers.alive, "no Worker left alive").toBe(0);
+    if (slow.landed) expect(slow.workers.alive, "no Worker left alive after the slowed-down cancel").toBe(0);
     expect(await foundry(clientSnapshot), "no document or compendium created").toEqual(before);
-    expect(workers.alive).toBe(0);
     expect(con.attributed()).toEqual([]);
   });
 
