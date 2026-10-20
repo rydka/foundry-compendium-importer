@@ -306,6 +306,9 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
    * cancellable (PDF) analysis runs.
    */
   #setButtons(enabled, { cancellable = false } = {}) {
+    // The file field too: the result must be the one of the file shown
+    const file = this.element?.querySelector("input[name=sourceFile]");
+    if ( file ) file.disabled = !enabled;
     this.element?.querySelectorAll("footer button").forEach(button => {
       if ( button.dataset.action === "cancelAnalysis" ) {
         button.hidden = enabled || !cancellable;
