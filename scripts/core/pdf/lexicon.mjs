@@ -158,7 +158,7 @@ export const LEXICON = freeze({
     abyssal: ["Abyssal"],
     cant: ["Thieves' Cant", "Thieves’ Cant", "Thieves Cant", "argot des voleurs"],
     celestial: ["Celestial", "céleste"],
-    deep: ["Deep Speech", "commun des profondeurs", "profond"],
+    deep: ["Deep Speech", "profond"],
     druidic: ["Druidic", "druidique"],
     gith: ["Gith"],
     gnoll: ["Gnoll"],
