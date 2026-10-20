@@ -22,6 +22,7 @@ function neutral(schema) {
 
 function fill(schema, name, facts) {
   const k = key(name);
+  if (k === "name") return facts.name;
   if (/^(ac|armorclass|armourclass)$/.test(k)) return facts.ac;
   if (/^(hp|hitpoints|hpvalue|hitpointsvalue|maxhp)$/.test(k)) return facts.hp;
   if (/(hpformula|hitdice|hitpointsformula|formula)$/.test(k)) return facts.hpFormula;
@@ -63,7 +64,7 @@ export function buildAnswer(schema, facts) {
 /** Facts of a synthetic creature spec (synth.expectedCreature output) for `buildAnswer`. */
 export function factsOf(exp) {
   return {
-    ac: exp.ac.value, hp: exp.hp.value, hpFormula: exp.hp.formula, cr: exp.cr, xp: exp.xp,
+    name: exp.name, ac: exp.ac.value, hp: exp.hp.value, hpFormula: exp.hp.formula, cr: exp.cr, xp: exp.xp,
     speed: exp.speed, abilities: exp.abilities, senses: exp.senses,
     entries: exp.entries.map((e) => ({ name: e.name, section: e.section }))
   };
