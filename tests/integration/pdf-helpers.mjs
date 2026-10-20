@@ -162,3 +162,16 @@ export function canonical(doc) {
   return strip(doc);
 }
 
+
+/** Puts a local file in a hidden <input type=file> of the page (no copy of its bytes through the test); read it with `document.getElementById("cji-big-file").files[0]`. */
+export async function bigFileInPage(page, filePath) {
+  await page.evaluate(() => {
+    document.getElementById("cji-big-file")?.remove();
+    const input = document.createElement("input");
+    input.type = "file";
+    input.id = "cji-big-file";
+    input.hidden = true;
+    document.body.append(input);
+  });
+  await page.locator("#cji-big-file").setInputFiles(filePath);
+}

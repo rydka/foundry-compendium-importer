@@ -34,7 +34,7 @@ test("C3: the module is active with version 0.3.0 and dnd5e is the system", asyn
 test("C24: the api exposes open, analyze and runImport", async ({ foundry }) => {
   const api = await foundry((id) => Object.keys(game.modules.get(id).api).sort(), MODULE_ID);
   evidence("C24-api.json", api);
-  expect(api).toEqual(["analyze", "open", "runImport"]);
+  expect(api).toEqual(["analyze", "open", "pdfWorkerCount", "readPdf", "runImport"]);
 });
 
 test("C4: the settings menu has an 'Open the importer' button that opens the window", async ({ gamePage, foundry }) => {

@@ -1,3 +1,4 @@
+/* global document */
 // PDF import on the real book (Better Undead Compendium.pdf, 35 pages, 212 MB, local file, ignored by git):
 // C2 (12 enriched actors), C3 (3 items), M1 (console), C6 (same result twice), M5 (time, measured and reported).
 // Skipped when the PDF is absent. The PDF is chosen with setInputFiles(path): Playwright hands the local path to the
@@ -8,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { expect, test } from "../../../../test-env/fixtures.mjs";
 import { clientDeletePacks, clientReadPack, evidence, uniqueName } from "./helpers.mjs";
 import {
-  BETTER_UNDEAD_PDF, WIN, analyze, chooseFile, confirm, fillNewPack, hasBetterUndead, openWindow, readLang, watchConsole
+  BETTER_UNDEAD_PDF, WIN, analyze, bigFileInPage, chooseFile, confirm, fillNewPack, hasBetterUndead, openWindow, readLang, watchConsole
 } from "./pdf-helpers.mjs";
 
 const truth = JSON.parse(readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "fixtures", "pdf", "better-undead.truth.json"), "utf8"));
@@ -97,20 +98,19 @@ test("target type: the creatures are ignored for an item compendium and the item
 });
 
 test("C6: reading the book twice gives the same entries, byte for byte", async ({ gamePage, foundry }) => {
-  const read = () => foundry(async (url) => {
+  await bigFileInPage(gamePage, BETTER_UNDEAD_PDF);
+  const read = () => foundry(async () => {
     const api = game.modules.get("compendium-json-importer").api;
-    const buf = new Uint8Array(await (await fetch(url)).arrayBuffer());
+    const file = document.getElementById("cji-big-file").files[0];
     const out = {};
     for (const documentName of ["Actor", "Item"]) {
-      const r = await api.readPdf(buf, { fileName: "Better Undead Compendium.pdf", documentName });
+      const r = await api.readPdf(file, { fileName: "Better Undead Compendium.pdf", documentName });
       out[documentName] = JSON.stringify(r.entries);
     }
     return out;
-  }, "/__cji-better-undead.pdf");
-  await gamePage.route("**/__cji-better-undead.pdf", (route) => route.fulfill({ path: BETTER_UNDEAD_PDF, contentType: "application/pdf" }));
+  });
   const first = await read();
   const second = await read();
-  await gamePage.unroute("**/__cji-better-undead.pdf");
   expect(JSON.parse(first.Actor)).toHaveLength(12);
   expect(JSON.parse(first.Item)).toHaveLength(3);
   expect(second.Actor === first.Actor, "actors identical").toBe(true);
@@ -118,10 +118,10 @@ test("C6: reading the book twice gives the same entries, byte for byte", async (
 });
 
 test("M5: time to read the 35 pages (measured and reported, median of 3; not an assertion)", async ({ gamePage, foundry }) => {
-  await gamePage.route("**/__cji-better-undead.pdf", (route) => route.fulfill({ path: BETTER_UNDEAD_PDF, contentType: "application/pdf" }));
-  const runs = await foundry(async (url) => {
+  await bigFileInPage(gamePage, BETTER_UNDEAD_PDF);
+  const runs = await foundry(async () => {
     const api = game.modules.get("compendium-json-importer").api;
-    const buf = new Uint8Array(await (await fetch(url)).arrayBuffer());
+    const buf = document.getElementById("cji-big-file").files[0];
     const longTasks = [];
     const observer = new PerformanceObserver((list) => { for (const e of list.getEntries()) longTasks.push(Math.round(e.duration)); });
     try { observer.observe({ entryTypes: ["longtask"] }); } catch { /* not supported */ }
@@ -133,8 +133,7 @@ test("M5: time to read the 35 pages (measured and reported, median of 3; not an 
     }
     observer.disconnect();
     return { out, longTasks };
-  }, "/__cji-better-undead.pdf");
-  await gamePage.unroute("**/__cji-better-undead.pdf");
+  });
   const walls = runs.out.map((r) => r.wallMs).sort((a, b) => a - b);
   const median = walls[1];
   const sum = (t) => (t ? Object.entries(t).filter(([k]) => k !== "ai").reduce((n, [, v]) => n + v, 0) : null);

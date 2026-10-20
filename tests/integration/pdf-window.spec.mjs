@@ -70,6 +70,9 @@ test.describe("Better Undead Compendium.pdf (35 pages)", () => {
     await fillNewPack(gamePage, `C1 cancel ${pack}`, pack);
     const before = await foundry(clientSnapshot);
 
+    // Reading takes ~0.8 s on this machine: slow the CPU down so that the cancel lands during the reading.
+    const cdp = await gamePage.context().newCDPSession(gamePage);
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 10 });
     let ms = null;
     let cancelled = false;
     for (let attempt = 0; attempt < 3 && !cancelled; attempt++) {
@@ -85,6 +88,7 @@ test.describe("Better Undead Compendium.pdf (35 pages)", () => {
       ms = Date.now() - t0;
       cancelled = !(await gamePage.locator(`${WIN} .cji-summary`).isVisible());
     }
+    await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
     await gamePage.waitForTimeout(500);
     const workers = await workerCounts(gamePage);
     await stopWorkerProbe(gamePage);
@@ -123,7 +127,7 @@ test("C7: a scanned PDF is announced clearly, nothing is imported, the window re
   expect(scannedText, "an Error.Pdf string mentions a scanned PDF").toBeTruthy();
   await expect(gamePage.locator("body")).toContainText(scannedText.replace(/\{[^}]+\}/g, "").trim().slice(0, 30), { timeout: 20_000 });
   await expect(gamePage.locator(`${WIN} footer button[type=submit]`)).toBeEnabled();
-  await expect(gamePage.locator(`${WIN} .cji-summary`)).toHaveCount(0);
+  await expect(gamePage.locator(`${WIN} .cji-summary`)).toBeHidden();
   await gamePage.screenshot({ path: testInfo.outputPath("C7-pdf-scanne.png") });
   expect(await foundry(clientSnapshot)).toEqual(before);
   expect(await foundry(clientReadPack, `world.${pack}`)).toBeNull();
