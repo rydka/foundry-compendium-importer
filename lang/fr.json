@@ -225,7 +225,26 @@
         "aiRejected": "L’IA locale a donné des valeurs absentes du texte ({fields}) : la créature n’a pas été importée.",
         "aiUnreachable": "L’IA locale est injoignable : le bloc n’a pas été lu.",
         "aiTimeout": "L’IA locale n’a pas répondu à temps : le bloc n’a pas été lu.",
-        "itemNoTitle": "Un en-tête d’objet magique sans titre au-dessus : l’objet n’a pas été importé."
+        "itemNoTitle": "Un en-tête d’objet magique sans titre au-dessus : l’objet n’a pas été importé.",
+        "aiPartial": "Certaines valeurs données par l’IA locale étaient absentes du texte et ont été ignorées ({fields})."
+      }
+    },
+    "Settings": {
+      "pdfAi": {
+        "Name": "PDF : IA locale pour les blocs illisibles",
+        "Hint": "Quand un bloc de statistiques d’un PDF ne peut pas être lu par les règles de mise en page, son texte est soumis à un modèle Ollama local. La réponse est vérifiée dans le texte et marquée « lu par IA » dans la revue. Désactivé par défaut ; rien ne quitte la machine."
+      },
+      "ollamaUrl": {
+        "Name": "PDF : adresse d’Ollama",
+        "Hint": "URL de base du serveur Ollama local. Vide : l’adresse d’item-configurator si ce module est actif, sinon http://localhost:11434."
+      },
+      "ollamaModel": {
+        "Name": "PDF : modèle Ollama",
+        "Hint": "Nom du modèle à utiliser. Vide : le modèle d’item-configurator si ce module est actif, sinon llama3.1:8b."
+      },
+      "aiTimeout": {
+        "Name": "PDF : délai de l’IA par bloc (secondes)",
+        "Hint": "Temps accordé au modèle local pour un bloc de statistiques (10 à 600 secondes). Deux blocs sans réponse d’affilée arrêtent l’IA pour le reste du fichier."
       }
     }
   }

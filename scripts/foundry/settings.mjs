@@ -25,15 +25,44 @@ export function registerSettings() {
     })),
     default: []
   });
+  registerAiSettings();
+}
+
+const AI_DEFAULT_URL = "http://localhost:11434";
+const AI_DEFAULT_MODEL = "llama3.1:8b";
+const AI_DEFAULT_TIMEOUT_S = 120;
+const ITEM_CONFIGURATOR = "item-configurator";
+
+/** Register the world settings of the local AI for the PDF blocks the rules cannot read (C5). Off by default. */
+export function registerAiSettings() {
+  const name = key => ({ name: `${MODULE_ID}.Settings.${key}.Name`, hint: `${MODULE_ID}.Settings.${key}.Hint` });
+  game.settings.register(MODULE_ID, "pdfAi", { ...name("pdfAi"), scope: "world", config: true, restricted: true, type: Boolean, default: false });
+  // Empty: the values of item-configurator when it is active, else the defaults
+  game.settings.register(MODULE_ID, "ollamaUrl", { ...name("ollamaUrl"), scope: "world", config: true, restricted: true, type: String, default: "" });
+  game.settings.register(MODULE_ID, "ollamaModel", { ...name("ollamaModel"), scope: "world", config: true, restricted: true, type: String, default: "" });
+  game.settings.register(MODULE_ID, "aiTimeout", {
+    ...name("aiTimeout"), scope: "world", config: true, restricted: true, type: Number, default: AI_DEFAULT_TIMEOUT_S,
+    range: { min: 10, max: 600, step: 10 }
+  });
+}
+
+/** A setting of item-configurator, when that module is active and registered it. */
+function itemConfiguratorSetting(key) {
+  if ( !game.modules.get(ITEM_CONFIGURATOR)?.active || !game.settings.settings.has(`${ITEM_CONFIGURATOR}.${key}`) ) return "";
+  return String(game.settings.get(ITEM_CONFIGURATOR, key) ?? "");
 }
 
 /**
- * Local AI configuration for the PDF blocks the rules cannot read (C5). Completed by the AI task: until the
- * settings exist, the AI is off.
+ * Local AI configuration for the PDF blocks the rules cannot read (C5): the module's settings, then those of
+ * item-configurator, then the defaults (`http://localhost:11434`, `llama3.1:8b`, 120 s).
  * @returns {{enabled: boolean, url: string, model: string, timeoutMs: number}}
  */
 export function aiConfig() {
-  return { enabled: false, url: "", model: "", timeoutMs: 0 };
+  const get = key => (game.settings.settings.has(`${MODULE_ID}.${key}`) ? game.settings.get(MODULE_ID, key) : undefined);
+  const url = String(get("ollamaUrl") ?? "").trim() || itemConfiguratorSetting("ollamaUrl") || AI_DEFAULT_URL;
+  const model = String(get("ollamaModel") ?? "").trim() || itemConfiguratorSetting("ollamaModel") || AI_DEFAULT_MODEL;
+  const seconds = Number(get("aiTimeout")) || AI_DEFAULT_TIMEOUT_S;
+  return { enabled: get("pdfAi") === true, url, model, timeoutMs: Math.max(10, Math.min(600, seconds)) * 1000 };
 }
 
 /**

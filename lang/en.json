@@ -225,7 +225,26 @@
         "aiRejected": "The local AI gave values that are not in the text ({fields}): the creature was not imported.",
         "aiUnreachable": "The local AI could not be reached: the block was not read.",
         "aiTimeout": "The local AI did not answer in time: the block was not read.",
-        "itemNoTitle": "A magic item header without a title above it: the item was not imported."
+        "itemNoTitle": "A magic item header without a title above it: the item was not imported.",
+        "aiPartial": "Some values given by the local AI were not in the text and were ignored ({fields})."
+      }
+    },
+    "Settings": {
+      "pdfAi": {
+        "Name": "PDF: local AI for unreadable stat blocks",
+        "Hint": "When a stat block of a PDF cannot be read by the layout rules, send its text to a local Ollama model. The answer is checked against the text and marked \"read by AI\" in the review. Off by default; nothing leaves the machine."
+      },
+      "ollamaUrl": {
+        "Name": "PDF: Ollama address",
+        "Hint": "Base URL of the local Ollama server. Empty: the address of item-configurator when that module is active, else http://localhost:11434."
+      },
+      "ollamaModel": {
+        "Name": "PDF: Ollama model",
+        "Hint": "Name of the model to use. Empty: the model of item-configurator when that module is active, else llama3.1:8b."
+      },
+      "aiTimeout": {
+        "Name": "PDF: AI timeout per block (seconds)",
+        "Hint": "Time allowed to the local model for one stat block (10 to 600 seconds). Two unanswered blocks in a row stop the AI for the rest of the file."
       }
     }
   }

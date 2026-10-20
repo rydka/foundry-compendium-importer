@@ -73,7 +73,7 @@ export function parseTraits(traitLines, parser) {
  * @param {{parser: object, seed: string, rank: number}} ctx
  * @returns {object}
  */
-export function toItemSource(entry, section, { parser, seed, rank }) {
+export function toEntryItem(entry, section, { parser, seed, rank }) {
   const sectionLabel = LEXICON.sectionLabelsEn[section] ?? null;
   const description = entryDescription(entry, sectionLabel);
   const attack = sectionLabel && parser?.parseFeature ? parser.parseFeature(entry.name, description)?.attack : null;
@@ -139,9 +139,9 @@ export function toActorSource(block, stats, { parser, source = "", page = block.
 
   const items = [];
   let rank = 0;
-  for ( const entry of block.features ?? [] ) items.push(toItemSource(entry, "features", { parser, seed, rank: rank++ }));
+  for ( const entry of block.features ?? [] ) items.push(toEntryItem(entry, "features", { parser, seed, rank: rank++ }));
   for ( const section of SECTIONS ) {
-    for ( const entry of block[section] ?? [] ) items.push(toItemSource(entry, section, { parser, seed, rank: rank++ }));
+    for ( const entry of block[section] ?? [] ) items.push(toEntryItem(entry, section, { parser, seed, rank: rank++ }));
   }
 
   const pdf = { source, page, readBy };
