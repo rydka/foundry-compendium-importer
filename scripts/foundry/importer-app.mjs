@@ -83,6 +83,14 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   // Rendering
 
   /** @override */
+  _onClose(options) {
+    super._onClose(options);
+    // Closing the window cancels a PDF read in progress: pdf.js task and worker, and the Ollama queue
+    this.#abort?.abort();
+    this.#abort = null;
+  }
+
+  /** @override */
   async _onRender(context, options) {
     await super._onRender(context, options);
     if ( this.#step === "choose" ) this.#preload();
