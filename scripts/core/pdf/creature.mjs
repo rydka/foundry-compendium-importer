@@ -94,12 +94,14 @@ export function toEntryItem(entry, section, { parser, seed, rank }) {
  * Actor source of a block.
  * @param {object} block  Result of `readStatBlock`.
  * @param {object} stats  Result of `parseStatLines`.
- * @param {object} ctx  `{ parser, source, page, readBy, size, sizeLine }`: `size` is the parsed size line
- *   (`parseSizeLine`), `source` the file name, `readBy` "rules" or "ai".
+ * @param {object} ctx  `{ parser, source, page, rank, readBy, size }`: `size` is the parsed size line
+ *   (`parseSizeLine`), `source` the file name (flag only), `rank` the rank of the block among those of the same
+ *   name on the page (0 first), `readBy` "rules" or "ai".
  * @returns {object}
  */
-export function toActorSource(block, stats, { parser, source = "", page = block.page, readBy = "rules", size = null } = {}) {
-  const seed = `${source}|${page}|${block.title}`;
+export function toActorSource(block, stats, { parser, source = "", page = block.page, rank = 0, readBy = "rules", size = null } = {}) {
+  // Stable id: page, name and rank on the page; not the file name (see stable-id.mjs)
+  const seed = `${page}|${block.title}|${rank}`;
   const system = { abilities: {}, attributes: {}, details: {}, skills: {}, traits: {} };
 
   for ( const [key, value] of Object.entries(stats.abilities ?? {}) ) {
@@ -138,10 +140,10 @@ export function toActorSource(block, stats, { parser, source = "", page = block.
   }
 
   const items = [];
-  let rank = 0;
-  for ( const entry of block.features ?? [] ) items.push(toEntryItem(entry, "features", { parser, seed, rank: rank++ }));
+  let itemRank = 0;
+  for ( const entry of block.features ?? [] ) items.push(toEntryItem(entry, "features", { parser, seed, rank: itemRank++ }));
   for ( const section of SECTIONS ) {
-    for ( const entry of block[section] ?? [] ) items.push(toEntryItem(entry, section, { parser, seed, rank: rank++ }));
+    for ( const entry of block[section] ?? [] ) items.push(toEntryItem(entry, section, { parser, seed, rank: itemRank++ }));
   }
 
   const pdf = { source, page, readBy };

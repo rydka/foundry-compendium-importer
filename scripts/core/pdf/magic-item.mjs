@@ -113,10 +113,11 @@ export function findMagicItems(pages, { parser }) {
  * dnd5e 6 item source of a found magic item: document type and `system.type` from the item kind
  * (`LEXICON.itemTypes`), rarity in `system.rarities`, attunement, header line and body in the description.
  * @param {object} found  Entry of `findMagicItems`.
- * @param {{parser: object, source?: string, readBy?: string}} ctx
+ * @param {{parser: object, source?: string, rank?: number, readBy?: string}} ctx  `rank`: rank among the items
+ *   of the same name on the page (part of the stable id); `source`: file name, written in the flag only.
  * @returns {object}
  */
-export function toItemSource(found, { parser, source = "", readBy = "rules" } = {}) {
+export function toItemSource(found, { parser, source = "", rank = 0, readBy = "rules" } = {}) {
   const description = `<p><em>${escapeHtml(found.typeLine)}</em></p>\n${found.html ?? ""}`;
   const plan = parser?.parseItem ? parser.parseItem(found.name, `<p>${escapeHtml(normalizeHeader(found.typeLine))}</p>\n${found.html ?? ""}`) : null;
   const kind = plan?.itemKind ?? found.header?.kind ?? "wondrous";
@@ -132,7 +133,7 @@ export function toItemSource(found, { parser, source = "", readBy = "rules" } = 
   const attunement = plan?.details?.attunement ?? found.header?.attunement;
   if ( attunement ) system.attunement = attunement;
   return {
-    _id: stableId(`${source}|${found.page}|${found.name}|item`),
+    _id: stableId(`${found.page}|${found.name}|${rank}|item`),
     name: found.name,
     type: mapping.type,
     img: "icons/svg/item-bag.svg",

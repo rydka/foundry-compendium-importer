@@ -71,7 +71,7 @@ export async function readBlocksWithAi(extraction, { ai, parser, fileName, signa
     const block = { title: job.name, page: job.page, features: [], actions: [], bonus: [], reactions: [], legendary: [] };
     for ( const entry of entries ) block[entry.sectionKey].push({ name: entry.name, meta: entry.meta, text: entry.text });
     const sizeText = job.block?.sizeLine?.text ?? job.lines.find(l => parseSizeLine(l)) ?? "";
-    const actor = toActorSource(block, merged, { parser, source: fileName, page: job.page, readBy: "ai", size: parseSizeLine(sizeText) });
+    const actor = toActorSource(block, merged, { parser, source: fileName, page: job.page, rank: job.rank ?? 0, readBy: "ai", size: parseSizeLine(sizeText) });
     extraction.actors.push(actor);
     setBlockStatus(extraction, job, "ai");
     setProblem(extraction, job, null);
