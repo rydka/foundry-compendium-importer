@@ -151,3 +151,22 @@ test("C5: the analysis can be cancelled while the model thinks; the pending requ
   await expect.poll(() => aborted, { timeout: 3000 }).toBe(true);
   expect(await foundry(clientReadPack, `world.${pack}`)).toBeNull();
 });
+
+test("C5: a block cut right after Challenge (no entry) is a candidate for the AI when pdfAi is on, and only a reported problem when it is off", async ({ gamePage, foundry }) => {
+  const off = await fakeOllama(gamePage, { answer: honestAnswer });
+  await startAnalysis(gamePage, "ref-cut-noentries");
+  await expect(gamePage.locator(`${WIN} .cji-summary`)).toBeVisible({ timeout: 30_000 });
+  const textOff = await gamePage.locator(`${WIN} .cji-summary`).innerText();
+  expect(off.calls, "pdfAi off: no request").toEqual([]);
+  expect(textOff).toContain("Flint Bearer");
+  expect(textOff).toContain(en.Pdf.Reason.noEntries.slice(0, 25));
+  await off.stop();
+  await foundry(async (id) => { await foundry.applications.instances.get(id)?.close(); }, MODULE);
+
+  await setSetting("pdfAi", true)(gamePage);
+  const on = await fakeOllama(gamePage, { answer: honestAnswer });
+  await startAnalysis(gamePage, "ref-cut-noentries");
+  await expect(gamePage.locator(`${WIN} .cji-summary`)).toBeVisible({ timeout: 60_000 });
+  expect(on.posts().some((c) => new URL(c.url).pathname === "/api/chat"), "pdfAi on: the block is sent to the model").toBe(true);
+  await on.stop();
+});

@@ -60,13 +60,14 @@ describe.skipIf(!hasFoundryPdfjs())("stat block over two pages", () => {
       expect(pages).toHaveLength(1);
       const result = await runExtract(pages, { fileName: "cut.pdf" });
       const want = expectedOfDoc(d).creatures[0];
-      const problem = result.problems.find((p) => p.page === 1 && (p.name === null || nameKey(p.name) === nameKey("Cut Bearer")));
+      const problem = result.problems.find((p) => p.page === 1 && p.name && nameKey(p.name) === nameKey("Cut Bearer"));
       expect(problem, `a problem for the cut block: ${JSON.stringify(result.problems)}`).toBeTruthy();
-      expect(typeof problem.reason).toBe("string");
-      expect(problem.reason.length).toBeGreaterThan(0);
-      // if the part that is there is still produced, the review must say it is incomplete (the problem above)
-      const got = result.actors.length ? readActor(result.actors[0]) : null;
-      if (got) expect(got.entries.length, "entries it could read").toBeLessThan(want.entries.length);
+      expect(problem.reason).toBe("blockCut");
+      // the part that is there is imported anyway, and the review says it may be incomplete
+      expect(result.actors.map((a) => nameKey(a.name))).toEqual(["cut bearer"]);
+      const got = readActor(result.actors[0]);
+      expect(got.entries.length, "entries it could read").toBeLessThan(want.entries.length);
+      expect(got.entries.length).toBeGreaterThan(0);
     }, 60_000);
   });
 

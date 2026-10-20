@@ -249,7 +249,7 @@ export async function buildPdf(doc) {
     return {
       title: [F.timesBold, 17.6, 19, 3, 2], type: [F.obl, 8.6, 10.5, 0, 1], label: [F.reg, 9, 11, 0, 0], row: [F.reg, 9, 11, 0, 0],
       head: [F.times, 12.7, 14, 5, 1], entry: [F.reg, 9, 11, 0, 0], para: [F.reg, 9, 11, 0, 0],
-      lore: [F.reg, 9.6, 11.5, 0, 5], loreHead: [F.timesBold, 16.3, 18, 8, 2], wide: [F.timesBold, 25, 28, 0, 6],
+      lore: [F.reg, 9.6, 11.5, 0, 5], loreSerif: [F.times, 10.5, 12.5, 0, 5], loreHead: [F.timesBold, 16.3, 18, 8, 2], wide: [F.timesBold, 25, 28, 0, 6],
       itemTitle1: [F.timesBold, 13, 15, 0, 0], itemTitle2: [F.timesBold, 21.3, 24, 0, 2], itemType: [F.obl, 9.6, 11.7, 0, 3],
       itemPara: [F.reg, 9.6, 11.7, 0, 6], sub: [F.times, 13, 15, 5, 1]
     }[name];
@@ -320,6 +320,10 @@ export async function buildPdf(doc) {
     return lines;
   };
 
+  // Test hooks of a creature flow item: breakBefore (page break before the printed line / entry / heading starting with this text),
+  // afterBreak ({ text, style } paragraph written at the top of the new page), breakBeforeLineContaining (page break before the first
+  // wrapped line that contains this text, i.e. in the middle of an entry).
+  let lineBreakText = null;
   const place = (segments, styleName, { indent = 0 } = {}) => {
     const [, size, lh, before, after] = style(styleName);
     const font0 = style(styleName)[0];
@@ -329,6 +333,7 @@ export async function buildPdf(doc) {
     const lines = wrap(segs, size, colw);
     y -= before;
     for (const runs of lines) {
+      if (lineBreakText && runs.map((r) => r.text).join("").includes(lineBreakText)) { lineBreakText = null; newPage(); }
       ensure(lh);
       const c = cols === 2 ? COLS[col] : { x: 40, w: 515 };
       y -= lh;
@@ -363,7 +368,17 @@ export async function buildPdf(doc) {
     if (item.lore) { place([{ text: item.lore }], "lore"); continue; }
     if (item.loreHead) { place([{ text: item.loreHead }], "loreHead"); continue; }
     const ops = item.creature ? renderCreature(item.creature, doc) : item.item ? renderItem(item.item) : [];
+    let broken = false;
+    lineBreakText = item.creature?.breakBeforeLineContaining ?? item.breakBeforeLineContaining ?? null;
+    const breakBefore = item.breakBefore ?? item.creature?.breakBefore ?? null;
+    const opStart = (o) => o.label ?? o.name ?? o.text ?? o.cells?.[0]?.t ?? "";
     for (const op of ops) {
+      if (breakBefore && !broken && String(opStart(op)).startsWith(breakBefore)) {
+        broken = true;
+        newPage();
+        const ab = item.afterBreak ?? item.creature?.afterBreak;
+        if (ab) place([{ text: ab.text }], ab.style === "serif" ? "loreSerif" : "para");
+      }
       switch (op.k) {
         case "title": place([{ text: op.text }], "title"); break;
         case "type": place([{ text: op.text }], "type"); break;

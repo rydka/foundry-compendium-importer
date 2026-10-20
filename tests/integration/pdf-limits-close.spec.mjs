@@ -156,14 +156,35 @@ test.describe("a stat block over two pages", () => {
     });
   }
 
-  test("a block cut short and not continued is listed in the review with its name and page", async ({ gamePage, foundry }, testInfo) => {
-    const { reviewText } = await importPdfDoc(gamePage, foundry, created, { file: "ref-span-cut", filter: "actors", name: "span-cut", confirmImport: false });
+  test("blockCut: a block cut short and not continued is listed in the review with its name and page, and the creature is imported anyway", async ({ gamePage, foundry }, testInfo) => {
+    const { reviewText, docs } = await importPdfDoc(gamePage, foundry, created, { file: "ref-span-cut", filter: "actors", name: "span-cut" });
     evidence("S-cut-revue.txt", reviewText);
     await gamePage.screenshot({ path: testInfo.outputPath("S-bloc-coupe.png") });
+    expect(reviewText).toContain("Cut Bearer");
+    expect(reviewText).toMatch(/p. 1/);
+    expect(reviewText).toContain(prefix(en.Pdf.Reason.blockCut));
+    expect(docs.map((d) => d.name)).toEqual(["Cut Bearer"]);
+    evidence("S-cut-acteur.json", { items: docs[0].items.map((i) => i.name) });
+    expect(docs[0].items.length).toBeGreaterThan(0);
+  });
+
+  test("blockCut is listed in .cji-pdf-problems with the name and the page", async ({ gamePage, foundry }) => {
+    await importPdfDoc(gamePage, foundry, created, { file: "ref-span-cut", filter: "actors", name: "span-cut2", confirmImport: false });
     const lines = await gamePage.locator(`${WIN} .cji-pdf-problems li`).allInnerTexts();
-    expect(lines.length, "a problem line in the review").toBeGreaterThanOrEqual(1);
-    expect(lines.join("\n")).toMatch(/p\. 1/);
-    expect(lines.join("\n")).toMatch(/Cut Bearer/);
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(/Cut Bearer/);
+    expect(lines[0]).toMatch(/p. 1/);
+  });
+
+  test("an attack entry cut over the page break still gets its attack activity (enrichment on)", async ({ gamePage, foundry }, testInfo) => {
+    const { docs } = await importPdfDoc(gamePage, foundry, created, { file: "ref-attack-span", filter: "actors", name: "atk-span", enrich: true });
+    await gamePage.screenshot({ path: testInfo.outputPath("G-attaque-a-cheval.png") });
+    const swing = docs[0].items.find((i) => i.name === "Lantern Swing");
+    const acts = Object.values(swing.system.activities ?? {});
+    evidence("G-activites.json", acts.map((a) => ({ type: a.type, attack: a.attack, damage: a.damage })));
+    expect(acts.some((a) => a.type === "attack"), "an attack activity").toBe(true);
+    const parts = acts.flatMap((a) => (a.damage?.parts ?? []));
+    expect(JSON.stringify(parts), "the damage written on the second page is read").toMatch(/1d10|10/);
   });
 });
 

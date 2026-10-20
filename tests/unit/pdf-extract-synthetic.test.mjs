@@ -10,7 +10,7 @@ import {
 } from "../support/score.mjs";
 import { containsFingerprint } from "../support/fingerprint.mjs";
 
-const docs = loadDocs(undefined, (f) => f.startsWith("ref-") && !/scanned|partial|unreadable|span|enrichers/.test(f));
+const docs = loadDocs(undefined, (f) => f.startsWith("ref-") && !/scanned|partial|unreadable|span|enrichers|cut|attack/.test(f));
 const sortedStr = (a) => [...a].sort().join(",");
 
 describe.skipIf(!hasFoundryPdfjs())("synthetic reference books", () => {

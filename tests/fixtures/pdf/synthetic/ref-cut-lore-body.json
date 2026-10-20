@@ -1,0 +1,131 @@
+{
+ "id": "ref-cut-lore-body",
+ "edition": "2014",
+ "lang": "en",
+ "cols": 1,
+ "draw": "lines",
+ "footer": "number",
+ "fonts": "std",
+ "flow": [
+  {
+   "lore": "The processional roads are older than the towns they join, and the lanterns older than the roads."
+  },
+  {
+   "creature": {
+    "name": "Soot Bearer",
+    "size": "med",
+    "type": "undead",
+    "subtype": "",
+    "alignment": "neutral evil",
+    "typeLine": "Medium undead, neutral evil",
+    "ac": {
+     "value": 15,
+     "natural": true,
+     "detail": "natural armor"
+    },
+    "hp": {
+     "value": 67,
+     "formula": "9d8 + 27"
+    },
+    "speed": {
+     "walk": 30
+    },
+    "abilities": [
+     10,
+     14,
+     16,
+     10,
+     12,
+     14
+    ],
+    "saves": [
+     "con"
+    ],
+    "skills": {
+     "prc": 1
+    },
+    "senses": {
+     "darkvision": 60
+    },
+    "passive": 13,
+    "printed": {
+     "di": "poison",
+     "ci": "poisoned",
+     "languages": "Common",
+     "dr": "cold, necrotic"
+    },
+    "traits": {
+     "dr": [
+      "cold",
+      "necrotic"
+     ],
+     "di": [
+      "poison"
+     ],
+     "dv": [],
+     "ci": [
+      "poisoned"
+     ]
+    },
+    "cr": 4,
+    "xp": 1100,
+    "prof": 2,
+    "entries": [
+     [
+      "trait",
+      "Wick Sense",
+      "",
+      "The bearer knows the location of every open flame within 60 feet of it, even through walls."
+     ],
+     [
+      "trait",
+      "Guttering Aura",
+      "",
+      "A creature that ends its turn within 5 feet of the bearer must succeed on a DC 13 Constitution saving throw or have its light sources reduced by one step until the end of its next turn."
+     ],
+     [
+      "trait",
+      "Sooty Hide",
+      "",
+      "The bearer has advantage on Dexterity (Stealth) checks made in dim light or darkness."
+     ],
+     [
+      "action",
+      "Multiattack",
+      "",
+      "The bearer makes two Lantern Swing attacks."
+     ],
+     [
+      "action",
+      "Lantern Swing",
+      "",
+      "Melee Weapon Attack: +5 to hit, reach 5 ft., one target. Hit: 8 (1d10 + 3) bludgeoning damage plus 3 (1d6) fire damage."
+     ],
+     [
+      "action",
+      "Smother",
+      "Recharge 5-6",
+      "The bearer exhales a cloud of soot in a 15-foot cone. Each creature in that area must succeed on a DC 13 Constitution saving throw or be blinded until the end of its next turn."
+     ],
+     [
+      "bonus",
+      "Snuff Out",
+      "",
+      "The bearer extinguishes a nonmagical flame within 30 feet of it."
+     ],
+     [
+      "reaction",
+      "Cold Wick",
+      "",
+      "When the bearer takes fire damage, it reduces that damage by 5 (1d6 + 2)."
+     ]
+    ]
+   },
+   "breakBefore": "Smother",
+   "afterBreak": {
+    "text": "The roads at night were never empty, and the travellers who kept to them learned to leave a light in every window.",
+    "style": "body"
+   }
+  }
+ ]
+}
