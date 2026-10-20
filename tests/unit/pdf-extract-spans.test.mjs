@@ -6,6 +6,11 @@ import { hasFoundryPdfjs, pagesOfDoc, runExtract, SYNTHETIC } from "../support/p
 import { CREATURE_FIELDS, commonFromSpec, nameKey, readActor, readItem, scoreCreature, scoreEntries } from "../support/score.mjs";
 import { containsFingerprint } from "../support/fingerprint.mjs";
 import { expectedOfDoc, loadDoc } from "../support/synth.mjs";
+import { ENRICHER_PATTERNS, escapeHtml } from "../../scripts/core/pdf/html.mjs";
+
+/** Text nodes of an HTML string: split on the tags, entities decoded. */
+const textNodes = (html) => String(html).split(/<[^>]*>/).filter(Boolean).map((t) => t.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&"));
+const textOf = (html) => textNodes(html).join("");
 
 const doc = (name) => loadDoc(path.join(SYNTHETIC, `${name}.json`));
 
@@ -82,7 +87,7 @@ describe.skipIf(!hasFoundryPdfjs())("stat block over two pages", () => {
       expect(result.actors).toHaveLength(1);
       expect(result.items).toHaveLength(1);
     }, 60_000);
-    it("no description of a creature holds a literal @UUID[ or [[ (they are written as entities)", () => {
+    it("no description of a creature holds a literal @UUID[ or [[ (the first character of each sequence is wrapped in a span)", () => {
       for (const item of result.actors[0].items) {
         const html = item.system.description.value;
         expect(html, item.name).not.toMatch(/@\w+\[/);
@@ -93,7 +98,8 @@ describe.skipIf(!hasFoundryPdfjs())("stat block over two pages", () => {
       const s = scoreEntries(readActor(result.actors[0]), commonFromSpec(want.creatures[0]));
       expect({ missing: s.missing, different: s.different }).toEqual({ missing: [], different: [] });
       const margin = result.actors[0].items.find((i) => i.name === "Margin Notes").system.description.value;
-      expect(margin).toMatch(/&#64;UUID&#91;|&#x40;UUID&#x5B;|&commat;UUID/i);
+      expect(textOf(margin)).toContain("@UUID[Compendium.dnd5e.spells.Item.abcdef123456]{Fireball}");
+      expect(textOf(margin)).toContain("[[/r 2d6]]");
     });
     it("a magic item description is neutralized too and keeps its text", () => {
       const html = readItem(result.items[0]).html;
@@ -101,8 +107,33 @@ describe.skipIf(!hasFoundryPdfjs())("stat block over two pages", () => {
       expect(html).not.toContain("[[");
       expect(containsFingerprint(html, want.items[0].intro)).toBe(true);
     });
+    it("no text node of any description (creature and item) matches a Foundry or dnd5e enricher pattern, and the text is intact", () => {
+      const htmls = [...result.actors[0].items.map((i) => i.system.description.value), readItem(result.items[0]).html];
+      for (const html of htmls) {
+        for (const node of textNodes(html)) for (const re of ENRICHER_PATTERNS) expect(node, `${re} in "${node.slice(0, 60)}"`).not.toMatch(re);
+      }
+      const all = htmls.map(textOf).join(" ");
+      expect(all).toContain("@UUID[Compendium.dnd5e.spells.Item.abcdef123456]{Fireball}");
+      expect(all).toContain("[[/r 2d6]]");
+      expect(all).toContain("&Reference[Grappled]");
+    });
     it("the document itself keeps the printed names unchanged", () => {
       expect(result.actors[0].items.map((i) => i.name)).toContain("Ink Spray");
     });
+  });
+});
+
+describe("escapeHtml", () => {
+  it("leaves ordinary text alone: an e-mail address and a single bracket", () => {
+    expect(escapeHtml("mail@example.com")).toBe("mail@example.com");
+    expect(escapeHtml("a [b] c")).toBe("a [b] c");
+  });
+  it("breaks the three enricher openings with markup and keeps the text", () => {
+    for (const text of ["@UUID[x]{y}", "[[/r 2d6]]", "&Reference[Grappled]"]) {
+      const html = escapeHtml(text);
+      expect(html).toContain("<span>");
+      expect(textOf(html)).toBe(text);
+      for (const node of textNodes(html)) for (const re of ENRICHER_PATTERNS) expect(node).not.toMatch(re);
+    }
   });
 });

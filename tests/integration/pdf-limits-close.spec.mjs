@@ -105,8 +105,9 @@ test.describe("closing and the file field (Better Undead, CPU slowed to keep the
     expect(await foundry(clientSnapshot)).toEqual(before);
   });
 
-  for (const how of ["app.close()", "the close button of the window"]) {
+  for (const how of ["app.close()", "the close button of the window", "the Escape key"]) {
     test(`closing the window (${how}) during the reading cancels it: Worker terminated, nothing written, no error`, async ({ gamePage, foundry }, testInfo) => {
+      const slug = how.startsWith("app") ? "api" : how.includes("Escape") ? "echap" : "bouton";
       const con = watchConsole(gamePage);
       await startWorkerProbe(gamePage);
       const pack = await prepare(gamePage, { name: "close-read" });
@@ -117,6 +118,7 @@ test.describe("closing and the file field (Better Undead, CPU slowed to keep the
       const creating = await workerCounts(gamePage);
       const t0 = Date.now();
       if (how === "app.close()") await foundry(async (id) => { await foundry.applications.instances.get(id).close(); }, MODULE);
+      else if (how === "the Escape key") await gamePage.keyboard.press("Escape");
       else await gamePage.locator(`${WIN} .window-header [data-action=close]`).click();
       await expect(gamePage.locator(WIN)).toHaveCount(0, { timeout: 5000 });
       await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
@@ -128,14 +130,14 @@ test.describe("closing and the file field (Better Undead, CPU slowed to keep the
         if (w.alive === 0) break;
         await gamePage.waitForTimeout(100);
       }
-      evidence(`F-fermeture-echantillons-${how.startsWith("app") ? "api" : "bouton"}.json`, samples.filter((_, i) => i % 5 === 0 || i === samples.length - 1));
+      evidence(`F-fermeture-echantillons-${slug}.json`, samples.filter((_, i) => i % 5 === 0 || i === samples.length - 1));
       await expect.poll(async () => (await workerCounts(gamePage)).alive, { timeout: 1000 }).toBe(0);
       const ms = Date.now() - t0;
       const api = await foundry(() => game.modules.get("compendium-json-importer").api.pdfWorkerCount?.());
-      await gamePage.waitForTimeout(1500); // a reading that went on would end in a review or an error by now
+      await gamePage.waitForTimeout(2500); // a reading that went on would end in a review or an error by now
       const reappeared = await gamePage.evaluate(() => document.querySelector("#compendium-json-importer") !== null);
       await stopWorkerProbe(gamePage);
-      evidence(`F-fermeture-${how.startsWith("app") ? "api" : "bouton"}.json`, { workersBefore: creating, msToNoWorker: ms, apiPdfWorkerCount: api, windowReappeared: reappeared, console: con.logs });
+      evidence(`F-fermeture-${slug}.json`, { workersBefore: creating, msToNoWorker: ms, apiPdfWorkerCount: api, windowReappeared: reappeared, console: con.logs });
       await gamePage.screenshot({ path: testInfo.outputPath("F-fermeture.png") });
       expect(creating.created).toBeGreaterThanOrEqual(1);
       expect(api ?? 0, "api.pdfWorkerCount()").toBe(0);
@@ -208,7 +210,7 @@ test.describe("text that looks like Foundry enrichers stays text", () => {
       for (const html of list) {
         const el = document.createElement("div");
         el.innerHTML = await foundry.applications.ux.TextEditor.implementation.enrichHTML(html);
-        out.push({ links: el.querySelectorAll("a.content-link, a.inline-roll, [data-uuid]").length, text: el.textContent });
+        out.push({ links: el.querySelectorAll("a.content-link, a.inline-roll, a.reference-link, [data-uuid]").length, text: el.textContent });
       }
       return out;
     }, htmls);
@@ -221,6 +223,7 @@ test.describe("text that looks like Foundry enrichers stays text", () => {
     expect(rendered.reduce((n, r) => n + r.links, 0), "links or inline rolls created by the enrichers").toBe(0);
     expect(rendered.some((r) => r.text.includes("@UUID[Compendium.dnd5e.spells.Item.abcdef123456]{Fireball}")), "the text is shown as written").toBe(true);
     expect(rendered.some((r) => r.text.includes("[[/r 2d6]]"))).toBe(true);
+    expect(rendered.some((r) => r.text.includes("&Reference[Grappled]"))).toBe(true);
     const s = scoreEntries(readActor({ ...a.docs[0], items: a.docs[0].items }), commonFromSpec(wantActor));
     expect(s.missing).toEqual([]);
     expect(nameKey(a.docs[0].name)).toBe(nameKey(wantActor.name));

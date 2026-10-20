@@ -18,7 +18,7 @@ const failing = (score) => Object.entries(score).filter(([, ok]) => !ok).map(([f
 
 describe.skipIf(!hasFoundryPdfjs())("blocks over a page break", () => {
   describe("a. the break falls inside the stat lines", () => {
-    for (const [name, firstLineOfPage2] of [["ref-cut-stats-dr", /Damage Resistances/], ["ref-cut-stats-table", /STR\s+DEX/]]) {
+    for (const [name, firstLineOfPage2] of [["ref-cut-stats-dr", /Damage Resistances/], ["ref-cut-stats-dr-1col", /Damage Resistances/], ["ref-cut-stats-table", /STR\s+DEX/]]) {
       it(`${name}: page 2 starts with "${firstLineOfPage2.source}" and the creature is complete`, async () => {
         const { pages, result, want } = await run(name);
         expect(pages).toHaveLength(2);

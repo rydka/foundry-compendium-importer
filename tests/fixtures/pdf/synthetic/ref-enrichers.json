@@ -71,7 +71,7 @@
       "trait",
       "Margin Notes",
       "",
-      "The scribe writes @UUID[Compendium.dnd5e.spells.Item.abcdef123456]{Fireball} and [[/r 2d6]] in the margins, and a roll of [[/r 1d20 + 5]] on a table."
+      "The scribe writes @UUID[Compendium.dnd5e.spells.Item.abcdef123456]{Fireball} and [[/r 2d6]] in the margins, and a roll of [[/r 1d20 + 5]] on a table. See &Reference[Grappled] for the rule."
      ],
      [
       "action",
