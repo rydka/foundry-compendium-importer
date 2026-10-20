@@ -1,0 +1,20 @@
+[
+  {
+    "_id": "c17ActorAAAAAAA1", "name": "Ember Brute", "type": "npc", "img": "icons/svg/mystery-man.svg",
+    "system": {
+      "attributes": { "hp": { "value": 30, "max": 30 }, "ac": { "flat": 12 } },
+      "abilities": { "str": { "value": 16 }, "dex": { "value": 10 } },
+      "details": { "cr": 1 }
+    },
+    "items": [
+      {
+        "_id": "c17ItemAAAAAAAA1", "name": "Ember Lash", "type": "weapon",
+        "system": { "description": { "value": "<p><small>Action</small><br/><strong>Ember Lash.</strong> <em>Melee Weapon Attack:</em> +5 to hit, reach 5 ft., one target. <em>Hit:</em> 9 (2d6 + 2) bludgeoning damage.</p>" } }
+      },
+      {
+        "_id": "c17ItemAAAAAAAA2", "name": "Cinder Burst", "type": "feat",
+        "system": { "description": { "value": "<p><small>Action</small><br/><strong>Cinder Burst (Recharge 5-6).</strong> Each creature within 10 feet must make a DC 13 Dexterity saving throw, taking 10 (3d6) fire damage on a failed save, or half as much damage on a successful one.</p>" } }
+      }
+    ]
+  }
+]
