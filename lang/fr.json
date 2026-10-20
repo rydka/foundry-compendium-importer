@@ -234,7 +234,7 @@
     "Settings": {
       "pdfAi": {
         "Name": "PDF : IA locale pour les blocs illisibles",
-        "Hint": "Quand un bloc de statistiques d’un PDF ne peut pas être lu par les règles de mise en page, son texte est soumis à un modèle Ollama local. La réponse est vérifiée dans le texte et marquée « lu par IA » dans la revue. Désactivé par défaut ; rien ne quitte la machine."
+        "Hint": "Quand un bloc de statistiques d’un PDF ne peut pas être lu par les règles de mise en page, son texte est envoyé au serveur Ollama configuré ci-dessous (local par défaut). La réponse est vérifiée dans le texte et marquée « lu par IA » dans la revue. Désactivé par défaut."
       },
       "ollamaUrl": {
         "Name": "PDF : adresse d’Ollama",

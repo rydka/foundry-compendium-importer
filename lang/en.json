@@ -234,7 +234,7 @@
     "Settings": {
       "pdfAi": {
         "Name": "PDF: local AI for unreadable stat blocks",
-        "Hint": "When a stat block of a PDF cannot be read by the layout rules, send its text to a local Ollama model. The answer is checked against the text and marked \"read by AI\" in the review. Off by default; nothing leaves the machine."
+        "Hint": "When a stat block of a PDF cannot be read by the layout rules, send its text to the Ollama server configured below (local by default). The answer is checked against the text and marked \"read by AI\" in the review. Off by default."
       },
       "ollamaUrl": {
         "Name": "PDF: Ollama address",
