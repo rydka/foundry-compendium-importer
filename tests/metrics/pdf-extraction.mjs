@@ -12,7 +12,7 @@ import { BETTER_UNDEAD_PDF, FIXTURES, hasBetterUndead, hasFoundryPdfjs, loadDocs
 import { readPages } from "../support/pdfjs-node.mjs";
 import { expectedOf } from "../support/pdf-env.mjs";
 import {
-  CREATURE_FIELDS, ITEM_FIELDS, aggregate, commonFromSpec, commonFromTruth, pairByName, readActor, readItem, scoreCreature, scoreItem
+  CREATURE_FIELDS, ITEM_FIELDS, aggregate, commonFromSpec, commonFromTruth, pairByName, readActor, readItem, scoreCreature, scoreEntries, scoreItem
 } from "../support/score.mjs";
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, "").split("=")));
@@ -26,6 +26,15 @@ function measure(label, result, wantCreatures, wantItems) {
   const m3 = aggregate(scores, CREATURE_FIELDS);
   const itemPairs = pairByName(result.items.map(readItem), wantItems);
   const m4 = aggregate(itemPairs.map((p) => scoreItem(p.got, p.want)), ITEM_FIELDS);
+  // text fidelity: each expected entry found by name and section with the same text (reported next to M3, not part of it)
+  let textOk = 0, textTotal = 0;
+  const textWrong = [];
+  for (const p of pairs) {
+    if (!p.got || !p.want.entries) { textTotal += p.want.entries?.length ?? 0; continue; }
+    const e = scoreEntries(p.got, p.want);
+    textOk += e.ok; textTotal += e.total;
+    for (const w of [...e.missing, ...e.different, ...e.extra.map((x) => `extra ${x}`)]) textWrong.push(`${p.want.name}: ${w}`);
+  }
   const wrongFields = [];
   pairs.forEach((p, i) => { for (const f of CREATURE_FIELDS) if (!scores[i][f]) wrongFields.push(`${p.want.name}: ${f}`); });
   const wrongItems = [];
@@ -35,6 +44,7 @@ function measure(label, result, wantCreatures, wantItems) {
     m2: { extracted: found, present: wantCreatures.length, spurious: gotActors.length - found, ratio: wantCreatures.length ? found / wantCreatures.length : null },
     m3: { ok: m3.ok, total: m3.total, ratio: m3.ratio, byField: m3.byField, wrong: wrongFields },
     m4: { ok: m4.ok, total: m4.total, ratio: m4.total ? m4.ratio : null, byField: m4.byField, wrong: wrongItems, itemsFound: itemPairs.filter((p) => p.got).length, itemsPresent: wantItems.length, spuriousItems: result.items.length - itemPairs.filter((p) => p.got).length },
+    text: { ok: textOk, total: textTotal, ratio: textTotal ? textOk / textTotal : null, wrong: textWrong },
     problems: result.problems.length
   };
 }
@@ -72,9 +82,10 @@ results.push(await syntheticSet("Synthetic reference set", path.join(FIXTURES, "
 if (args.control) results.push(await syntheticSet("Synthetic control set (unseen by the developers)", path.resolve(args.control), () => true));
 
 const pct = (x) => (x === null ? "n/a" : `${(x * 100).toFixed(1)} %`);
-const lines = ["| Set | M2 creatures | M3 fields | M4 items |", "|---|---|---|---|"];
+const lines = ["| Set | M2 creatures | M3 fields | M4 items | Exact texts of entries |", "|---|---|---|---|---|"];
 for (const r of results) {
-  lines.push(`| ${r.label} | ${r.m2.extracted}/${r.m2.present} (${pct(r.m2.ratio)}), ${r.m2.spurious} spurious | ${r.m3.ok}/${r.m3.total} (${pct(r.m3.ratio)}) | ${r.m4.ok}/${r.m4.total} (${pct(r.m4.ratio)}) |`);
+  lines.push(`| ${r.label} | ${r.m2.extracted}/${r.m2.present} (${pct(r.m2.ratio)}), ${r.m2.spurious} spurious | ${r.m3.ok}/${r.m3.total} (${pct(r.m3.ratio)}) | ${r.m4.ok}/${r.m4.total} (${pct(r.m4.ratio)}) | ${r.text.ok}/${r.text.total} (${pct(r.text.ratio)}) |`);
+  if (r.text.wrong.length) lines.push(`|  | text differences: ${r.text.wrong.join("; ")} | | | |`);
 }
 for (const r of results) {
   if (r.m3.wrong.length) lines.push("", `Wrong creature fields, ${r.label}:`, ...r.m3.wrong.map((w) => `- ${w}`));
