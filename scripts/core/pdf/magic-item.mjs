@@ -69,9 +69,11 @@ export function findMagicItems(pages, { parser }) {
     if ( all[i - 1].page !== page || above.size < HEADING_RATIO * bodySize ) continue;
     const header = readHeader(line.text, parser);
     if ( !header ) continue;
-    // Title: consecutive heading lines above, top to bottom
+    // Title: consecutive heading lines above, top to bottom ("Censored Translation of the" / "Tome of Decay"). A line
+    // set larger than the one below it is a chapter title, not a part of the name
     let first = i - 1;
     while ( first > 0 && all[first - 1].page === page && all[first - 1].line.size >= HEADING_RATIO * bodySize
+      && all[first - 1].line.size <= all[first].line.size + 0.5
       && !stops.has(all[first - 1].line) && !headers.has(all[first - 1].line) ) first--;
     const titleLines = all.slice(first, i).map(e => e.line);
     const titleSize = Math.max(...titleLines.map(l => l.size));
@@ -120,7 +122,10 @@ export function toItemSource(found, { parser, source = "", readBy = "rules" } = 
   const kind = plan?.itemKind ?? found.header?.kind ?? "wondrous";
   const mapping = LEXICON.itemTypes[kind] ?? LEXICON.itemTypes.wondrous;
   const system = { description: { value: description } };
-  if ( mapping.value ) system.type = { value: mapping.value, baseItem: mapping.baseItem ?? "" };
+  if ( mapping.value ) {
+    // `baseItem` exists on weapons and equipment, not on consumables (dnd5e 6 rejects unknown fields)
+    system.type = mapping.type === "consumable" ? { value: mapping.value } : { value: mapping.value, baseItem: mapping.baseItem ?? "" };
+  }
   if ( mapping.properties ) system.properties = [...mapping.properties];
   const rarity = plan?.details?.rarity ?? found.header?.rarity;
   if ( rarity ) system.rarities = [rarity];

@@ -15,6 +15,7 @@ const ROUTE_LIB = "scripts/pdfjs/build/pdf.mjs";
 const ROUTE_WORKER = "scripts/pdfjs/build/pdf.worker.mjs";
 const ROUTE_CMAPS = "scripts/pdfjs/web/cmaps/";
 const ROUTE_FONTS = "scripts/pdfjs/web/standard_fonts/";
+const PAGE_BATCH = 8;
 
 let pdfjsPromise = null;
 /** Workers alive right now (tests check that a cancelled or finished read leaves none). */
@@ -141,21 +142,30 @@ export async function* readPdfPages(bytes, { signal, onPage, timings = {} } = {}
     timings.fonts = 0;
     const fontNames = {};
     const total = doc.numPages;
-    for ( let number = 1; number <= total; number++ ) {
+    // Pages are requested by batches: every call to the worker is a round trip that waits for the main thread,
+    // so the requests of a batch overlap instead of queuing behind each frame
+    for ( let first = 1; first <= total; first += PAGE_BATCH ) {
       if ( signal?.aborted ) throw abortError();
       const tp = performance.now();
-      const page = await doc.getPage(number);
-      const content = await page.getTextContent();
-      const text = content.items.map(it => it.str ?? "").join(" ").replace(/\s+/g, " ");
-      const tf = performance.now();
-      if ( isCandidatePage(text) ) await resolveFonts(page, content.items, fontNames);
-      timings.fonts += performance.now() - tf;
-      const [x0, y0, x1, y1] = page.view;
-      const model = toPageModel(content, { number, width: x1 - x0, height: y1 - y0 }, fontNames);
-      page.cleanup();
+      const numbers = [];
+      for ( let n = first; n <= Math.min(total, first + PAGE_BATCH - 1); n++ ) numbers.push(n);
+      const batch = await Promise.all(numbers.map(async number => {
+        const page = await doc.getPage(number);
+        return { number, page, content: await page.getTextContent() };
+      }));
       timings.pages += performance.now() - tp;
-      onPage?.(number, total);
-      yield model;
+      for ( const { number, page, content } of batch ) {
+        if ( signal?.aborted ) throw abortError();
+        const text = content.items.map(it => it.str ?? "").join(" ").replace(/\s+/g, " ");
+        const tf = performance.now();
+        if ( isCandidatePage(text) ) await resolveFonts(page, content.items, fontNames);
+        timings.fonts += performance.now() - tf;
+        const [x0, y0, x1, y1] = page.view;
+        const model = toPageModel(content, { number, width: x1 - x0, height: y1 - y0 }, fontNames);
+        page.cleanup();
+        onPage?.(number, total);
+        yield model;
+      }
     }
   } finally {
     signal?.removeEventListener("abort", onAbort);
