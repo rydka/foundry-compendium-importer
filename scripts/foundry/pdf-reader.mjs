@@ -109,12 +109,18 @@ export async function* readPdfPages(bytes, { signal, onPage, timings = {} } = {}
   const pdfjs = await loadPdfJs();
   if ( signal?.aborted ) throw abortError();
   const t0 = performance.now();
-  const worker = new Worker(foundry.utils.getRoute(ROUTE_WORKER), { type: "module" });
-  liveWorkers++;
-  const pdfWorker = new pdfjs.PDFWorker({ port: worker });
+  let worker = null;
   let task = null;
   const onAbort = () => task?.destroy().catch(() => {});
   try {
+    worker = new Worker(foundry.utils.getRoute(ROUTE_WORKER), { type: "module" });
+    liveWorkers++;
+    // A worker script that does not load (404, CSP) never answers pdf.js: its error event ends the wait
+    const workerFailed = new Promise((_, reject) => worker.addEventListener("error", event => {
+      reject(new PdfReadError("readerUnavailable", event?.message || "the pdf.js worker failed to load"));
+    }, { once: true }));
+    workerFailed.catch(() => {});
+    const pdfWorker = new pdfjs.PDFWorker({ port: worker });
     task = pdfjs.getDocument({
       data: bytes,
       worker: pdfWorker,
@@ -130,8 +136,9 @@ export async function* readPdfPages(bytes, { signal, onPage, timings = {} } = {}
     signal?.addEventListener("abort", onAbort, { once: true });
     let doc;
     try {
-      doc = await task.promise;
+      doc = await Promise.race([task.promise, workerFailed]);
     } catch(err) {
+      if ( err instanceof PdfReadError ) throw err;
       if ( signal?.aborted ) throw abortError();
       if ( err?.name === "PasswordException" ) throw new PdfReadError("encrypted", err.message);
       if ( err?.name === "InvalidPDFException" ) throw new PdfReadError("invalid", err.message);
@@ -174,8 +181,10 @@ export async function* readPdfPages(bytes, { signal, onPage, timings = {} } = {}
     } catch(err) {
       console.debug(`${MODULE_ID} | pdf.js task destroy`, err);
     }
-    worker.terminate();
-    liveWorkers--;
+    if ( worker ) {
+      worker.terminate();
+      liveWorkers--;
+    }
   }
 }
 
