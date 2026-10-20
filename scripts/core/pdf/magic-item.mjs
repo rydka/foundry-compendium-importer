@@ -133,7 +133,7 @@ export function toItemSource(found, { parser, source = "", rank = 0, readBy = "r
   const attunement = plan?.details?.attunement ?? found.header?.attunement;
   if ( attunement ) system.attunement = attunement;
   return {
-    _id: stableId(`${found.page}|${found.name}|${rank}|item`),
+    _id: stableId(`${source}|${found.page}|${found.name}|${rank}|item`),
     name: found.name,
     type: mapping.type,
     img: "icons/svg/item-bag.svg",

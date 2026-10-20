@@ -100,8 +100,8 @@ export function toEntryItem(entry, section, { parser, seed, rank }) {
  * @returns {object}
  */
 export function toActorSource(block, stats, { parser, source = "", page = block.page, rank = 0, readBy = "rules", size = null } = {}) {
-  // Stable id: page, name and rank on the page; not the file name (see stable-id.mjs)
-  const seed = `${page}|${block.title}|${rank}`;
+  // Stable id: file, page, name and rank on the page (see stable-id.mjs)
+  const seed = `${source}|${page}|${block.title}|${rank}`;
   const system = { abilities: {}, attributes: {}, details: {}, skills: {}, traits: {} };
 
   for ( const [key, value] of Object.entries(stats.abilities ?? {}) ) {
