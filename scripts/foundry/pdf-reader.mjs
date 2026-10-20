@@ -111,7 +111,22 @@ export async function* readPdfPages(bytes, { signal, onPage, timings = {}, maxPa
   const t0 = performance.now();
   let worker = null;
   let task = null;
-  const onAbort = () => task?.destroy().catch(() => {});
+  let terminated = false;
+  // The worker is killed at once on abort (a busy worker would answer pdf.js's own Terminate only after its
+  // current parse): every wait on it is raced against the abort, since a dead worker never answers
+  const terminate = () => {
+    if ( !worker || terminated ) return;
+    terminated = true;
+    worker.terminate();
+    liveWorkers--;
+  };
+  let onAbort = null;
+  const aborted = new Promise((_, reject) => {
+    if ( signal?.aborted ) reject(abortError());
+    onAbort = () => { terminate(); reject(abortError()); };
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+  aborted.catch(() => {});
   try {
     worker = new Worker(foundry.utils.getRoute(ROUTE_WORKER), { type: "module" });
     liveWorkers++;
@@ -133,10 +148,9 @@ export async function* readPdfPages(bytes, { signal, onPage, timings = {}, maxPa
       cMapPacked: true,
       standardFontDataUrl: foundry.utils.getRoute(ROUTE_FONTS)
     });
-    signal?.addEventListener("abort", onAbort, { once: true });
     let doc;
     try {
-      doc = await Promise.race([task.promise, workerFailed]);
+      doc = await Promise.race([task.promise, workerFailed, aborted]);
     } catch(err) {
       if ( err instanceof PdfReadError ) throw err;
       if ( signal?.aborted ) throw abortError();
@@ -159,16 +173,16 @@ export async function* readPdfPages(bytes, { signal, onPage, timings = {}, maxPa
       const tp = performance.now();
       const numbers = [];
       for ( let n = first; n <= Math.min(total, first + PAGE_BATCH - 1); n++ ) numbers.push(n);
-      const batch = await Promise.all(numbers.map(async number => {
+      const batch = await Promise.race([Promise.all(numbers.map(async number => {
         const page = await doc.getPage(number);
         return { number, page, content: await page.getTextContent() };
-      }));
+      })), aborted]);
       timings.pages += performance.now() - tp;
       for ( const { number, page, content } of batch ) {
         if ( signal?.aborted ) throw abortError();
         const text = content.items.map(it => it.str ?? "").join(" ").replace(/\s+/g, " ");
         const tf = performance.now();
-        if ( isCandidatePage(text) ) await resolveFonts(page, content.items, fontNames);
+        if ( isCandidatePage(text) ) await Promise.race([resolveFonts(page, content.items, fontNames), aborted]);
         timings.fonts += performance.now() - tf;
         const [x0, y0, x1, y1] = page.view;
         const model = toPageModel(content, { number, width: x1 - x0, height: y1 - y0 }, fontNames);
@@ -178,16 +192,10 @@ export async function* readPdfPages(bytes, { signal, onPage, timings = {}, maxPa
       }
     }
   } finally {
-    signal?.removeEventListener("abort", onAbort);
-    try {
-      await task?.destroy();
-    } catch(err) {
-      console.debug(`${MODULE_ID} | pdf.js task destroy`, err);
-    }
-    if ( worker ) {
-      worker.terminate();
-      liveWorkers--;
-    }
+    if ( onAbort ) signal?.removeEventListener("abort", onAbort);
+    terminate();
+    // Not awaited: the worker is already gone, pdf.js would wait for an answer that never comes
+    task?.destroy().catch(() => {});
   }
 }
 

@@ -65,6 +65,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   #busy = false;
   #analyzing = false;
   #abort = null; // AbortController of a PDF read in progress (the Cancel button)
+  #closing = false; // set when the window closes: a running analysis stops without rendering
 
   /** The chosen file is a PDF: read by pdf.js at analysis time, never as text. */
   #isPdf() {
@@ -83,11 +84,14 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
   // Rendering
 
   /** @override */
-  _onClose(options) {
-    super._onClose(options);
-    // Closing the window cancels a PDF read in progress: pdf.js task and worker, and the Ollama queue
+  async _preClose(options) {
+    // Closing the window (header button, Escape or close()) cancels a PDF read in progress at once, before the
+    // closing animation: pdf.js task and worker, and the Ollama queue. An analysis still running must not render
+    // the review into a closed window.
+    this.#closing = true;
     this.#abort?.abort();
     this.#abort = null;
+    return super._preClose(options);
   }
 
   /** @override */
@@ -479,6 +483,8 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
         throw err;
       }
     }
+    // The window was closed during the read: nothing to show (and no review to render again)
+    if ( this.#closing || !this.rendered ) return;
     const warnings = [];
     if ( parsed.meta?.docType && (parsed.meta.docType !== documentName) ) {
       warnings.push(t("Warning.DocType", { file: parsed.meta.docType, pack: documentName }));
@@ -508,6 +514,7 @@ export class ImporterApp extends HandlebarsApplicationMixin(ApplicationV2) {
       pdf: parsed.report ?? null
     };
     await saveChoices(s);
+    if ( this.#closing || !this.rendered ) return; // closed while the entries were analyzed
     this.#step = "review";
     await this.render();
   }
