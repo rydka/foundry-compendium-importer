@@ -402,6 +402,8 @@ export async function buildPdf(doc) {
     y -= 8;
   }
   finishPage();
+  // `maxPages` cuts the document: what overflowed to the next pages is lost (a stat block cut short)
+  if (doc.maxPages) while (pdf.getPageCount() > doc.maxPages) pdf.removePage(pdf.getPageCount() - 1);
   return pdf.save();
 }
 

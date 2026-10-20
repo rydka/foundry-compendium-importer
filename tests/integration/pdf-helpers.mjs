@@ -175,3 +175,33 @@ export async function bigFileInPage(page, filePath) {
   });
   await page.locator("#cji-big-file").setInputFiles(filePath);
 }
+
+/**
+ * Full UI import of a synthetic document into a new compendium ("actors" | "items" filter).
+ * enrich: false keeps the descriptions as read. Returns the review text and the stored documents (want = expected count).
+ */
+export async function importPdfDoc(page, foundry, created, { file, filter, name, enrich = false, want = 1, confirmImport = true }) {
+  const { clientReadPack, uniqueName } = await import("./helpers.mjs");
+  const pack = uniqueName(name);
+  created.push(pack);
+  await foundry(async (id) => { await foundry.applications.instances.get(id)?.close(); }, MODULE_ID);
+  await openWindow(page);
+  await page.selectOption(`${WIN} select[name=typeFilter]`, filter);
+  await chooseFile(page, await syntheticFile(file));
+  await fillNewPack(page, `PDF ${pack}`, pack);
+  const enrichBox = page.locator(`${WIN} input[name=enrich]`);
+  if (await enrichBox.count()) await enrichBox.setChecked(enrich);
+  await analyze(page);
+  await expect(page.locator(`${WIN} .cji-summary`)).toBeVisible({ timeout: 60_000 });
+  const reviewText = await page.locator(`${WIN} .cji-summary`).innerText();
+  if (!confirmImport) return { pack, docs: [], reviewText };
+  await confirm(page);
+  const deadline = Date.now() + 30_000;
+  let docs = [];
+  while (Date.now() < deadline) {
+    docs = (await foundry(clientReadPack, `world.${pack}`)) ?? [];
+    if (docs.length >= want) break;
+    await page.waitForTimeout(500);
+  }
+  return { pack, docs, reviewText };
+}

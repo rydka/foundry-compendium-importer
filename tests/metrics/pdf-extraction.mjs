@@ -78,7 +78,7 @@ if (hasBetterUndead()) {
 } else {
   console.log("Better Undead Compendium.pdf not found: skipped");
 }
-results.push(await syntheticSet("Synthetic reference set", path.join(FIXTURES, "synthetic"), (f) => f.startsWith("ref-") && !/scanned|partial|unreadable/.test(f)));
+results.push(await syntheticSet("Synthetic reference set", path.join(FIXTURES, "synthetic"), (f) => f.startsWith("ref-") && !/scanned|partial|unreadable|span|enrichers/.test(f)));
 if (args.control) results.push(await syntheticSet("Synthetic control set (unseen by the developers)", path.resolve(args.control), () => true));
 
 const pct = (x) => (x === null ? "n/a" : `${(x * 100).toFixed(1)} %`);
