@@ -70,6 +70,8 @@ export async function extractFromPdf(fileOrBytes, { fileName = "", documentName,
   if ( documentName === "Actor" ) { entries = actors; ignoredOtherType.Item = items.length; }
   else if ( documentName === "Item" ) { entries = items; ignoredOtherType.Actor = actors.length; }
   else entries = [...actors, ...items];
+  // Sources written for the current dnd5e: the validator checks them strictly instead of migrating them
+  for ( const entry of entries ) entry._stats = { systemId: game.system.id, systemVersion: game.system.version };
   const report = {
     fileName: name,
     pages: pages.length,
