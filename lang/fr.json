@@ -228,7 +228,8 @@
         "aiUnreachable": "L’IA locale est injoignable : le bloc n’a pas été lu.",
         "aiTimeout": "L’IA locale n’a pas répondu à temps : le bloc n’a pas été lu.",
         "itemNoTitle": "Un en-tête d’objet magique sans titre au-dessus : l’objet n’a pas été importé.",
-        "aiPartial": "Certaines valeurs données par l’IA locale étaient absentes du texte et ont été ignorées ({fields})."
+        "aiPartial": "Certaines valeurs données par l’IA locale étaient absentes du texte et ont été ignorées ({fields}).",
+        "blockCut": "Le bloc de statistiques s’arrête en bas de la page {page} et sa suite n’a pas été trouvée sur la page suivante : la créature est peut-être incomplète (vérifiez ses dernières actions)."
       }
     },
     "Settings": {

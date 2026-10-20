@@ -228,7 +228,8 @@
         "aiUnreachable": "The local AI could not be reached: the block was not read.",
         "aiTimeout": "The local AI did not answer in time: the block was not read.",
         "itemNoTitle": "A magic item header without a title above it: the item was not imported.",
-        "aiPartial": "Some values given by the local AI were not in the text and were ignored ({fields})."
+        "aiPartial": "Some values given by the local AI were not in the text and were ignored ({fields}).",
+        "blockCut": "The stat block stops at the bottom of page {page} and its continuation was not found on the next page: the creature may be incomplete (check its last actions)."
       }
     },
     "Settings": {

@@ -129,13 +129,130 @@ export function entryPredicate(lines, bodyFamily, bodyFonts) {
 }
 
 /**
+ * Read lines into a block, from a position of the columns. Shared by the first page of a block and its
+ * continuation on the next page. The cursor carries the state between calls: section, entries open, the entry
+ * being read (closed only when the block is finalized, because its text may go on over the page break).
+ * @param {object[][]} columns
+ * @param {{c: number, i: number}} start  First line to read (inclusive).
+ * @param {object} cursor  `{ block, bodyFamily, bodySize, isEntryWord, section, inEntries, current, pageContinuation }`
+ * @returns {"title"|"sidebar"|"break"|"end"}  Why the reading stopped: another title, a sidebar or heading, lore
+ *   or text that is not the block's (`break`), or the end of the page (`end`: the block may go on).
+ */
+function readBlockLines(columns, start, cursor) {
+  const { block, bodyFamily, bodySize, isEntryWord } = cursor;
+  const titleMin = TITLE_RATIO * bodySize;
+  const headerMin = HEADER_RATIO * bodySize;
+  const isBodyLine = line => line.words.some(w => fontFamily(w.font) === bodyFamily);
+  const isStatLine = text => !!labelOf(text) || ABILITY_ROW_RE.test(text) || ABILITY_CELL.test(text) || isSizeLine(text);
+  const close = () => {
+    if ( cursor.current ) {
+      const { section, name, meta, text } = cursor.current;
+      block[section].push({ name, meta, text: normalizeSpace(text) });
+    }
+    cursor.current = null;
+  };
+  for ( let c = start.c; c < columns.length; c++ ) {
+    const lines = c === start.c ? columns[c].slice(start.i) : columns[c];
+    // A column (or a page) that continues the block starts with lore or a quote in another font, or with the
+    // block itself. In the other column, body text that is not an entry is lore (Python rule); at the top of
+    // the next page, it is the rest of the entry cut by the page break.
+    let continuation = (c !== start.c) || !!cursor.pageContinuation;
+    for ( const line of lines ) {
+      const text = line.text;
+      if ( isFooterLine(text) ) continue;
+      if ( line.size >= titleMin ) return "title";
+      const body = isBodyLine(line);
+      if ( line.size >= headerMin ) {
+        const sectionKey = sectionOf(text);
+        if ( sectionKey && SECTION_NAMES.has(sectionKey) ) {
+          close();
+          cursor.section = sectionKey;
+          cursor.inEntries = true;
+          continuation = false;
+          continue;
+        }
+        if ( isWord(LEXICON.headerTraits, text) && cursor.inEntries ) {
+          close();
+          cursor.current = { section: "features", name: normalizeSpace(text).replace(/[.:]+$/, ""), meta: "", text: "" };
+          continuation = false;
+          continue;
+        }
+        if ( !body ) {
+          if ( continuation ) continue;
+          return "sidebar";
+        }
+      }
+      if ( !body ) {
+        if ( continuation ) continue;
+        if ( cursor.inEntries ) return "break";
+        continue;
+      }
+      if ( !cursor.inEntries && !block.sizeLine && isSizeLine(text) ) { block.sizeLine = text; continue; }
+      const stat = !cursor.inEntries && isStatLine(text);
+      const start_ = stat ? null : entryStart(line, isEntryWord);
+      const firstStyle = fontStyle(line.words[0].font);
+      const continuesEntry = cursor.pageContinuation && (cursor.current || !cursor.inEntries);
+      if ( continuation && !start_ && !(firstStyle.italic && cursor.current) && !continuesEntry ) return "break";
+      continuation = false;
+      if ( start_ ) {
+        close();
+        cursor.current = { section: cursor.section, name: start_.name, meta: start_.meta, text: start_.rest };
+        cursor.inEntries = true;
+      } else if ( !cursor.inEntries ) {
+        block.statLines.push(text);
+      } else if ( cursor.current ) {
+        cursor.current.text += ` ${text}`;
+      } else if ( cursor.section === "legendary" ) {
+        cursor.current = { section: "features", name: "Legendary Actions", meta: "", text };
+      } else {
+        return "break";
+      }
+    }
+    cursor.pageContinuation = false;
+  }
+  return "end";
+}
+
+/** Push the entry being read into its section (the block is complete). Returns the block. */
+export function closeStatBlock(block) {
+  const cursor = block.cursor;
+  if ( cursor?.current ) {
+    const { section, name, meta, text } = cursor.current;
+    block[section].push({ name, meta, text: normalizeSpace(text) });
+    cursor.current = null;
+  }
+  return block;
+}
+
+/** Number of traits and actions of a block (the entry being read included). */
+export function entryCount(block) {
+  const closed = ["features", "actions", "bonus", "reactions", "legendary"].reduce((n, s) => n + (block[s]?.length ?? 0), 0);
+  return closed + (block.cursor?.current ? 1 : 0);
+}
+
+/** Lines of a block region: from a start to the next title-sized line, over the columns. */
+function regionOf(columns, start, titleMin) {
+  const region = [];
+  outer: for ( let c = start.c; c < columns.length; c++ ) {
+    const lines = c === start.c ? columns[c].slice(start.i + 1) : columns[c];
+    for ( const line of lines ) {
+      if ( line.size >= titleMin ) break outer;
+      region.push(line);
+    }
+  }
+  return region;
+}
+
+/**
  * Read the stat block `title` of a page from its layout.
  * @param {object|object[][]} page  Page model, or its columns (`pageColumns`).
  * @param {string|object} title  Title text, or a block found by `findStatBlocks` (its `titleLine` is used).
  * @param {object} [opts]
  * @returns {object}  `{ title, page, statLines, sizeLine, bodySize, entryStyle, features, actions, bonus, reactions,
- *   legendary }` with the exact text of each trait and action, or `{ error, title, page }` (`error` is one of
- *   noTitle, missingStats, fontUnknown, noEntries).
+ *   legendary, ended, cursor }` with the exact text of each trait and action, or `{ error, title, page }` (`error`
+ *   is one of noTitle, missingStats, fontUnknown). `ended` is "end" when the block reached the end of the page:
+ *   it may go on on the next page (`continueStatBlock`); call `closeStatBlock` once it is complete, the entry
+ *   being read at the end of the page is in `cursor.current`, not yet in its section.
  */
 export function readStatBlock(page, title, opts = {}) {
   const columns = Array.isArray(page) ? page : pageColumns(page);
@@ -150,7 +267,6 @@ export function readStatBlock(page, title, opts = {}) {
   if ( !acLine ) return fail("missingStats");
   const bodySize = acLine.size;
   const titleMin = TITLE_RATIO * bodySize;
-  const headerMin = HEADER_RATIO * bodySize;
   const bodyFamily = fontFamily(acLine.words[0].font);
   const regularFont = acLine.words.at(-1).font;
 
@@ -168,94 +284,38 @@ export function readStatBlock(page, title, opts = {}) {
   }
   if ( !start ) return fail("noTitle");
 
-  // Region of the block (for the entry font): from the title to the next title
-  const region = [];
-  outer: for ( let c = start.c; c < columns.length; c++ ) {
-    const lines = c === start.c ? columns[c].slice(start.i + 1) : columns[c];
-    for ( const line of lines ) {
-      if ( line.size >= titleMin ) break outer;
-      region.push(line);
-    }
-  }
-  const { isEntryWord, style } = entryPredicate(region, bodyFamily, [regularFont]);
+  const { isEntryWord, style } = entryPredicate(regionOf(columns, start, titleMin), bodyFamily, [regularFont]);
   if ( !style ) return fail("fontUnknown");
 
   const block = { title: titleText, page: pageNumber, statLines: [], sizeLine: null, bodySize, entryStyle: style,
-    features: [], actions: [], bonus: [], reactions: [], legendary: [] };
-  let section = "features";
-  let current = null;
-  let inEntries = false;
-  const close = () => {
-    if ( current ) {
-      current.text = normalizeSpace(current.text);
-      block[current.section].push({ name: current.name, meta: current.meta, text: current.text });
-    }
-    current = null;
-  };
-  const isBodyLine = line => line.words.some(w => fontFamily(w.font) === bodyFamily);
-  const isStatLine = text => !!labelOf(text) || ABILITY_ROW_RE.test(text) || ABILITY_CELL.test(text) || isSizeLine(text);
-
-  read: for ( let c = start.c; c < columns.length; c++ ) {
-    const lines = c === start.c ? columns[c].slice(start.i + 1) : columns[c];
-    let continuation = c !== start.c;
-    for ( const line of lines ) {
-      const text = line.text;
-      if ( isFooterLine(text) ) continue;
-      if ( line.size >= titleMin ) break read; // another title: the block is over
-      const body = isBodyLine(line);
-      if ( line.size >= headerMin ) {
-        const sectionKey = sectionOf(text);
-        if ( sectionKey && SECTION_NAMES.has(sectionKey) ) {
-          close();
-          section = sectionKey;
-          inEntries = true;
-          continuation = false;
-          continue;
-        }
-        if ( isWord(LEXICON.headerTraits, text) && inEntries ) {
-          close();
-          current = { section: "features", name: normalizeSpace(text).replace(/[.:]+$/, ""), meta: "", text: "" };
-          continuation = false;
-          continue;
-        }
-        if ( !body ) {
-          if ( continuation ) continue; // lore above the rest of the block in the other column
-          break read; // a sidebar ("Threadnotes: ...") or a heading: the block is over
-        }
-      }
-      if ( !body ) {
-        if ( continuation ) continue; // quote in another font at the top of the other column
-        if ( inEntries ) break read;
-        continue;
-      }
-      if ( !inEntries && !block.sizeLine && isSizeLine(text) ) { block.sizeLine = text; continue; }
-      const stat = !inEntries && isStatLine(text);
-      const start_ = stat ? null : entryStart(line, isEntryWord);
-      const firstStyle = fontStyle(line.words[0].font);
-      if ( continuation && !start_ && !(firstStyle.italic && current) ) {
-        // The other column continues the block with a trait, an action, or an italic sub-entry of the last
-        // trait ("Harmed by Running Water." among the Vampire Weaknesses); otherwise it is lore.
-        break read;
-      }
-      continuation = false;
-      if ( start_ ) {
-        close();
-        current = { section, name: start_.name, meta: start_.meta, text: start_.rest };
-        inEntries = true;
-      } else if ( !inEntries ) {
-        block.statLines.push(text);
-      } else if ( current ) {
-        current.text += ` ${text}`;
-      } else if ( section === "legendary" ) {
-        current = { section: "features", name: "Legendary Actions", meta: "", text };
-      } else {
-        break read;
-      }
-    }
-  }
-  close();
+    features: [], actions: [], bonus: [], reactions: [], legendary: [], ended: null, cursor: null };
+  block.cursor = { block, bodyFamily, bodySize, regularFont, isEntryWord, section: "features", inEntries: false, current: null, pageContinuation: false };
+  block.ended = readBlockLines(columns, { c: start.c, i: start.i + 1 }, block.cursor);
   if ( !block.statLines.length ) return fail("missingStats");
-  const entries = block.features.length + block.actions.length + block.bonus.length + block.reactions.length + block.legendary.length;
-  if ( !entries ) return fail("noEntries");
+  return block;
+}
+
+/**
+ * Continue a block that reached the end of its page (`ended === "end"`) with the columns of the next page: the
+ * lines before the next title-sized line go on with the same section, with the entry cut by the page break, or
+ * with the stat lines when the block had no entry yet. Lore in another font at the top of the page is skipped.
+ * @param {object[][]} columns  Columns of the next page.
+ * @param {object} block  Block read by `readStatBlock` (modified in place: entries, `ended`, `continued`, `pages`).
+ * @param {{page?: number}} [opts]
+ * @returns {object}  The same block; `continued` tells whether the page added anything to it.
+ */
+export function continueStatBlock(columns, block, { page } = {}) {
+  const cursor = block.cursor;
+  if ( !cursor ) return block;
+  const titleMin = TITLE_RATIO * cursor.bodySize;
+  const { isEntryWord, style } = entryPredicate(regionOf(columns, { c: 0, i: -1 }, titleMin), cursor.bodyFamily, [cursor.regularFont]);
+  if ( style ) cursor.isEntryWord = isEntryWord;
+  const measure = () => entryCount(block) + block.statLines.length + (cursor.current?.text.length ?? 0);
+  const before = measure();
+  cursor.pageContinuation = true;
+  block.ended = readBlockLines(columns, { c: 0, i: 0 }, cursor);
+  cursor.pageContinuation = false;
+  block.continued = measure() > before;
+  if ( block.continued && page ) (block.pages ??= [block.page]).push(page);
   return block;
 }
