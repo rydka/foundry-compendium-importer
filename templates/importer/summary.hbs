@@ -37,7 +37,7 @@
   {{/if}}
   <ul class="cji-counts">
     <li>{{localize "compendium-json-importer.Summary.Conform" count=summary.counts.conform}}</li>
-    <li>{{localize "compendium-json-importer.Summary.Updated" count=summary.counts.updated}}</li>
+    {{#unless summary.pdf}}<li>{{localize "compendium-json-importer.Summary.Updated" count=summary.counts.updated}}</li>{{/unless}}
     <li>{{localize "compendium-json-importer.Summary.Rejected" count=summary.counts.rejected}}</li>
     <li>{{localize "compendium-json-importer.Summary.Other" count=summary.counts.other}}</li>
     <li>{{localize "compendium-json-importer.Summary.ToReplace" count=summary.counts.toReplace}}</li>
