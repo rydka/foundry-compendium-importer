@@ -12,6 +12,8 @@
  * @property {number} [col]   Column index (set by `pageColumns`).
  */
 
+import { ABILITY_ROW_RE } from "./lexicon.mjs";
+
 const LINE_TOLERANCE = 2.5;
 const GAP_RATIO = 0.15;
 
@@ -58,6 +60,15 @@ export function columnSplit(words, width) {
     }
   }
   if ( best.crossing > GUTTER_MAX_LINES || best.crossing > Math.max(1, GUTTER_MAX_SHARE * lines.length) ) return null;
+  // The ability table of a stat block ("STR DEX CON INT WIS CHA" and its scores) is never split: a sparse
+  // one-column page whose only wide lines are the table would otherwise pass for two columns
+  // (a row of the left column that shares its baseline with a line of the right column stays a left row)
+  const splitsTable = lines.some(line => {
+    if ( !ABILITY_ROW_RE.test(line.text) ) return false;
+    const side = keep => joinWords(line.words.filter(keep));
+    return !ABILITY_ROW_RE.test(side(w => w.x1 <= best.x)) && !ABILITY_ROW_RE.test(side(w => w.x0 >= best.x));
+  });
+  if ( splitsTable ) return null;
   return best.x;
 }
 
