@@ -29,25 +29,35 @@ export function isFooterLine(text) {
   return !!compact && /^(?:(.{1,3}?)\1{3,})+.?$/.test(compact);
 }
 
+const GUTTER_HALF_WIDTH = 4;
+const GUTTER_MAX_LINES = 3;
+const GUTTER_MAX_SHARE = 0.15;
+
 /**
- * x of the gap between the two columns (the fewest words crossing it near the middle), null for one column.
+ * x of the gutter between the two columns, null for one column. The gutter is the 8-point band near the middle
+ * that the fewest lines cross: at most three lines (a banner across both columns), and at most 15 % of the lines
+ * of the page, so a sparse one-column page whose few long lines happen to leave a gap is not split.
  * @param {import("./page-model.mjs").PdfWord[]} words
  * @param {number} width
  * @returns {number|null}
  */
 export function columnSplit(words, width) {
+  const lines = groupLines(words);
+  if ( !lines.length ) return null;
   let best = null;
   const from = Math.floor(width * 0.4);
   const to = Math.floor(width * 0.6);
   for ( let x = from; x <= to; x++ ) {
+    const left = x - GUTTER_HALF_WIDTH;
+    const right = x + GUTTER_HALF_WIDTH;
     let crossing = 0;
-    for ( const w of words ) if ( (w.x0 < x) && (x < w.x1) ) crossing++;
+    for ( const line of lines ) if ( line.words.some(w => (w.x0 < right) && (w.x1 > left)) ) crossing++;
     const distance = Math.abs(x - width / 2);
     if ( !best || (crossing < best.crossing) || ((crossing === best.crossing) && (distance < best.distance)) ) {
       best = { crossing, distance, x };
     }
   }
-  if ( !best || best.crossing > 3 ) return null;
+  if ( best.crossing > GUTTER_MAX_LINES || best.crossing > Math.max(1, GUTTER_MAX_SHARE * lines.length) ) return null;
   return best.x;
 }
 
