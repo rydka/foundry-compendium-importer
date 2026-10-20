@@ -120,7 +120,16 @@ test.describe("closing and the file field (Better Undead, CPU slowed to keep the
       else await gamePage.locator(`${WIN} .window-header [data-action=close]`).click();
       await expect(gamePage.locator(WIN)).toHaveCount(0, { timeout: 5000 });
       await cdp.send("Emulation.setCPUThrottlingRate", { rate: 1 });
-      await expect.poll(async () => (await workerCounts(gamePage)).alive, { timeout: 5000 }).toBe(0);
+      // sampled (evidence), then asserted
+      const samples = [];
+      while (Date.now() - t0 < 6000) {
+        const w = await workerCounts(gamePage);
+        samples.push({ t: Date.now() - t0, ...w });
+        if (w.alive === 0) break;
+        await gamePage.waitForTimeout(100);
+      }
+      evidence(`F-fermeture-echantillons-${how.startsWith("app") ? "api" : "bouton"}.json`, samples.filter((_, i) => i % 5 === 0 || i === samples.length - 1));
+      await expect.poll(async () => (await workerCounts(gamePage)).alive, { timeout: 1000 }).toBe(0);
       const ms = Date.now() - t0;
       const api = await foundry(() => game.modules.get("compendium-json-importer").api.pdfWorkerCount?.());
       await gamePage.waitForTimeout(1500); // a reading that went on would end in a review or an error by now
