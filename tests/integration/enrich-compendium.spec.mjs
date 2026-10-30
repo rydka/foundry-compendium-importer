@@ -306,7 +306,7 @@ test("C22/M11: the spells of the casting traits are added with mode, level, uses
   expect.soft(tally.bonusOk).toBe(tally.bonus);
 });
 
-test("C22: the real Death Knight (truncated trait, no spell list) gets no spell and no invention", async ({ foundry }) => {
+test("C22: the real Death Knight (tools/out, regenerated: its Innate Spellcasting lists 6 spells) gets exactly the listed spells and no invention", async ({ foundry }) => {
   const { readFileSync } = await import("node:fs");
   const actors = JSON.parse(readFileSync(new URL("../../tools/out/actors.json", import.meta.url), "utf8"));
   const dk = actors.find((a) => /death knight/i.test(a.name));
@@ -314,5 +314,6 @@ test("C22: the real Death Knight (truncated trait, no spell list) gets no spell 
   const result = await foundry(clientAnalyze, { entries: [dk], options: {} });
   const out = result.accepted[0];
   evidence("C22-death-knight.json", { spellsAdded: out.data.items.filter((i) => i.type === "spell").length, status: out.enrichment.status, notes: out.enrichment.notes });
-  expect(out.data.items.filter((i) => i.type === "spell")).toHaveLength(dk.items.filter((i) => i.type === "spell").length);
+  const spells = out.data.items.filter((i) => i.type === "spell").map((i) => i.name.toLowerCase()).sort();
+  expect(spells).toEqual(["curse of agony", "curse of recklessness", "death grip", "deathmark", "finger of death", "shadow bolt"]);
 });

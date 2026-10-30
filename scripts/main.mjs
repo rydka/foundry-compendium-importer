@@ -6,6 +6,8 @@ import { onRenderCompendiumDirectory } from "./foundry/directory-button.mjs";
 import { analyzeEntries } from "./foundry/validator.mjs";
 import { importFromAnalysis } from "./foundry/import-runner.mjs";
 import { invalidateIndexes } from "./foundry/enrichment.mjs";
+import { extractFromPdf } from "./foundry/pdf-import.mjs";
+import { pdfWorkerCount } from "./foundry/pdf-reader.mjs";
 
 Hooks.once("init", () => {
   registerSettings();
@@ -36,5 +38,12 @@ Hooks.once("init", () => {
 });
 
 Hooks.once("ready", () => {
-  game.modules.get(MODULE_ID).api = { open: openImporter, analyze: analyzeEntries, runImport: importFromAnalysis };
+  game.modules.get(MODULE_ID).api = {
+    open: openImporter,
+    analyze: analyzeEntries,
+    runImport: importFromAnalysis,
+    // PDF: `readPdf(file | bytes, { fileName, documentName, signal, onProgress, ai })` -> { entries, meta, report }
+    readPdf: (fileOrBytes, opts) => extractFromPdf(fileOrBytes, opts),
+    pdfWorkerCount
+  };
 });

@@ -1,9 +1,43 @@
 <section class="cji-summary" {{#unless review}}hidden{{/unless}}>
   {{#if review}}
   <h3>{{localize "compendium-json-importer.Summary.Title"}} <small>{{summary.target}}</small></h3>
+  {{#if summary.pdf}}
+  <section class="cji-pdf">
+    <h4>{{localize "compendium-json-importer.Pdf.Title"}} <small>{{summary.pdf.fileName}}</small></h4>
+    {{#if summary.pdf.problems.length}}
+    <ul class="cji-list cji-pdf-problems">
+      {{#each summary.pdf.problems}}
+      <li class="cji-warning"><i class="fa-solid fa-triangle-exclamation" inert></i> <strong>{{name}}</strong> <span class="cji-existing">{{page}}</span> — {{reason}}</li>
+      {{/each}}
+    </ul>
+    {{/if}}
+    <ul class="cji-counts">
+      <li>{{localize "compendium-json-importer.Pdf.Pages" count=summary.pdf.pages seconds=summary.pdf.seconds}}</li>
+      <li>{{localize "compendium-json-importer.Pdf.Blocks" found=summary.pdf.found read=summary.pdf.read}}{{#if summary.pdf.aiCount}} {{localize "compendium-json-importer.Pdf.BlocksAi" count=summary.pdf.aiCount}}{{/if}}</li>
+      <li>{{localize "compendium-json-importer.Pdf.Items" count=summary.pdf.items}}</li>
+      {{#each summary.pdf.ignored}}<li class="cji-warning">{{this}}</li>{{/each}}
+    </ul>
+    {{#if summary.pdf.blocks.length}}
+    <details class="cji-pdf-blocks">
+      <summary>{{localize "compendium-json-importer.Pdf.BlocksTitle" count=summary.pdf.blocks.length}}</summary>
+      <ul class="cji-list">
+        {{#each summary.pdf.blocks}}<li><strong>{{name}}</strong> <span class="cji-existing">{{page}}</span>{{#if ai}} <span class="cji-badge cji-badge-ai">{{localize "compendium-json-importer.Pdf.ReadByAi"}}</span>{{/if}}</li>{{/each}}
+      </ul>
+    </details>
+    {{/if}}
+    {{#if summary.pdf.itemList.length}}
+    <details class="cji-pdf-items">
+      <summary>{{localize "compendium-json-importer.Pdf.ItemsTitle" count=summary.pdf.itemList.length}}</summary>
+      <ul class="cji-list">
+        {{#each summary.pdf.itemList}}<li><strong>{{name}}</strong> <span class="cji-existing">{{page}}</span></li>{{/each}}
+      </ul>
+    </details>
+    {{/if}}
+  </section>
+  {{/if}}
   <ul class="cji-counts">
     <li>{{localize "compendium-json-importer.Summary.Conform" count=summary.counts.conform}}</li>
-    <li>{{localize "compendium-json-importer.Summary.Updated" count=summary.counts.updated}}</li>
+    {{#unless summary.pdf}}<li>{{localize "compendium-json-importer.Summary.Updated" count=summary.counts.updated}}</li>{{/unless}}
     <li>{{localize "compendium-json-importer.Summary.Rejected" count=summary.counts.rejected}}</li>
     <li>{{localize "compendium-json-importer.Summary.Other" count=summary.counts.other}}</li>
     <li>{{localize "compendium-json-importer.Summary.ToReplace" count=summary.counts.toReplace}}</li>

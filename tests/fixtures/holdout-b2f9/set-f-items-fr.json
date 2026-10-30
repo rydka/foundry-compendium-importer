@@ -1,0 +1,33 @@
+{
+  "id": "set-f-items-fr", "edition": "2014", "lang": "fr", "cols": 2, "draw": "words", "footer": "number", "fonts": "std",
+  "flow": [
+    { "wide": "Butin de la Route Noyée" },
+    { "lore": "Des barges refont surface de temps à autre avec leur cargaison intacte. La cargaison, en règle générale, n’est pas celle que promettait le manifeste." },
+    { "item": {
+      "titleLines": ["Anneau du Péager"], "typeLine": "Anneau, rare (nécessite un lien d’harmonisation)",
+      "paras": [
+        "Un lourd anneau de fer frappé d’une pièce qu’aucune monnaie n’a jamais gravée. Tant que vous le portez, les créatures qui vous doivent une dette, une faveur ou de l’argent ont un désavantage aux tests de Charisme (Tromperie) effectués contre vous.",
+        "Par une action, vous pouvez désigner une créature à 9 mètres ou moins. Elle doit réussir un jet de sauvegarde de Sagesse DD 15 ou ne pas pouvoir s’éloigner de vous jusqu’à la fin de votre prochain tour. Une fois utilisé, l’anneau ne peut plus le faire avant le crépuscule suivant."
+      ],
+      "expect": { "docType": "equipment", "typeValue": "ring", "rarity": "rare", "attunement": "required" } } },
+    { "item": {
+      "titleLines": ["Lanterne des Heures Lentes"], "typeLine": "Objet merveilleux, peu courant",
+      "paras": [
+        "Cette lanterne de laiton brûle d’une flamme vert pâle qui ne dégage aucune chaleur. Tant qu’elle est allumée, vous et les créatures de votre choix à 3 mètres ou moins n’avez pas besoin de dormir et ne subissez aucune pénalité de manque de repos pendant 24 heures."
+      ],
+      "expect": { "docType": "equipment", "typeValue": "wondrous", "rarity": "uncommon", "attunement": "" } } },
+    { "page": 1 },
+    { "item": {
+      "titleLines": ["Coupe-Roseau"], "typeLine": "Arme (faucille), rare",
+      "paras": [
+        "Vous bénéficiez d’un bonus de +1 aux jets d’attaque et de dégâts effectués avec cette arme magique. Elle ignore les pénalités liées aux attaques en nageant ou en se tenant dans une eau peu profonde."
+      ],
+      "expect": { "docType": "weapon", "typeValue": null, "rarity": "rare", "attunement": "" } } },
+    { "item": {
+      "titleLines": ["Philtre de Courage Saumâtre"], "typeLine": "Potion, peu courant",
+      "paras": [
+        "Après avoir bu cette potion trouble, vous avez l’avantage aux jets de sauvegarde contre l’état effrayé pendant 1 heure et vous gagnez 5 points de vie temporaires."
+      ],
+      "expect": { "docType": "consumable", "typeValue": "potion", "rarity": "uncommon", "attunement": "" } } }
+  ]
+}

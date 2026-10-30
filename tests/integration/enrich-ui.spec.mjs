@@ -221,7 +221,7 @@ for (const code of ["fr", "en"]) {
       await gamePage.reload();
       await waitForGame(gamePage);
       expect(await foundry(() => game.i18n.lang)).toBe(code);
-      await analyzeFile(gamePage, { filter: "actors", file: OUT_FILE("actors.json") });
+      await analyzeFile(gamePage, { filter: "actors", file: fixturePath("enrichment/c17-attack.json") });
       await gamePage.locator(`${WIN} .cji-enrich details`).evaluateAll((all) => all.forEach((d) => { d.open = true; }));
       const text = await gamePage.locator(WIN).innerText();
       await gamePage.screenshot({ path: test.info().outputPath(`C17-resume-${code}.png`) });
@@ -233,7 +233,7 @@ for (const code of ["fr", "en"]) {
       expect(RAW_KEY.test(text)).toBe(false);
       // a sentence of the library (attack line) in this language
       const sample = (lib.Describe.Attack ?? "").split("{")[0].trim();
-      evidence(`C17-${code}.json`, { title: t.Enrich.Title, optionsLabel: optionsText, librarySamplePrefix: sample, textStart: text.slice(0, 600) });
+      evidence(`C17-${code}.json`, { title: t.Enrich.Title, optionsLabel: optionsText, librarySamplePrefix: sample, textStart: text.slice(0, 600), reviewText: text });
       if (sample) expect(text).toContain(sample);
       if (code === "fr") {
         // The sentences of the module in French: the first item block (as before). Later blocks quote the English source

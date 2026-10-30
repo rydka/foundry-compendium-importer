@@ -1,0 +1,38 @@
+{
+  "id": "ref-2024-fr", "edition": "2024", "lang": "fr", "cols": 2, "draw": "lines", "footer": "number", "fonts": "std",
+  "flow": [
+    { "loreHead": "Le Chœur Creux" },
+    { "lore": "Tous les temples qui ont chanté pour les morts gardent quelques voix qui ne se sont jamais tues. Le chœur n’a plus besoin d’assemblée : il lui suffit d’un sol et d’une raison de chanter." },
+    { "creature": {
+      "name": "Chantre Creux", "size": "med", "type": "undead", "subtype": "", "alignment": "neutre mauvais", "typeLine": "Mort-vivant de taille M, neutre mauvais",
+      "ac": { "value": 15 }, "hp": { "value": 67, "formula": "9d8 + 27" },
+      "speed": { "walk": 30, "fly": 40, "hover": true }, "abilities": [8, 16, 16, 12, 14, 18],
+      "saves": ["wis", "cha"], "skills": { "prf": 1, "prc": 1 }, "senses": { "darkvision": 60 }, "passive": 15,
+      "printed": { "dr": "Froid ; Nécrotique", "imm": "Poison ; Charmé, Épuisement, Empoisonné", "languages": "commun et une autre langue" },
+      "traits": { "dr": ["cold", "necrotic"], "di": ["poison"], "dv": [], "ci": ["charmed", "exhaustion", "poisoned"] },
+      "cr": 5, "xp": 1800, "prof": 3,
+      "entries": [
+        ["trait", "Complainte résonnante", "", "Les créatures à 3 mètres ou moins du chantre ont un désavantage aux jets de sauvegarde de Constitution faits pour maintenir leur Concentration."],
+        ["trait", "Dérive intangible", "", "Le chantre peut traverser les créatures et les objets comme s’ils étaient un Terrain difficile. Il subit 5 (1d10) dégâts de Force s’il termine son tour dans un objet."],
+        ["action", "Attaques multiples", "", "Le chantre effectue deux attaques de Toucher lugubre."],
+        ["action", "Toucher lugubre", "", "Jet d’attaque au corps à corps : +6, allonge 1,50 m. Touché : 9 (2d6 + 2) dégâts Nécrotiques."],
+        ["action", "Accord dissonant", "Recharge 5-6", "Jet de sauvegarde de Constitution : DD 14, chaque créature dans un cône de 4,50 mètres. Échec : 14 (4d6) dégâts de Tonnerre et la cible a la condition Assourdi jusqu’à la fin de son prochain tour. Réussite : moitié de dégâts."],
+        ["bonus", "Évanouissement", "", "Le chantre a la condition Invisible jusqu’au début de son prochain tour ou jusqu’à ce qu’il fasse un jet d’attaque ou lance un sort."],
+        ["reaction", "Fausse note", "", "Déclencheur : une créature à 9 mètres ou moins lance un sort à composante verbale. Réponse : le chantre force la créature à faire un jet de sauvegarde de Charisme DD 14 ; en cas d’échec, le sort échoue et l’emplacement est perdu."]
+      ] } },
+    { "creature": {
+      "name": "Rôdeur des Tertres", "size": "lg", "type": "monstrosity", "subtype": "", "alignment": "non aligné", "typeLine": "Monstruosité de taille G, non aligné",
+      "ac": { "value": 14 }, "hp": { "value": 105, "formula": "10d10 + 50" },
+      "speed": { "walk": 40, "burrow": 20 }, "abilities": [19, 14, 20, 4, 12, 6],
+      "saves": ["con"], "skills": { "ste": 2, "prc": 1 }, "senses": { "tremorsense": 60 }, "passive": 14,
+      "printed": { "imm": "Poison ; Empoisonné", "languages": "aucune" },
+      "traits": { "dr": [], "di": ["poison"], "dv": [], "ci": ["poisoned"] },
+      "cr": 6, "xp": 2300, "prof": 3,
+      "entries": [
+        ["trait", "Embuscade souterraine", "", "Si le rôdeur creuse sur au moins 6 mètres en ligne droite vers une créature puis la touche avec une attaque de Lacération au même tour, la cible a la condition À terre."],
+        ["action", "Attaques multiples", "", "Le rôdeur effectue deux attaques de Lacération."],
+        ["action", "Lacération", "", "Jet d’attaque au corps à corps : +7, allonge 3 m. Touché : 13 (2d8 + 4) dégâts Tranchants."],
+        ["action", "Engloutissement", "Recharge 6", "Jet de sauvegarde de Force : DD 15, une créature de taille M ou inférieure agrippée par le rôdeur. Échec : la cible est engloutie et a les conditions Aveuglé et Entravé."]
+      ] } }
+  ]
+}

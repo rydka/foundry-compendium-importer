@@ -1,0 +1,260 @@
+{
+ "id": "ref-unreadable",
+ "edition": "2014",
+ "lang": "en",
+ "cols": 2,
+ "draw": "lines",
+ "footer": "number",
+ "fonts": "std",
+ "flow": [
+  {
+   "fonts": "single",
+   "creature": {
+    "name": "Faded Scribe",
+    "size": "med",
+    "type": "humanoid",
+    "subtype": "",
+    "alignment": "neutral",
+    "typeLine": "Medium humanoid, neutral",
+    "ac": {
+     "value": 12,
+     "natural": false
+    },
+    "hp": {
+     "value": 20,
+     "formula": "3d8 + 0"
+    },
+    "speed": {
+     "walk": 30
+    },
+    "abilities": [
+     10,
+     12,
+     12,
+     10,
+     10,
+     10
+    ],
+    "saves": [],
+    "skills": {},
+    "senses": {},
+    "passive": 10,
+    "printed": {
+     "languages": "Common"
+    },
+    "traits": {
+     "dr": [],
+     "di": [],
+     "dv": [],
+     "ci": []
+    },
+    "cr": 1,
+    "xp": 200,
+    "prof": 2,
+    "entries": [
+     [
+      "trait",
+      "Quiet Step",
+      "",
+      "The scribe makes no noise while sneaking."
+     ],
+     [
+      "action",
+      "Strike",
+      "",
+      "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) bludgeoning damage."
+     ]
+    ]
+   }
+  },
+  {
+   "page": 1
+  },
+  {
+   "fonts": "single",
+   "creature": {
+    "name": "Faded Porter",
+    "size": "med",
+    "type": "humanoid",
+    "subtype": "",
+    "alignment": "neutral",
+    "typeLine": "Medium humanoid, neutral",
+    "ac": {
+     "value": 13,
+     "natural": false
+    },
+    "hp": {
+     "value": 25,
+     "formula": "4d8 + 1"
+    },
+    "speed": {
+     "walk": 30
+    },
+    "abilities": [
+     11,
+     12,
+     12,
+     10,
+     10,
+     10
+    ],
+    "saves": [],
+    "skills": {},
+    "senses": {},
+    "passive": 10,
+    "printed": {
+     "languages": "Common"
+    },
+    "traits": {
+     "dr": [],
+     "di": [],
+     "dv": [],
+     "ci": []
+    },
+    "cr": 1,
+    "xp": 200,
+    "prof": 2,
+    "entries": [
+     [
+      "trait",
+      "Quiet Step",
+      "",
+      "The porter makes no noise while sneaking."
+     ],
+     [
+      "action",
+      "Strike",
+      "",
+      "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) bludgeoning damage."
+     ]
+    ]
+   }
+  },
+  {
+   "page": 1
+  },
+  {
+   "fonts": "single",
+   "creature": {
+    "name": "Faded Ferryman",
+    "size": "med",
+    "type": "humanoid",
+    "subtype": "",
+    "alignment": "neutral",
+    "typeLine": "Medium humanoid, neutral",
+    "ac": {
+     "value": 14,
+     "natural": false
+    },
+    "hp": {
+     "value": 30,
+     "formula": "5d8 + 2"
+    },
+    "speed": {
+     "walk": 30
+    },
+    "abilities": [
+     12,
+     12,
+     12,
+     10,
+     10,
+     10
+    ],
+    "saves": [],
+    "skills": {},
+    "senses": {},
+    "passive": 10,
+    "printed": {
+     "languages": "Common"
+    },
+    "traits": {
+     "dr": [],
+     "di": [],
+     "dv": [],
+     "ci": []
+    },
+    "cr": 1,
+    "xp": 200,
+    "prof": 2,
+    "entries": [
+     [
+      "trait",
+      "Quiet Step",
+      "",
+      "The ferryman makes no noise while sneaking."
+     ],
+     [
+      "action",
+      "Strike",
+      "",
+      "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) bludgeoning damage."
+     ]
+    ]
+   }
+  },
+  {
+   "page": 1
+  },
+  {
+   "fonts": "single",
+   "creature": {
+    "name": "Faded Gaoler",
+    "size": "med",
+    "type": "humanoid",
+    "subtype": "",
+    "alignment": "neutral",
+    "typeLine": "Medium humanoid, neutral",
+    "ac": {
+     "value": 15,
+     "natural": false
+    },
+    "hp": {
+     "value": 35,
+     "formula": "6d8 + 3"
+    },
+    "speed": {
+     "walk": 30
+    },
+    "abilities": [
+     13,
+     12,
+     12,
+     10,
+     10,
+     10
+    ],
+    "saves": [],
+    "skills": {},
+    "senses": {},
+    "passive": 10,
+    "printed": {
+     "languages": "Common"
+    },
+    "traits": {
+     "dr": [],
+     "di": [],
+     "dv": [],
+     "ci": []
+    },
+    "cr": 1,
+    "xp": 200,
+    "prof": 2,
+    "entries": [
+     [
+      "trait",
+      "Quiet Step",
+      "",
+      "The gaoler makes no noise while sneaking."
+     ],
+     [
+      "action",
+      "Strike",
+      "",
+      "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) bludgeoning damage."
+     ]
+    ]
+   }
+  }
+ ]
+}

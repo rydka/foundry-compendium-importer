@@ -90,7 +90,8 @@ test("speed (2): progress is shown during the analysis with the buttons disabled
       const line = document.querySelector("#compendium-json-importer .cji-status");
       new MutationObserver(() => {
         if (!line.textContent) return;
-        const buttons = Array.from(document.querySelectorAll("#compendium-json-importer footer button"));
+        // the Cancel button of the analysis (PDF import, C1) is active by design: the others must be disabled
+        const buttons = Array.from(document.querySelectorAll("#compendium-json-importer footer button:not([data-action=cancelAnalysis])"));
         window.__seen.push({ text: line.textContent, hidden: line.hidden, allDisabled: buttons.length > 0 && buttons.every((b) => b.disabled) });
       }).observe(line, { childList: true, characterData: true, subtree: true, attributes: true });
     });

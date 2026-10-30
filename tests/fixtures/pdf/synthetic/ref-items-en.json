@@ -1,0 +1,44 @@
+{
+  "id": "ref-items-en", "edition": "2014", "lang": "en", "cols": 2, "draw": "lines", "footer": "number", "fonts": "std",
+  "flow": [
+    { "wide": "Relics of the Archive" },
+    { "lore": "Whatever the fire left behind, the scavengers sorted into three piles: things that burned, things that cursed, and things that did neither and were therefore far more dangerous." },
+    { "item": {
+      "titleLines": ["Ring of Whispering Echoes"], "typeLine": "Ring, uncommon (requires attunement by a wizard)",
+      "paras": [
+        "This band of blackened silver hums faintly when held to the ear. While you wear it, you can hear the last sentence spoken in any room you enter, repeated softly once.",
+        "As an action, you can ask the ring a single question about the room. The ring answers in a whisper that only you can hear. Once used, this property cannot be used again until the next dawn."
+      ],
+      "expect": { "docType": "equipment", "typeValue": "ring", "rarity": "uncommon", "attunement": "required" } } },
+    { "item": {
+      "titleLines": ["Cloak of the Ashen Road"], "typeLine": "Wondrous item, rare (requires attunement)",
+      "paras": [
+        "A traveller’s cloak the colour of old soot. While you wear it, you leave no footprints on ash, dust or snow, and you have advantage on Dexterity (Stealth) checks made to hide in smoke or fog.",
+        "The cloak sheds a fine grey powder that is warm to the touch and smells faintly of burnt paper."
+      ],
+      "subs": [ { "head": "Lingering Embers", "paras": ["Once per long rest, you can use your reaction when you take fire damage to reduce that damage by 10."] } ],
+      "expect": { "docType": "equipment", "typeValue": "wondrous", "rarity": "rare", "attunement": "required" } } },
+    { "page": 1 },
+    { "item": {
+      "titleLines": ["Emberbrand"], "typeLine": "Weapon (longsword), very rare (requires attunement)",
+      "paras": [
+        "You gain a +2 bonus to attack and damage rolls made with this magic weapon. When you hit a creature with it, the target takes an extra 1d6 fire damage.",
+        "While you hold the drawn blade, it sheds bright light in a 15-foot radius and dim light for an additional 15 feet."
+      ],
+      "expect": { "docType": "weapon", "typeValue": null, "rarity": "veryRare", "attunement": "required" } } },
+    { "item": {
+      "titleLines": ["Draught of Quiet Steps"], "typeLine": "Potion, common",
+      "paras": [
+        "When you drink this grey-green liquid, your footsteps make no sound for 1 hour. You have advantage on Dexterity (Stealth) checks that rely on moving silently."
+      ],
+      "expect": { "docType": "consumable", "typeValue": "potion", "rarity": "common", "attunement": "" } } },
+    { "page": 1 },
+    { "item": {
+      "titleLines": ["Censored Excerpt of the", "Lantern of the Patient Dead"], "typeLine": "Wondrous item, legendary",
+      "paras": [
+        "This lantern was last seen in the vaults beneath the archive, lit, and hanging from the hand of a skeleton that did not move. Its flame is the colour of a bruise.",
+        "While the lantern is lit, undead creatures within 30 feet of it must succeed on a DC 17 Wisdom saving throw before attacking you, or choose a different target."
+      ],
+      "expect": { "docType": "equipment", "typeValue": "wondrous", "rarity": "legendary", "attunement": "" } } }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+ "id": "ref-enrichers",
+ "edition": "2014",
+ "lang": "en",
+ "cols": 2,
+ "draw": "lines",
+ "footer": "number",
+ "fonts": "std",
+ "flow": [
+  {
+   "lore": "A short note before the block."
+  },
+  {
+   "creature": {
+    "name": "Glyph Scribe",
+    "size": "med",
+    "type": "undead",
+    "subtype": "",
+    "alignment": "neutral evil",
+    "typeLine": "Medium undead, neutral evil",
+    "ac": {
+     "value": 15,
+     "natural": true,
+     "detail": "natural armor"
+    },
+    "hp": {
+     "value": 67,
+     "formula": "9d8 + 27"
+    },
+    "speed": {
+     "walk": 30
+    },
+    "abilities": [
+     10,
+     14,
+     16,
+     10,
+     12,
+     14
+    ],
+    "saves": [
+     "con"
+    ],
+    "skills": {
+     "prc": 1
+    },
+    "senses": {
+     "darkvision": 60
+    },
+    "passive": 13,
+    "printed": {
+     "di": "poison",
+     "ci": "poisoned",
+     "languages": "Common"
+    },
+    "traits": {
+     "dr": [],
+     "di": [
+      "poison"
+     ],
+     "dv": [],
+     "ci": [
+      "poisoned"
+     ]
+    },
+    "cr": 4,
+    "xp": 1100,
+    "prof": 2,
+    "entries": [
+     [
+      "trait",
+      "Margin Notes",
+      "",
+      "The scribe writes @UUID[Compendium.dnd5e.spells.Item.abcdef123456]{Fireball} and [[/r 2d6]] in the margins, and a roll of [[/r 1d20 + 5]] on a table. See &Reference[Grappled] for the rule."
+     ],
+     [
+      "action",
+      "Multiattack",
+      "",
+      "The scribe makes two Quill attacks."
+     ],
+     [
+      "action",
+      "Quill",
+      "",
+      "Melee Weapon Attack: +4 to hit, reach 5 ft., one target. Hit: 5 (1d6 + 2) piercing damage."
+     ],
+     [
+      "action",
+      "Ink Spray",
+      "Recharge 5-6",
+      "Each creature in a 15-foot cone must succeed on a DC 12 Dexterity saving throw or take 7 (2d6) acid damage. Cast @UUID[Compendium.dnd5e.spells.Item.abcdef123456]{Fireball} at them, or call [[/r 2d6]] fire damage and [[/damage 1d8 fire]] more."
+     ]
+    ]
+   }
+  },
+  {
+   "item": {
+    "titleLines": [
+     "Quill of Marginalia"
+    ],
+    "typeLine": "Wondrous item, uncommon",
+    "paras": [
+     "While you hold this quill you can write @UUID[Compendium.dnd5e.items.Item.xyz]{Scroll} and [[/r 1d4]] notes that fade at dawn."
+    ],
+    "expect": {
+     "docType": "equipment",
+     "typeValue": "wondrous",
+     "rarity": "uncommon",
+     "attunement": ""
+    }
+   }
+  }
+ ]
+}

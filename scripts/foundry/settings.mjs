@@ -25,6 +25,70 @@ export function registerSettings() {
     })),
     default: []
   });
+  registerPdfLimitSettings();
+  registerAiSettings();
+}
+
+const AI_DEFAULT_URL = "http://localhost:11434";
+const AI_DEFAULT_MODEL = "llama3.1:8b";
+const AI_DEFAULT_TIMEOUT_S = 120;
+const ITEM_CONFIGURATOR = "item-configurator";
+
+/** Register the world settings of the local AI for the PDF blocks the rules cannot read (C5). Off by default. */
+export function registerAiSettings() {
+  const name = key => ({ name: `${MODULE_ID}.Settings.${key}.Name`, hint: `${MODULE_ID}.Settings.${key}.Hint` });
+  game.settings.register(MODULE_ID, "pdfAi", { ...name("pdfAi"), scope: "world", config: true, restricted: true, type: Boolean, default: false });
+  // Empty: the values of item-configurator when it is active, else the defaults
+  game.settings.register(MODULE_ID, "ollamaUrl", { ...name("ollamaUrl"), scope: "world", config: true, restricted: true, type: String, default: "" });
+  game.settings.register(MODULE_ID, "ollamaModel", { ...name("ollamaModel"), scope: "world", config: true, restricted: true, type: String, default: "" });
+  game.settings.register(MODULE_ID, "aiTimeout", {
+    ...name("aiTimeout"), scope: "world", config: true, restricted: true, type: Number, default: AI_DEFAULT_TIMEOUT_S,
+    range: { min: 10, max: 600, step: 10 }
+  });
+}
+
+const PDF_DEFAULT_MAX_SIZE_MB = 500;
+const PDF_DEFAULT_MAX_PAGES = 400;
+
+/** Register the world settings that bound a PDF import: file size (MB) and number of pages, 0 for no limit. */
+export function registerPdfLimitSettings() {
+  const name = key => ({ name: `${MODULE_ID}.Settings.${key}.Name`, hint: `${MODULE_ID}.Settings.${key}.Hint` });
+  game.settings.register(MODULE_ID, "pdfMaxSizeMb", {
+    ...name("pdfMaxSizeMb"), scope: "world", config: true, restricted: true, type: Number, default: PDF_DEFAULT_MAX_SIZE_MB,
+    range: { min: 0, max: 4000, step: 50 }
+  });
+  game.settings.register(MODULE_ID, "pdfMaxPages", {
+    ...name("pdfMaxPages"), scope: "world", config: true, restricted: true, type: Number, default: PDF_DEFAULT_MAX_PAGES,
+    range: { min: 0, max: 5000, step: 50 }
+  });
+}
+
+/**
+ * Limits of a PDF import: `{ maxSizeMb, maxPages }`, 0 for none.
+ * @returns {{maxSizeMb: number, maxPages: number}}
+ */
+export function pdfLimits() {
+  const get = (key, fallback) => (game.settings.settings.has(`${MODULE_ID}.${key}`) ? Number(game.settings.get(MODULE_ID, key)) : fallback);
+  return { maxSizeMb: Math.max(0, get("pdfMaxSizeMb", PDF_DEFAULT_MAX_SIZE_MB) || 0), maxPages: Math.max(0, get("pdfMaxPages", PDF_DEFAULT_MAX_PAGES) || 0) };
+}
+
+/** A setting of item-configurator, when that module is active and registered it. */
+function itemConfiguratorSetting(key) {
+  if ( !game.modules.get(ITEM_CONFIGURATOR)?.active || !game.settings.settings.has(`${ITEM_CONFIGURATOR}.${key}`) ) return "";
+  return String(game.settings.get(ITEM_CONFIGURATOR, key) ?? "");
+}
+
+/**
+ * Local AI configuration for the PDF blocks the rules cannot read (C5): the module's settings, then those of
+ * item-configurator, then the defaults (`http://localhost:11434`, `llama3.1:8b`, 120 s).
+ * @returns {{enabled: boolean, url: string, model: string, timeoutMs: number}}
+ */
+export function aiConfig() {
+  const get = key => (game.settings.settings.has(`${MODULE_ID}.${key}`) ? game.settings.get(MODULE_ID, key) : undefined);
+  const url = String(get("ollamaUrl") ?? "").trim() || itemConfiguratorSetting("ollamaUrl") || AI_DEFAULT_URL;
+  const model = String(get("ollamaModel") ?? "").trim() || itemConfiguratorSetting("ollamaModel") || AI_DEFAULT_MODEL;
+  const seconds = Number(get("aiTimeout")) || AI_DEFAULT_TIMEOUT_S;
+  return { enabled: get("pdfAi") === true, url, model, timeoutMs: Math.max(10, Math.min(600, seconds)) * 1000 };
 }
 
 /**
