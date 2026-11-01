@@ -2,7 +2,7 @@
   "id": "compendium-json-importer",
   "title": "Compendium JSON Importer",
   "description": "Import dnd5e actors, items and other documents from .json, .db or PDF files into compendiums, with a conformity check against the dnd5e 6 data model.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "url": "https://github.com/rydka/foundry-compendium-importer",
   "manifest": "https://github.com/rydka/foundry-compendium-importer/releases/latest/download/module.json",
   "download": "https://github.com/rydka/foundry-compendium-importer/releases/latest/download/module.zip",
@@ -32,8 +32,9 @@
         "type": "module",
         "compatibility": {
           "minimum": "1.0.0",
-          "verified": "1.0.0"
-        }
+          "verified": "1.1.0"
+        },
+        "manifest": "https://github.com/rydka/dnd5e-text-parser/releases/latest/download/module.json"
       }
     ]
   },
