@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1
+
+- Import direct depuis un PDF (arrivé avec 0.3.0, qui n'était pas installable) : choisir un `.pdf` dans la fenêtre de l'importeur extrait les créatures (blocs de statistiques 2014 et 2024, anglais et français, une ou deux colonnes, blocs à cheval sur deux pages) et les objets magiques, avec la revue et l'enrichissement habituels. Blocs coupés ou illisibles signalés dans la revue, page à l'appui ; IA locale (Ollama) en option pour les blocs illisibles. PDF scanné refusé.
+- Publication : `manifest` et `download` pointent vers les fichiers de la release GitHub ; la dépendance `dnd5e-text-parser` (1.1.0) indique son manifeste, pour que Foundry l'installe avec l'importeur.
+
 ## 0.3.0
 
 - Complétion des activités depuis le texte, avec la bibliothèque `dnd5e-text-parser` (nouvelle dépendance, API 1.x) : activités utilitaires vides converties en attaque, sauvegarde ou dégâts, usages et recharge, actions et résistances légendaires, résistances, immunités et vulnérabilités, incantation et emplacements de sorts. Les valeurs déjà présentes dans le fichier ne sont jamais remplacées.

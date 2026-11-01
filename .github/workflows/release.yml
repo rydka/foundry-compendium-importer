@@ -19,6 +19,10 @@ jobs:
         with:
           node-version: 24
 
+      # Dev dependency "file:../dnd5e-text-parser": fetch the published library next to the repo.
+      - name: Fetch dnd5e-text-parser
+        run: git clone --depth 1 --branch v1.1.0 https://github.com/rydka/dnd5e-text-parser.git ../dnd5e-text-parser
+
       - run: npm ci
       - run: npm run lint
       - run: npm test
@@ -40,8 +44,11 @@ jobs:
 
       - name: Build module.zip
         run: |
-          zip -r module.zip module.json scripts styles lang templates README.md CHANGELOG.md \
-            $( [ -d packs ] && echo packs ) $( [ -d assets ] && echo assets )
+          files=""
+          for p in module.json scripts styles lang templates packs assets README.md CHANGELOG.md LICENSE; do
+            [ -e "$p" ] && files="$files $p"
+          done
+          zip -r module.zip $files
 
       - name: Upload release assets
         env:

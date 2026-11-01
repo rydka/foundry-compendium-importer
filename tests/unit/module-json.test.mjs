@@ -10,12 +10,13 @@ describe("module.json (C3)", () => {
     expect(manifest.compatibility.verified).toBe("14");
   });
 
-  it("is version 0.3.0 and requires dnd5e-text-parser 1.0.0", () => {
-    expect(manifest.version).toBe("0.3.0");
+  it("is version 0.3.1 and requires dnd5e-text-parser 1.0.0 with its manifest", () => {
+    expect(manifest.version).toBe("0.3.1");
     const lib = manifest.relationships.requires.find((r) => r.id === "dnd5e-text-parser");
     expect(lib).toBeDefined();
     expect(lib.type).toBe("module");
     expect(lib.compatibility.minimum).toBe("1.0.0");
+    expect(lib.manifest).toBe("https://github.com/rydka/dnd5e-text-parser/releases/latest/download/module.json");
   });
 
   it("requires dnd5e 6.0.0 and was verified on 6.0.6", () => {
